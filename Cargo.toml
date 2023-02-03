@@ -1,0 +1,20 @@
+[package]
+name = "warblersneeds"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = ["serialize"]
+serialize = ["dep:serde", "dep:ron"]
+
+[dependencies]
+bytemuck = "1.13.0"
+rand = "0.8.5"
+bevy = {version = "0.9.1"}
+
+# needed for serialize feature
+serde = {version = "1.0.152", optional = true}
+ron = {version = "0.8", optional = true}
+
