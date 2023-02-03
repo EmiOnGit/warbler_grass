@@ -4,13 +4,13 @@ use bevy::{
     reflect::TypeUuid,
     render::{
         extract_component::ExtractComponentPlugin, render_phase::AddRenderCommand,
-        render_resource::SpecializedMeshPipelines, RenderApp, RenderStage,
+        render_resource::SpecializedMeshPipelines, RenderApp, RenderStage, extract_resource::ExtractResourcePlugin,
     },
 };
 
 use crate::{
     render::{self, grass_pipeline::GrassPipeline},
-    GrassData,
+    GrassData, RegionConfig,
 };
 
 pub(crate) const GRASS_RENDER_HANDLE: HandleUntyped =
@@ -22,8 +22,10 @@ impl Plugin for WarblersPlugin {
         let mut shaders = app.world.resource_mut::<Assets<Shader>>();
         let grass_shader = Shader::from_wgsl(include_str!("render/grass_shader.wgsl"));
         shaders.set_untracked(GRASS_RENDER_HANDLE, grass_shader);
-
+        app.init_resource::<RegionConfig>()
+            .register_type::<RegionConfig>();
         app.add_plugin(ExtractComponentPlugin::<GrassData>::default());
+        app.add_plugin(ExtractResourcePlugin::<RegionConfig>::default());
 
         app.sub_app_mut(RenderApp)
             .init_resource::<GrassPipeline>()

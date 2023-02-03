@@ -18,3 +18,4 @@ bevy = {version = "0.9.1"}
 serde = {version = "1.0.152", optional = true}
 ron = {version = "0.8", optional = true}
 
+bevy-inspector-egui = "*"

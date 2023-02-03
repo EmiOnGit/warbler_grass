@@ -15,7 +15,7 @@ use crate::{warblers_plugin::GRASS_RENDER_HANDLE, GrassBlade};
 pub struct GrassPipeline {
     shader: Handle<Shader>,
     mesh_pipeline: MeshPipeline,
-    region_layout: BindGroupLayout,
+    pub region_layout: BindGroupLayout,
 }
 
 impl FromWorld for GrassPipeline {
@@ -75,12 +75,6 @@ impl SpecializedMeshPipeline for GrassPipeline {
                     offset: VertexFormat::Float32x3.size(),
                     shader_location: 2,
                 },
-                // color
-                // VertexAttribute {
-                //     format: VertexFormat::Float32x4,
-                //     offset: VertexFormat::Float32x4.size(),
-                //     shader_location: 3,
-                // },
             ],
         });
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone();

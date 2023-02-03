@@ -4,16 +4,14 @@
 @group(1) @binding(0)
 var<uniform> mesh: Mesh;
 @group(2) @binding(1)
-var<uniform> colorr: vec4<f32>;
+var<uniform> color: vec4<f32>;
 
-// NOTE: Bindings must come before functions that use them!
 #import bevy_pbr::mesh_functions
 
 struct Vertex {
     @location(0) position: vec4<f32>,
     @location(1) i_pos_scale: vec3<f32>,
     @location(2) heigth: f32,
-    // @location(3) i_color: vec4<f32>,
 };
 
 struct VertexOutput {
@@ -33,7 +31,6 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
     // The grass should be darker at the buttom
     out.color = colorr * (vertex.position.y + 0.1) * 0.3;
-    // out.color = colorr;
     return out;
 }
 

@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_phase::{DrawFunctions, RenderPhase};
 use bevy::render::render_resource::{
-    Buffer, BufferInitDescriptor, BufferUsages, PipelineCache, SpecializedMeshPipelines, BindGroupDescriptor, ShaderStages, BindingType, BufferBindingType, BindGroupLayoutEntry, BindGroupEntry, BindingResource, BufferBinding, BindGroupLayoutDescriptor, BindGroup,
+    Buffer, BufferInitDescriptor, BufferUsages, PipelineCache, SpecializedMeshPipelines, BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding, BindGroup,
 };
 use bevy::render::renderer::RenderDevice;
 use bevy::render::view::ExtractedView;
@@ -13,7 +13,7 @@ use bevy::{
     render::render_phase::SetItemPipeline,
 };
 
-use crate::GrassData;
+use crate::{GrassData, RegionConfig};
 
 use self::grass_pipeline::GrassPipeline;
 mod draw_mesh;
@@ -34,7 +34,9 @@ pub struct InstanceBuffer {
 
 pub fn prepare_instance_buffers(
     mut commands: Commands,
+    pipeline: Res<GrassPipeline>,
     query: Query<(Entity, &GrassData)>,
+    region_config: Res<RegionConfig>,
     render_device: Res<RenderDevice>,
 ) {
     for (entity, instance_data) in &query {
@@ -43,26 +45,13 @@ pub fn prepare_instance_buffers(
             contents: bytemuck::cast_slice(instance_data.0.as_slice()),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
+
         let uniform_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("instance entity data buffer"),
-            contents: bytemuck::cast_slice(&[0.6,0.1,0.1,1.]),
+            contents: bytemuck::cast_slice(&region_config.color.as_rgba_f32()),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
-        let layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("warblersneeds|reagion_layout"),
-            entries: &[
-                BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: ShaderStages::VERTEX,
-                    ty: BindingType::Buffer {
-                        ty: BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None
-                }
-            ],
-        });
+        let layout = pipeline.region_layout.clone();
         let bind_group_des = BindGroupDescriptor {
             label: Some("uniform bind group"),
             layout: &layout,
