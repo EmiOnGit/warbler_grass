@@ -30,7 +30,7 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
     // The grass should be darker at the buttom
-    out.color = colorr * (vertex.position.y + 0.1) * 0.3;
+    out.color = color * (vertex.position.y + 0.1) * 0.3;
     return out;
 }
 
