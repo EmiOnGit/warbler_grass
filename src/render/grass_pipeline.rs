@@ -10,7 +10,7 @@ use bevy::{
     },
 };
 
-use crate::{warblers_plugin::GRASS_RENDER_HANDLE, GrassBlade};
+use crate::{warblers_plugin::GRASS_SHADER_HANDLE, GrassBlade};
 #[derive(Resource)]
 pub struct GrassPipeline {
     shader: Handle<Shader>,
@@ -25,6 +25,18 @@ impl FromWorld for GrassPipeline {
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
                 label: Some("warblersneeds|reagion_layout"),
                 entries: &[
+                    // color 
+                    BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: ShaderStages::VERTEX,
+                        ty: BindingType::Buffer {
+                            ty: BufferBindingType::Uniform,
+                            has_dynamic_offset: false,
+                            min_binding_size: None,
+                        },
+                        count: None
+                    },
+                    // Wind
                     BindGroupLayoutEntry {
                         binding: 1,
                         visibility: ShaderStages::VERTEX,
@@ -34,10 +46,10 @@ impl FromWorld for GrassPipeline {
                             min_binding_size: None,
                         },
                         count: None
-                    }
+                    },
                 ],
             });
-        let shader = GRASS_RENDER_HANDLE.typed::<Shader>();
+        let shader = GRASS_SHADER_HANDLE.typed::<Shader>();
         let mesh_pipeline = world.resource::<MeshPipeline>();
         GrassPipeline {
             shader,

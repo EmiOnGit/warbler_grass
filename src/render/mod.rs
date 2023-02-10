@@ -18,6 +18,7 @@ use crate::{GrassData, RegionConfig};
 use self::grass_pipeline::GrassPipeline;
 mod draw_mesh;
 pub(crate) mod grass_pipeline;
+
 pub(crate) type GrassDrawCall = (
     SetItemPipeline,
     SetMeshViewBindGroup<0>,
@@ -45,21 +46,33 @@ pub fn prepare_instance_buffers(
             contents: bytemuck::cast_slice(instance_data.0.as_slice()),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
-
-        let uniform_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-            label: Some("instance entity data buffer"),
+        let region_color_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            label: Some("region color buffer"),
             contents: bytemuck::cast_slice(&region_config.color.as_rgba_f32()),
+            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+        });
+        let region_wind_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            label: Some("region wind buffer"),
+            contents: bytemuck::cast_slice(&region_config.wind.to_array()),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
         let layout = pipeline.region_layout.clone();
         let bind_group_des = BindGroupDescriptor {
-            label: Some("uniform bind group"),
+            label: Some("grass uniform bind group"),
             layout: &layout,
             entries: &[
                 BindGroupEntry {
+                    binding: 0,
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &region_color_buffer,
+                        offset: 0,
+                        size: None,
+                    } ),
+                },
+                BindGroupEntry {
                     binding: 1,
                     resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &uniform_buffer,
+                        buffer: &region_wind_buffer,
                         offset: 0,
                         size: None,
                     } ),
@@ -79,7 +92,7 @@ pub fn prepare_instance_buffers(
 #[allow(clippy::too_many_arguments)]
 pub fn queue_grass_buffers(
     transparent_3d_draw_functions: Res<DrawFunctions<Transparent3d>>,
-    custom_pipeline: Res<GrassPipeline>,
+    grass_pipeline: Res<GrassPipeline>,
     msaa: Res<Msaa>,
     mut pipelines: ResMut<SpecializedMeshPipelines<GrassPipeline>>,
     mut pipeline_cache: ResMut<PipelineCache>,
@@ -103,7 +116,7 @@ pub fn queue_grass_buffers(
                     view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);
                     
                 let pipeline = pipelines
-                    .specialize(&mut pipeline_cache, &custom_pipeline, key, &mesh.layout)
+                    .specialize(&mut pipeline_cache, &grass_pipeline, key, &mesh.layout)
                     .unwrap();
                 transparent_phase.add(Transparent3d {
                     entity,
