@@ -29,6 +29,15 @@ bevy-inspector-egui = {version = "0.17.0", optional = true}
 [[example]]
 name = "load_from_plane"
 path = "examples/load_from_plane.rs"
+
+[[example]]
+name = "load_from_file"
+path = "examples/load_from_file.rs"
+
+[[example]]
+name = "load_custom"
+path = "examples/load_custom.rs"
+
 [[example]]
 name = "grass_colors"
 path = "examples/grass_colors.rs"
