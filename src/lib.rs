@@ -10,11 +10,12 @@ use bytemuck::{Pod, Zeroable};
 mod render;
 use bevy_inspector_egui::prelude::*;
 use warblers_plugin::GRASS_MESH_HANDLE;
-
+pub mod generator;
 pub mod warblers_plugin;
+
 #[derive(Bundle)]
 pub struct WarblersBundle {
-    pub grass_data: GrassData,
+    pub grass_data: Grass,
     pub grass_mesh: Handle<Mesh>,
     pub transform: Transform,
     pub no_frustum_calling: NoFrustumCulling,
@@ -22,6 +23,7 @@ pub struct WarblersBundle {
     pub visibility: Visibility,
     pub computed_visibility: ComputedVisibility,
 }
+
 impl Default for WarblersBundle {
     fn default() -> Self {
         Self {
@@ -37,10 +39,10 @@ impl Default for WarblersBundle {
 }
 
 #[derive(Clone, Debug, Component, Default)]
-pub struct GrassData(pub Vec<GrassBlade>);
+pub struct Grass(pub Vec<GrassBlade>);
 
-impl ExtractComponent for GrassData {
-    type Query = &'static GrassData;
+impl ExtractComponent for Grass {
+    type Query = &'static Grass;
     type Filter = ();
 
     fn extract_component(item: bevy::ecs::query::QueryItem<'_, Self::Query>) -> Self {
@@ -56,20 +58,20 @@ pub struct GrassBlade {
 #[cfg_attr(feature = "debug", derive(InspectorOptions))]
 #[derive(Resource, Clone, Reflect)]
 #[reflect(Resource)]
-pub struct RegionConfig {
+pub struct RegionConfiguration {
     pub color: Color,
     pub wind: Vec2,
 }
 
-impl Default for RegionConfig {
+impl Default for RegionConfiguration {
     fn default() -> Self {
-        RegionConfig {
+        RegionConfiguration {
             color: Color::rgb(0.3, 0.6, 0.0),
             wind: Vec2::new(0.6, 0.),
         }
     }
 }
-impl ExtractResource for RegionConfig {
+impl ExtractResource for RegionConfiguration {
     type Source = Self;
 
     fn extract_resource(source: &Self::Source) -> Self {

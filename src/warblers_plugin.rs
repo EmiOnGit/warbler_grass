@@ -10,7 +10,7 @@ use bevy::{
 
 use crate::{
     render::{self, grass_pipeline::GrassPipeline},
-    GrassData, RegionConfig,
+    Grass, RegionConfiguration,
 };
 
 pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
@@ -22,7 +22,7 @@ impl Plugin for WarblersPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         {
             let world = app.world.cell();
-            // load grass mesh
+            // load default grass mesh
             let mut meshes = world.resource_mut::<Assets<Mesh>>();
             let mut grass_mesh = Mesh::new(PrimitiveTopology::TriangleList);
             grass_mesh.insert_attribute(
@@ -41,13 +41,11 @@ impl Plugin for WarblersPlugin {
             let mut shaders = world.resource_mut::<Assets<Shader>>();
             let grass_shader = Shader::from_wgsl(include_str!("render/grass_shader.wgsl"));
             shaders.set_untracked(GRASS_SHADER_HANDLE, grass_shader);
-            
-
         }
-        app.init_resource::<RegionConfig>()
-            .register_type::<RegionConfig>();
-        app.add_plugin(ExtractComponentPlugin::<GrassData>::default());
-        app.add_plugin(ExtractResourcePlugin::<RegionConfig>::default());
+        app.init_resource::<RegionConfiguration>()
+            .register_type::<RegionConfiguration>();
+        app.add_plugin(ExtractComponentPlugin::<Grass>::default());
+        app.add_plugin(ExtractResourcePlugin::<RegionConfiguration>::default());
 
         app.sub_app_mut(RenderApp)
             .init_resource::<GrassPipeline>()

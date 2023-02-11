@@ -13,7 +13,7 @@ use bevy::{
     render::render_phase::SetItemPipeline,
 };
 
-use crate::{GrassData, RegionConfig};
+use crate::{Grass, RegionConfiguration};
 
 use self::grass_pipeline::GrassPipeline;
 mod draw_mesh;
@@ -36,8 +36,8 @@ pub struct InstanceBuffer {
 pub fn prepare_instance_buffers(
     mut commands: Commands,
     pipeline: Res<GrassPipeline>,
-    query: Query<(Entity, &GrassData)>,
-    region_config: Res<RegionConfig>,
+    query: Query<(Entity, &Grass)>,
+    region_config: Res<RegionConfiguration>,
     render_device: Res<RenderDevice>,
 ) {
     for (entity, instance_data) in &query {
@@ -97,7 +97,7 @@ pub fn queue_grass_buffers(
     mut pipelines: ResMut<SpecializedMeshPipelines<GrassPipeline>>,
     mut pipeline_cache: ResMut<PipelineCache>,
     meshes: Res<RenderAssets<Mesh>>,
-    material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>), With<GrassData>>,
+    material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>), With<Grass>>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Transparent3d>)>,
 ) {
     let draw_custom = transparent_3d_draw_functions

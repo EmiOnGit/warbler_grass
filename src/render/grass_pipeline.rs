@@ -23,7 +23,7 @@ impl FromWorld for GrassPipeline {
         let render_device = world.get_resource::<RenderDevice>().unwrap();
         let region_layout = 
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warblersneeds|reagion_layout"),
+                label: Some("warblersneeds configuration layout"),
                 entries: &[
                     // color 
                     BindGroupLayoutEntry {
