@@ -1,4 +1,3 @@
-pub mod file_loader;
 pub mod grass_field;
 pub mod plane;
 use crate::Grass;
@@ -8,7 +7,7 @@ pub mod standard_generator {
     pub use super::plane::Plane;
 }
 pub trait GrassGenerator<Config> {
-    fn generate(&self, generator_config: Config) -> Grass;
+    fn generate_grass(&self, generator_config: Config) -> Grass;
 }
 
 pub struct StandardGeneratorConfig {

@@ -1,16 +1,16 @@
 use bevy::prelude::Vec3;
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 
-use crate::{Grass, GrassBlade};
+use crate::{Grass, GrassBlade, file_loader::GrassFields};
 
-use super::{file_loader::GrassFields, GrassGenerator, StandardGeneratorConfig};
+use super::{GrassGenerator, StandardGeneratorConfig};
 
 pub struct GrassFieldGenerator<'a> {
     pub data: &'a GrassFields,
 }
 
 impl GrassGenerator<StandardGeneratorConfig> for GrassFieldGenerator<'_> {
-    fn generate(&self, generator_config: StandardGeneratorConfig) -> crate::Grass {
+    fn generate_grass(&self, generator_config: StandardGeneratorConfig) -> crate::Grass {
         let mut rand = if let Some(seed) = generator_config.seed {
             SmallRng::seed_from_u64(seed)
         } else {

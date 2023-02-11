@@ -6,7 +6,7 @@ pub struct Plane {
     pub dimensions: Transform,
 }
 impl GrassGenerator<StandardGeneratorConfig> for Plane {
-    fn generate(&self, generator_config: StandardGeneratorConfig) -> Grass {
+    fn generate_grass(&self, generator_config: StandardGeneratorConfig) -> Grass {
         let mut rand = if let Some(seed) = generator_config.seed {
             SmallRng::seed_from_u64(seed)
         } else {
