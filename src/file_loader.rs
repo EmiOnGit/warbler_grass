@@ -4,7 +4,8 @@ use bevy::{
     utils::BoxedFuture,
 };
 
-/// Each entry contains a rect internally defined by [x,z,width,height]
+/// Each entry contains a rect with the grass height, internally defined by [height, x,z,width,length].
+/// It can be loaded from file (see examples)
 #[derive(Debug, TypeUuid, serde::Deserialize, Reflect)]
 #[uuid = "39a3dc56-aa9c-4543-8640-a018b74b5052"]
 pub struct GrassFields(pub Vec<[f32; 5]>);

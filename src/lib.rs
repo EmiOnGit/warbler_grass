@@ -22,7 +22,7 @@ pub mod prelude {
 
 #[derive(Bundle)]
 pub struct WarblersBundle {
-    pub grass_data: Grass,
+    pub grass: Grass,
     pub grass_mesh: Handle<Mesh>,
     pub transform: Transform,
     pub no_frustum_calling: NoFrustumCulling,
@@ -34,7 +34,7 @@ pub struct WarblersBundle {
 impl Default for WarblersBundle {
     fn default() -> Self {
         Self {
-            grass_data: Default::default(),
+            grass: Default::default(),
             grass_mesh: GRASS_MESH_HANDLE.typed(),
             transform: Default::default(),
             no_frustum_calling: NoFrustumCulling,

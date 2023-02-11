@@ -13,7 +13,6 @@ use bevy::{
 };
 
 use crate::{
-    
     render::{self, grass_pipeline::GrassPipeline},
     Grass, RegionConfiguration, file_loader::{GrassFields, GrassFieldsAssetLoader},
 };
