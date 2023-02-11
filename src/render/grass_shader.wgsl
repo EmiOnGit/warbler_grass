@@ -18,7 +18,7 @@ var<uniform> wind: vec2<f32>;
 struct Vertex {
     @location(0) position: vec4<f32>,
     @location(1) position_field_offset: vec3<f32>,
-    @location(2) heigth: f32,
+    @location(2) height: f32,
 };
 
 struct VertexOutput {
@@ -28,15 +28,16 @@ struct VertexOutput {
 
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
-    var position = vertex.position.xyz + vertex.position_field_offset;
+    let height = vertex.position.y * vertex.height;
+    var position = vertex.position.xyz * vec3<f32>(1.,vertex.height, 1.) + vertex.position_field_offset;
     var out: VertexOutput;
 
     // Displacing the top of the grass. 
     // Can only affect the top vertex since vertex.position.y is 0 for all others
-    // TODO find a better random function
+    // TODO find a better random function to offset the top
     let strength = abs(wind.x) + abs(wind.y);
-    position.x += sin(position.z * position.z - vertex.position.y  * globals.time * strength) / 10. + vertex.position.y * wind.x / 4.;
-    position.z += sin(position.x * position.z + vertex.position.y  * globals.time * strength ) / 10. + vertex.position.y * wind.y / 4.;
+    position.x += sin(position.z * position.z - height  * globals.time * strength) / 10. + height * wind.x / 4.;
+    position.z += sin(position.x * position.z + height  * globals.time * strength ) / 10. + height * wind.y / 4.;
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
 
     // The grass should be darker at the buttom
