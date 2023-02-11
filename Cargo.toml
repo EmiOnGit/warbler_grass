@@ -41,3 +41,6 @@ path = "examples/load_custom.rs"
 [[example]]
 name = "grass_colors"
 path = "examples/grass_colors.rs"
+[[example]]
+name = "stress_test"
+path = "examples/stress_test.rs"

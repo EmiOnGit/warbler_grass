@@ -7,5 +7,7 @@ The crate is not mature and shouldn't be used seriously yet.
 However, every type of contribution is currently highly appreciated, so feel free to open an issue with your suggestion!
 
 The current implementation is fairly performant. 
-Most of the work is done on the gpu and the grass is instanced properly.
-For examples, you can take a look in the [examples](./examples/) folder of this project
+The stresstest with 1_000_000 grass blades animated with wind currently runs at around 250 fps on my hardware.
+This is because most of the work is done on the gpu and the grass is instanced properly.
+
+If you want to look at examples, you can take a look at the [examples](./examples/) folder of this project
