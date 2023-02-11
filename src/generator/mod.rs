@@ -1,5 +1,6 @@
 pub mod plane;
-
+pub mod file_loader;
+pub mod asset;
 use crate::Grass;
 
 pub trait GrassGenerator<Config> {

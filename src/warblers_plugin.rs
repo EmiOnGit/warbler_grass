@@ -10,7 +10,7 @@ use bevy::{
 
 use crate::{
     render::{self, grass_pipeline::GrassPipeline},
-    Grass, RegionConfiguration,
+    Grass, RegionConfiguration, generator::file_loader::{GrassDataAsset, GrassDataAssetLoader},
 };
 
 pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
@@ -43,7 +43,9 @@ impl Plugin for WarblersPlugin {
             shaders.set_untracked(GRASS_SHADER_HANDLE, grass_shader);
         }
         app.init_resource::<RegionConfiguration>()
-            .register_type::<RegionConfiguration>();
+            .register_type::<RegionConfiguration>()
+            .add_asset::<GrassDataAsset>()
+            .init_asset_loader::<GrassDataAssetLoader>();
         app.add_plugin(ExtractComponentPlugin::<Grass>::default());
         app.add_plugin(ExtractResourcePlugin::<RegionConfiguration>::default());
 
