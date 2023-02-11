@@ -2,6 +2,10 @@
 name = "warblersneeds"
 version = "0.1.0"
 edition = "2021"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+exclude = ["assets/", "scripts/"]
+keywords = ["bevy", "gamedev", "graphics", "grass", "rendering"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -20,3 +24,11 @@ serde = {version = "1.0.152", optional = true}
 ron = {version = "0.8", optional = true}
 
 bevy-inspector-egui = {version = "0.17.0", optional = true}
+
+
+[[example]]
+name = "load_from_plane"
+path = "examples/load_from_plane.rs"
+[[example]]
+name = "grass_colors"
+path = "examples/grass_colors.rs"

@@ -9,7 +9,7 @@ pub mod standard_generator {
 pub trait GrassGenerator<Config> {
     fn generate_grass(&self, generator_config: Config) -> Grass;
 }
-
+#[derive(Debug, Clone)]
 pub struct StandardGeneratorConfig {
     /// Density of the grass generated.
     /// The higher the density the more grass will be spawned per area

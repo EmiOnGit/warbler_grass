@@ -12,7 +12,7 @@ impl GrassGenerator<StandardGeneratorConfig> for Plane {
         } else {
             SmallRng::from_entropy()
         };
-        let area = self.dimensions.translation.x * self.dimensions.translation.z;
+        let area = self.dimensions.translation.x.abs() * self.dimensions.translation.z.abs();
         let blades_count = (area * generator_config.density) as usize;
         let blades = (0..blades_count)
             .into_iter()
