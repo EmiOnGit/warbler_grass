@@ -4,9 +4,12 @@ use bevy::{
     render::{
         mesh::MeshVertexBufferLayout,
         render_resource::{
-            RenderPipelineDescriptor, SpecializedMeshPipeline, SpecializedMeshPipelineError,
-            VertexAttribute, VertexBufferLayout, VertexFormat, VertexStepMode, BindGroupLayoutDescriptor, BindGroupLayoutEntry, ShaderStages, BindingType, BufferBindingType, BindGroupLayout,
-        }, renderer::RenderDevice,
+            BindGroupLayout, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType,
+            BufferBindingType, RenderPipelineDescriptor, ShaderStages, SpecializedMeshPipeline,
+            SpecializedMeshPipelineError, VertexAttribute, VertexBufferLayout, VertexFormat,
+            VertexStepMode,
+        },
+        renderer::RenderDevice,
     },
 };
 
@@ -21,34 +24,33 @@ pub struct GrassPipeline {
 impl FromWorld for GrassPipeline {
     fn from_world(world: &mut World) -> Self {
         let render_device = world.get_resource::<RenderDevice>().unwrap();
-        let region_layout = 
-            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warblersneeds configuration layout"),
-                entries: &[
-                    // color 
-                    BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: ShaderStages::VERTEX,
-                        ty: BindingType::Buffer {
-                            ty: BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None
+        let region_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+            label: Some("warblersneeds configuration layout"),
+            entries: &[
+                // color
+                BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
                     },
-                    // Wind
-                    BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: ShaderStages::VERTEX,
-                        ty: BindingType::Buffer {
-                            ty: BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None
+                    count: None,
+                },
+                // Wind
+                BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
                     },
-                ],
-            });
+                    count: None,
+                },
+            ],
+        });
         let shader = GRASS_SHADER_HANDLE.typed::<Shader>();
         let mesh_pipeline = world.resource::<MeshPipeline>();
         GrassPipeline {
@@ -69,7 +71,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
         let mut descriptor = self.mesh_pipeline.specialize(key, layout)?;
         descriptor.label = Some("Grass Render Pipeline".into());
         descriptor.vertex.shader = self.shader.clone();
-        let layouts = descriptor.layout.get_or_insert_with(||Vec::new());
+        let layouts = descriptor.layout.get_or_insert_with(|| Vec::new());
         layouts.push(self.region_layout.clone());
         descriptor.vertex.buffers.push(VertexBufferLayout {
             array_stride: std::mem::size_of::<GrassBlade>() as u64,

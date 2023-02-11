@@ -4,7 +4,8 @@ use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_phase::{DrawFunctions, RenderPhase};
 use bevy::render::render_resource::{
-    Buffer, BufferInitDescriptor, BufferUsages, PipelineCache, SpecializedMeshPipelines, BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding, BindGroup,
+    BindGroup, BindGroupDescriptor, BindGroupEntry, BindingResource, Buffer, BufferBinding,
+    BufferInitDescriptor, BufferUsages, PipelineCache, SpecializedMeshPipelines,
 };
 use bevy::render::renderer::RenderDevice;
 use bevy::render::view::ExtractedView;
@@ -67,7 +68,7 @@ pub fn prepare_instance_buffers(
                         buffer: &region_color_buffer,
                         offset: 0,
                         size: None,
-                    } ),
+                    }),
                 },
                 BindGroupEntry {
                     binding: 1,
@@ -75,11 +76,11 @@ pub fn prepare_instance_buffers(
                         buffer: &region_wind_buffer,
                         offset: 0,
                         size: None,
-                    } ),
-                }
-            ], 
+                    }),
+                },
+            ],
         };
-        
+
         let bind_group = render_device.create_bind_group(&bind_group_des);
         commands.entity(entity).insert(InstanceBuffer {
             entity_buffer,
@@ -114,7 +115,7 @@ pub fn queue_grass_buffers(
             if let Some(mesh) = meshes.get(mesh_handle) {
                 let key =
                     view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);
-                    
+
                 let pipeline = pipelines
                     .specialize(&mut pipeline_cache, &grass_pipeline, key, &mesh.layout)
                     .unwrap();

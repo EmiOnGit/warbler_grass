@@ -3,14 +3,19 @@ use bevy::{
     prelude::*,
     reflect::TypeUuid,
     render::{
-        extract_component::ExtractComponentPlugin, render_phase::AddRenderCommand,
-        render_resource::{SpecializedMeshPipelines, PrimitiveTopology}, RenderApp, RenderStage, extract_resource::ExtractResourcePlugin, mesh::Indices,
+        extract_component::ExtractComponentPlugin,
+        extract_resource::ExtractResourcePlugin,
+        mesh::Indices,
+        render_phase::AddRenderCommand,
+        render_resource::{PrimitiveTopology, SpecializedMeshPipelines},
+        RenderApp, RenderStage,
     },
 };
 
 use crate::{
+    generator::file_loader::{GrassFields, GrassFieldsAssetLoader},
     render::{self, grass_pipeline::GrassPipeline},
-    Grass, RegionConfiguration, generator::file_loader::{GrassDataAsset, GrassDataAssetLoader},
+    Grass, RegionConfiguration,
 };
 
 pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
@@ -36,7 +41,7 @@ impl Plugin for WarblersPlugin {
             );
             grass_mesh.set_indices(Some(Indices::U32(vec![1, 0, 3, 2, 1, 3, 0, 2, 3])));
 
-            meshes.set_untracked(GRASS_MESH_HANDLE,grass_mesh);
+            meshes.set_untracked(GRASS_MESH_HANDLE, grass_mesh);
             // load shader
             let mut shaders = world.resource_mut::<Assets<Shader>>();
             let grass_shader = Shader::from_wgsl(include_str!("render/grass_shader.wgsl"));
@@ -44,8 +49,8 @@ impl Plugin for WarblersPlugin {
         }
         app.init_resource::<RegionConfiguration>()
             .register_type::<RegionConfiguration>()
-            .add_asset::<GrassDataAsset>()
-            .init_asset_loader::<GrassDataAssetLoader>();
+            .add_asset::<GrassFields>()
+            .init_asset_loader::<GrassFieldsAssetLoader>();
         app.add_plugin(ExtractComponentPlugin::<Grass>::default());
         app.add_plugin(ExtractResourcePlugin::<RegionConfiguration>::default());
 

@@ -1,8 +1,7 @@
 use bevy::{
     prelude::*,
     render::{
-        extract_component::ExtractComponent,
-        extract_resource::ExtractResource,
+        extract_component::ExtractComponent, extract_resource::ExtractResource,
         view::NoFrustumCulling,
     },
 };
