@@ -11,3 +11,5 @@ The stresstest with 1_000_000 grass blades animated with wind currently runs at 
 This is because most of the work is done on the gpu and the grass is instanced properly.
 
 If you want to look at examples, you can take a look at the [examples](./examples/) folder of this project
+
+![alt text](images/preview.png)
