@@ -1,13 +1,8 @@
-use bevy::{
-    prelude::*,
-};
+use bevy::prelude::*;
 use warblersneeds::{
-    generator::{
-        plane::Plane,
-        StandardGeneratorConfig, GrassGenerator,
-    },
+    generator::{plane::Plane, GrassGenerator, StandardGeneratorConfig},
     warblers_plugin::WarblersPlugin,
-    WarblersBundle, RegionConfiguration,
+    RegionConfiguration, WarblersBundle,
 };
 mod helper;
 fn main() {
@@ -15,8 +10,8 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(WarblersPlugin)
         // define the default color
-        .insert_resource(RegionConfiguration { 
-            color: Color::rgb(0.5,0.1,0.0), 
+        .insert_resource(RegionConfiguration {
+            color: Color::rgb(0.5, 0.1, 0.0),
             ..default()
         })
         .add_plugin(helper::SimpleCamera)
@@ -32,22 +27,16 @@ fn setup_grass(mut commands: Commands) {
         height_deviation: 0.5,
         seed: Some(0x121),
     };
-    // translation indicates the outer point 
-    let plane1 = Plane { dimensions: Transform::from_xyz(30., 0., 30.) };
+    // translation indicates the outer point
+    let plane1 = Plane {
+        dimensions: Transform::from_xyz(30., 0., 30.),
+    };
 
     let grass = plane1.generate_grass(config.clone());
-    commands.spawn((
-        WarblersBundle {
-            grass,
-            ..default()
-        },
-    ));
+    commands.spawn((WarblersBundle { grass, ..default() },));
 }
 
-fn change_colors(
-    input: Res<Input<KeyCode>>,
-    mut config: ResMut<RegionConfiguration>,
-) {
+fn change_colors(input: Res<Input<KeyCode>>, mut config: ResMut<RegionConfiguration>) {
     // if the right arrow key is pressed the color gets more green
     if input.pressed(KeyCode::Right) {
         let r = config.color.r();
@@ -62,5 +51,4 @@ fn change_colors(
         config.color.set_r(r * 1.01);
         config.color.set_g(g * 0.99);
     }
-    
 }

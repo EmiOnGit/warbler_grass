@@ -1,11 +1,6 @@
-use bevy::{
-    prelude::*,
-};
+use bevy::prelude::*;
 use warblersneeds::{
-    generator::{
-        plane::Plane,
-        StandardGeneratorConfig, GrassGenerator,
-    },
+    generator::{plane::Plane, GrassGenerator, StandardGeneratorConfig},
     warblers_plugin::WarblersPlugin,
     WarblersBundle,
 };
@@ -26,16 +21,15 @@ fn setup_grass(mut commands: Commands) {
         height_deviation: 0.5,
         seed: Some(0x121),
     };
-    // translation indicates the outer point 
-    let plane1 = Plane { dimensions: Transform::from_xyz(30., 0., 10.) };
-    let plane2 = Plane { dimensions: Transform::from_xyz(10., 2., -10.) };
+    // translation indicates the outer point
+    let plane1 = Plane {
+        dimensions: Transform::from_xyz(30., 0., 10.),
+    };
+    let plane2 = Plane {
+        dimensions: Transform::from_xyz(10., 2., -10.),
+    };
 
     let mut grass = plane1.generate_grass(config.clone());
     grass.0.extend(plane2.generate_grass(config).0);
-    commands.spawn((
-        WarblersBundle {
-            grass,
-            ..default()
-        },
-    ));
+    commands.spawn((WarblersBundle { grass, ..default() },));
 }

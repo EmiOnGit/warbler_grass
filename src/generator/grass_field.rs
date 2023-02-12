@@ -1,12 +1,12 @@
 use bevy::prelude::Vec3;
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 
-use crate::{Grass, GrassBlade, file_loader::GrassFields};
+use crate::{file_loader::GrassFields, Grass, GrassBlade};
 
 use super::{GrassGenerator, StandardGeneratorConfig};
 
 /// Uses [GrassFields] to calculate the grass blades.
-/// 
+///
 /// [GrassFields] can be optained by loading them from file.
 pub struct GrassFieldGenerator<'a> {
     pub data: &'a GrassFields,

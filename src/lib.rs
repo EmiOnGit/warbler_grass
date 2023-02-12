@@ -9,15 +9,15 @@ use bytemuck::{Pod, Zeroable};
 mod render;
 use bevy_inspector_egui::prelude::*;
 use warblers_plugin::GRASS_MESH_HANDLE;
+pub mod file_loader;
 pub mod generator;
 pub mod warblers_plugin;
-pub mod file_loader;
 pub mod prelude {
-    pub use crate::WarblersBundle;
-    pub use crate::RegionConfiguration;
-    pub use crate::warblers_plugin::WarblersPlugin;
     pub use crate::generator::standard_generator;
     pub use crate::generator::StandardGeneratorConfig;
+    pub use crate::warblers_plugin::WarblersPlugin;
+    pub use crate::RegionConfiguration;
+    pub use crate::WarblersBundle;
 }
 
 #[derive(Bundle)]

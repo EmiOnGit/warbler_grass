@@ -13,8 +13,9 @@ use bevy::{
 };
 
 use crate::{
+    file_loader::{GrassFields, GrassFieldsAssetLoader},
     render::{self, grass_pipeline::GrassPipeline},
-    Grass, RegionConfiguration, file_loader::{GrassFields, GrassFieldsAssetLoader},
+    Grass, RegionConfiguration,
 };
 
 pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =

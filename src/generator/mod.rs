@@ -17,13 +17,13 @@ pub struct StandardGeneratorConfig {
     /// The mean height of the grass blades created by the generator
     pub height: f32,
     /// The deviation of the blade heights.
-    /// 
+    ///
     /// If you want no deviation in your blades, you can set it to 0
     pub height_deviation: f32,
     /// The seed used for the random number generator, which calculates height, x and z coordinates of the grass blades
-    /// 
-    /// If you want the grass to look always the same you can set a seed. 
-    /// If [None] is used, the seed is calculated from the internal random generator of the running OS 
+    ///
+    /// If you want the grass to look always the same you can set a seed.
+    /// If [None] is used, the seed is calculated from the internal random generator of the running OS
     pub seed: Option<u64>,
 }
 

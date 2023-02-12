@@ -1,5 +1,11 @@
 use bevy::prelude::*;
-use warblersneeds::{file_loader::GrassFields, prelude::{StandardGeneratorConfig, standard_generator::GrassFieldGenerator}, WarblersBundle, generator::GrassGenerator, warblers_plugin::WarblersPlugin};
+use warblersneeds::{
+    file_loader::GrassFields,
+    generator::GrassGenerator,
+    prelude::{standard_generator::GrassFieldGenerator, StandardGeneratorConfig},
+    warblers_plugin::WarblersPlugin,
+    WarblersBundle,
+};
 
 mod helper;
 fn main() {

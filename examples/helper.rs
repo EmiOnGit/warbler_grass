@@ -4,19 +4,16 @@ pub struct SimpleCamera;
 impl Plugin for SimpleCamera {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup_camera)
-        .add_system(camera_movement);
+            .add_system(camera_movement);
     }
 }
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-5.0, 10., 15.0).looking_at(Vec3::new(5.,4.,5.), Vec3::Y),
+        transform: Transform::from_xyz(-5.0, 10., 15.0).looking_at(Vec3::new(5., 4., 5.), Vec3::Y),
         ..default()
     });
 }
-fn camera_movement(
-    input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Transform, With<Camera>>,
-) {
+fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transform, With<Camera>>) {
     for mut transform in &mut query {
         let move_speed = 0.3;
         let rotate_speed = 0.02;
