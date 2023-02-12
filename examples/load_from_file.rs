@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use warblersneeds::{
     file_loader::GrassFields,
     generator::GrassGenerator,
-    prelude::{standard_generator::GrassFieldGenerator, StandardGeneratorConfig},
+    prelude::*,
     warblers_plugin::WarblersPlugin,
     WarblersBundle,
 };

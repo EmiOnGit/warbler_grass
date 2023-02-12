@@ -1,9 +1,5 @@
 use bevy::prelude::*;
-use warblersneeds::{
-    generator::{plane::Plane, GrassGenerator, StandardGeneratorConfig},
-    warblers_plugin::WarblersPlugin,
-    WarblersBundle,
-};
+use warblersneeds::prelude::*;
 mod helper;
 fn main() {
     App::new()

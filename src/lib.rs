@@ -13,8 +13,7 @@ pub mod file_loader;
 pub mod generator;
 pub mod warblers_plugin;
 pub mod prelude {
-    pub use crate::generator::standard_generator;
-    pub use crate::generator::StandardGeneratorConfig;
+    pub use crate::generator::standard_generator::*;
     pub use crate::warblers_plugin::WarblersPlugin;
     pub use crate::RegionConfiguration;
     pub use crate::WarblersBundle;
