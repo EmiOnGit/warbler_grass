@@ -36,7 +36,7 @@ impl GrassGenerator<StandardGeneratorConfig> for GrassFieldGenerator<'_> {
                     let grass_height = (generator_config.height + height_deviation) * height;
                     (
                         *x as f32 + x_delta * *width as f32,
-                        1.,
+                        0.,
                         *z as f32 + z_delta * *length as f32,
                         grass_height,
                     )
