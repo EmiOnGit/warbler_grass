@@ -15,6 +15,7 @@ This is because most of the work is done on the GPU and the grass is instanced p
 If you want to look at examples, you can take a look at the [examples](./examples/) folder of this project
 
 ![alt text](images/preview.png)
+The preview image comes from [my demo project](https://github.com/EmiOnGit/birdylook) where I use this crate for grass rending
 
 ## Example
 ```rust
@@ -41,7 +42,7 @@ fn setup_grass(mut commands: Commands) {
    
     // create the grass from the plane generator
     let grass = plane.generate_grass(config.clone());
-    
+
     // spawn the grass into the world
     commands.spawn((WarblersBundle { grass, ..default() },));
 }
