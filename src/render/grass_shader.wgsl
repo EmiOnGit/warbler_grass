@@ -13,6 +13,10 @@ var<uniform> color: vec4<f32>;
 
 @group(2) @binding(1)
 var<uniform> wind: vec2<f32>;
+
+@group(2) @binding(2)
+var noise_texture: texture_2d<f32>;
+
 #import bevy_pbr::mesh_functions
 
 struct Vertex {
@@ -26,18 +30,33 @@ struct VertexOutput {
     @location(0) color: vec4<f32>,
 };
 
+let NOISE_TEXTURE_SPEED: f32 = 5.;
+let NOISE_TEXTURE_ZOOM: f32 = 10.;
+
+fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
+    var texture_offset = wind * globals.time * NOISE_TEXTURE_SPEED;
+    var texture_position = (vec2<f32>(vertex_position.x ,vertex_position.y)+ texture_offset) * NOISE_TEXTURE_ZOOM;
+    
+    // dimensions of noise texture in vec2<u32>
+    let dim = textureDimensions(noise_texture, 0);
+
+    // readjust position in case of a over/under flow of tex. coords
+    texture_position = abs(texture_position % vec2<f32>(dim));
+    var texture_pixel = textureLoad(noise_texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0);
+    return texture_pixel.xy * wind;
+}
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
+    var out: VertexOutput;
     let height = vertex.position.y * vertex.height;
     var position = vertex.position.xyz * vec3<f32>(1.,vertex.height, 1.) + vertex.position_field_offset;
-    var out: VertexOutput;
 
-    // Displacing the top of the grass. 
-    // Can only affect the top vertex since vertex.position.y is 0 for all others
-    // TODO find a better random function to offset the top
-    let strength = abs(wind.x) + abs(wind.y);
-    position.x += sin(position.z * position.z - height  * globals.time * strength) / 10. + height * wind.x / 4.;
-    position.z += sin(position.x * position.z + height  * globals.time * strength ) / 10. + height * wind.y / 4.;
+    // only applies wind if the vertex is not on the ground
+    if vertex.position.y > 0.1 {
+        let offset = wind_offset(vec2<f32>(vertex.position_field_offset.x ,vertex.position_field_offset.z));
+        position.x += offset.x;
+        position.z += offset.y;
+    }
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
 
     // The grass should be darker at the buttom

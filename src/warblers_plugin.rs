@@ -8,13 +8,14 @@ use bevy::{
         mesh::Indices,
         render_phase::AddRenderCommand,
         render_resource::{PrimitiveTopology, SpecializedMeshPipelines},
+        texture::{CompressedImageFormats, ImageType},
         RenderApp, RenderStage,
     },
 };
 
 use crate::{
     file_loader::{GrassFields, GrassFieldsAssetLoader},
-    render::{self, grass_pipeline::GrassPipeline},
+    render::{self, grass_pipeline::GrassPipeline, noise::NoiseTexture},
     Grass, RegionConfiguration,
 };
 
@@ -22,11 +23,13 @@ pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
     HandleUntyped::weak_from_u64(Shader::TYPE_UUID, 2263343952151597127);
 pub(crate) const GRASS_MESH_HANDLE: HandleUntyped =
     HandleUntyped::weak_from_u64(Mesh::TYPE_UUID, 9357128457583957921);
+
 pub struct WarblersPlugin;
 impl Plugin for WarblersPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        {
+        let noise_texture = {
             let world = app.world.cell();
+
             // load default grass mesh
             let mut meshes = world.resource_mut::<Assets<Mesh>>();
             let mut grass_mesh = Mesh::new(PrimitiveTopology::TriangleList);
@@ -46,7 +49,18 @@ impl Plugin for WarblersPlugin {
             let mut shaders = world.resource_mut::<Assets<Shader>>();
             let grass_shader = Shader::from_wgsl(include_str!("render/grass_shader.wgsl"));
             shaders.set_untracked(GRASS_SHADER_HANDLE, grass_shader);
-        }
+
+            // load noise image. Used for wind generation
+            let mut images = world.resource_mut::<Assets<Image>>();
+            let img = Image::from_buffer(
+                include_bytes!("render/default_noise.png"),
+                ImageType::Extension("png"),
+                CompressedImageFormats::default(),
+                false,
+            )
+            .unwrap();
+            NoiseTexture::new(images.add(img))
+        };
         app.init_resource::<RegionConfiguration>()
             .register_type::<RegionConfiguration>()
             .add_asset::<GrassFields>()
@@ -56,6 +70,7 @@ impl Plugin for WarblersPlugin {
 
         app.sub_app_mut(RenderApp)
             .init_resource::<GrassPipeline>()
+            .insert_resource(noise_texture)
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_render_command::<Transparent3d, render::GrassDrawCall>()
             .add_system_to_stage(RenderStage::Prepare, render::prepare_instance_buffers)

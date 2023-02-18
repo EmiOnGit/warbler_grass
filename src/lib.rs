@@ -73,7 +73,7 @@ impl Default for RegionConfiguration {
     fn default() -> Self {
         RegionConfiguration {
             color: Color::rgb(0.3, 0.6, 0.0),
-            wind: Vec2::new(0.6, 0.),
+            wind: Vec2::new(0., 1.0),
         }
     }
 }

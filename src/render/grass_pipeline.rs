@@ -6,8 +6,8 @@ use bevy::{
         render_resource::{
             BindGroupLayout, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType,
             BufferBindingType, RenderPipelineDescriptor, ShaderStages, SpecializedMeshPipeline,
-            SpecializedMeshPipelineError, VertexAttribute, VertexBufferLayout, VertexFormat,
-            VertexStepMode,
+            SpecializedMeshPipelineError, TextureSampleType, TextureViewDimension, VertexAttribute,
+            VertexBufferLayout, VertexFormat, VertexStepMode,
         },
         renderer::RenderDevice,
     },
@@ -46,6 +46,17 @@ impl FromWorld for GrassPipeline {
                         ty: BufferBindingType::Uniform,
                         has_dynamic_offset: false,
                         min_binding_size: None,
+                    },
+                    count: None,
+                },
+                // Wind noise Texture
+                BindGroupLayoutEntry {
+                    binding: 2,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Texture {
+                        sample_type: TextureSampleType::Float { filterable: false },
+                        view_dimension: TextureViewDimension::D2,
+                        multisampled: false,
                     },
                     count: None,
                 },
