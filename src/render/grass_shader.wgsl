@@ -30,12 +30,12 @@ struct VertexOutput {
     @location(0) color: vec4<f32>,
 };
 
-let NOISE_TEXTURE_SPEED: f32 = 3.;
+let NOISE_TEXTURE_SPEED: f32 = 30.;
 let NOISE_TEXTURE_ZOOM: f32 = 5.;
 
 fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     var texture_offset = wind * globals.time * NOISE_TEXTURE_SPEED;
-    var texture_position = (vec2<f32>(vertex_position.x ,vertex_position.y)+ texture_offset) * NOISE_TEXTURE_ZOOM;
+    var texture_position = vec2<f32>(vertex_position.x ,vertex_position.y) * NOISE_TEXTURE_ZOOM + texture_offset  ;
     
     // dimensions of noise texture in vec2<u32>
     let dim = textureDimensions(noise_texture, 0);
