@@ -8,7 +8,7 @@ use bevy::{
         mesh::Indices,
         render_phase::AddRenderCommand,
         render_resource::{PrimitiveTopology, SpecializedMeshPipelines},
-        texture::{CompressedImageFormats, ImageType},
+        texture::{CompressedImageFormats, ImageType, FallbackImage},
         RenderApp, RenderStage,
     },
 };
@@ -69,6 +69,7 @@ impl Plugin for WarblersPlugin {
         app.add_plugin(ExtractResourcePlugin::<RegionConfiguration>::default());
 
         app.sub_app_mut(RenderApp)
+            .init_resource::<FallbackImage>()
             .init_resource::<GrassPipeline>()
             .insert_resource(noise_texture)
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()

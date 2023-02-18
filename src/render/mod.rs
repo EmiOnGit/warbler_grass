@@ -8,7 +8,7 @@ use bevy::render::render_resource::{
     BufferInitDescriptor, BufferUsages, PipelineCache, SpecializedMeshPipelines,
 };
 use bevy::render::renderer::RenderDevice;
-use bevy::render::texture::DEFAULT_IMAGE_HANDLE;
+use bevy::render::texture::FallbackImage;
 use bevy::render::view::ExtractedView;
 use bevy::{
     pbr::{SetMeshBindGroup, SetMeshViewBindGroup},
@@ -43,6 +43,7 @@ pub(crate) fn prepare_instance_buffers(
     query: Query<(Entity, &Grass)>,
     region_config: Res<RegionConfiguration>,
     noise_texture: Res<NoiseTexture>,
+    fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
 ) {
@@ -90,10 +91,7 @@ pub(crate) fn prepare_instance_buffers(
                         if let Some(img) = images.get(&noise_texture.texture) {
                             &img.texture_view
                         } else {
-                            &images
-                                .get(&DEFAULT_IMAGE_HANDLE.typed::<Image>())
-                                .unwrap()
-                                .texture_view
+                            &fallback_img.texture_view
                         }
                     }),
                 },
