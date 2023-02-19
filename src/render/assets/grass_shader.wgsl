@@ -6,7 +6,7 @@ struct Config {
     wind: vec2<f32>,
 };
 @group(1) @binding(0)
-var<uniform> grassblade_mesh: Mesh;
+var<uniform> mesh: Mesh;
 
 @group(2) @binding(0)
 var<uniform> color: vec4<f32>;
@@ -57,7 +57,7 @@ fn vertex(vertex: Vertex) -> VertexOutput {
         position.x += offset.x;
         position.z += offset.y;
     }
-    out.clip_position = mesh_position_local_to_clip(grassblade_mesh.model, vec4<f32>(position, 1.0));
+    out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
 
     // The grass should be darker at the buttom
     out.color = color * (vertex.position.y + 0.1) * 0.3;
