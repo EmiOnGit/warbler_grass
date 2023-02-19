@@ -8,6 +8,7 @@ use bevy::render::render_resource::{
     BufferInitDescriptor, BufferUsages, PipelineCache, SpecializedMeshPipelines,
 };
 use bevy::render::renderer::RenderDevice;
+use bevy::render::texture::FallbackImage;
 use bevy::render::view::ExtractedView;
 use bevy::{
     pbr::{SetMeshBindGroup, SetMeshViewBindGroup},
@@ -34,12 +35,14 @@ pub struct InstanceBuffer {
     length: usize,
 }
 
-pub fn prepare_instance_buffers(
+pub(crate) fn prepare_instance_buffers(
     mut commands: Commands,
     pipeline: Res<GrassPipeline>,
     query: Query<(Entity, &Grass)>,
     region_config: Res<RegionConfiguration>,
+    fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
+    images: Res<RenderAssets<Image>>,
 ) {
     for (entity, instance_data) in &query {
         let entity_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -57,6 +60,7 @@ pub fn prepare_instance_buffers(
             contents: bytemuck::cast_slice(&region_config.wind.to_array()),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
+
         let layout = pipeline.region_layout.clone();
         let bind_group_des = BindGroupDescriptor {
             label: Some("grass uniform bind group"),
@@ -76,6 +80,16 @@ pub fn prepare_instance_buffers(
                         buffer: &region_wind_buffer,
                         offset: 0,
                         size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 2,
+                    resource: BindingResource::TextureView({
+                        if let Some(img) = images.get(&region_config.wind_noise_texture) {
+                            &img.texture_view
+                        } else {
+                            &fallback_img.texture_view
+                        }
                     }),
                 },
             ],

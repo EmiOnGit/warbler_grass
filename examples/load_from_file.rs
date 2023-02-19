@@ -1,10 +1,7 @@
 use bevy::prelude::*;
 use warblersneeds::{
-    file_loader::GrassFields,
-    generator::GrassGenerator,
-    prelude::*,
-    warblers_plugin::WarblersPlugin,
-    WarblersBundle,
+    file_loader::GrassFields, generator::GrassGenerator, prelude::*,
+    warblers_plugin::WarblersPlugin, WarblersBundle,
 };
 
 mod helper;

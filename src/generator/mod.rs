@@ -5,8 +5,8 @@ use crate::Grass;
 pub mod standard_generator {
     pub use super::grass_field::GrassFieldGenerator;
     pub use super::plane::Plane;
-    pub use super::StandardGeneratorConfig;
     pub use super::GrassGenerator;
+    pub use super::StandardGeneratorConfig;
 }
 pub trait GrassGenerator<Config> {
     fn generate_grass(&self, generator_config: Config) -> Grass;

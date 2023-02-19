@@ -2,7 +2,7 @@ use bevy::{
     prelude::*,
     render::{
         extract_component::ExtractComponent, extract_resource::ExtractResource,
-        view::NoFrustumCulling,
+        view::NoFrustumCulling, texture::{CompressedImageFormats, ImageType},
     },
 };
 use bytemuck::{Pod, Zeroable};
@@ -67,13 +67,23 @@ pub struct GrassBlade {
 pub struct RegionConfiguration {
     pub color: Color,
     pub wind: Vec2,
+    pub wind_noise_texture: Handle<Image>,
 }
 
-impl Default for RegionConfiguration {
-    fn default() -> Self {
+impl FromWorld for RegionConfiguration {
+    fn from_world(world: &mut World) -> Self {
+        let mut images = world.resource_mut::<Assets<Image>>();
+            let img = Image::from_buffer(
+                include_bytes!("render/assets/default_noise.png"),
+                ImageType::Extension("png"),
+                CompressedImageFormats::default(),
+                false,
+            )
+            .unwrap();
         RegionConfiguration {
             color: Color::rgb(0.3, 0.6, 0.0),
-            wind: Vec2::new(0.6, 0.),
+            wind: Vec2::new(0., 1.0),
+            wind_noise_texture: images.add(img),
         }
     }
 }

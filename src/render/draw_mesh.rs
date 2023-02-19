@@ -37,7 +37,6 @@ impl EntityRenderCommand for DrawMeshInstanced {
         };
         // set uniforms
         pass.set_bind_group(2, &instance_buffer.uniform_bindgroup, &[]);
-
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
         pass.set_vertex_buffer(1, instance_buffer.entity_buffer.slice(..));
         match &gpu_mesh.buffer_info {
