@@ -9,11 +9,6 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(WarblersPlugin)
-        // define the default color
-        .insert_resource(RegionConfiguration {
-            color: Color::rgb(0.5, 0.1, 0.0),
-            ..default()
-        })
         .add_plugin(helper::SimpleCamera)
         .add_startup_system(setup_grass)
         .add_system(change_colors)
@@ -36,19 +31,20 @@ fn setup_grass(mut commands: Commands) {
     commands.spawn((WarblersBundle { grass, ..default() },));
 }
 
-fn change_colors(input: Res<Input<KeyCode>>, mut config: ResMut<RegionConfiguration>) {
-    // if the right arrow key is pressed the color gets more green
+fn change_colors(input: Res<Input<KeyCode>>, mut config: ResMut<RegionConfiguration>, time: Res<Time>) {
+    let r = ((time.raw_elapsed_seconds()  / 2.).sin() / 2.) + 0.5;
+    let g = 1. - r;
+    config.color.set_r(r);
+    config.color.set_g(g);
+    // if the right arrow key is pressed the color gets more blue
     if input.pressed(KeyCode::Right) {
-        let r = config.color.r();
-        let g = config.color.g();
-        config.color.set_r(r * 0.99);
-        config.color.set_g(g * 1.01);
+        let b = config.color.b();
+        
+        config.color.set_b((b + 0.005).min(1.));
     }
-    // if the left arrow key is pressed the color gets more red
+    // if the left arrow key is pressed the color gets less blue
     if input.pressed(KeyCode::Left) {
-        let r = config.color.r();
-        let g = config.color.g();
-        config.color.set_r(r * 1.01);
-        config.color.set_g(g * 0.99);
+        let b = config.color.b();
+        config.color.set_b((b - 0.005).max(0.));
     }
 }

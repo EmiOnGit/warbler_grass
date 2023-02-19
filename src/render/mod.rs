@@ -18,10 +18,8 @@ use bevy::{
 use crate::{Grass, RegionConfiguration};
 
 use self::grass_pipeline::GrassPipeline;
-use self::noise::NoiseTexture;
 mod draw_mesh;
 pub(crate) mod grass_pipeline;
-pub(crate) mod noise;
 
 pub(crate) type GrassDrawCall = (
     SetItemPipeline,
@@ -42,7 +40,6 @@ pub(crate) fn prepare_instance_buffers(
     pipeline: Res<GrassPipeline>,
     query: Query<(Entity, &Grass)>,
     region_config: Res<RegionConfiguration>,
-    noise_texture: Res<NoiseTexture>,
     fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
@@ -88,7 +85,7 @@ pub(crate) fn prepare_instance_buffers(
                 BindGroupEntry {
                     binding: 2,
                     resource: BindingResource::TextureView({
-                        if let Some(img) = images.get(&noise_texture.texture) {
+                        if let Some(img) = images.get(&region_config.wind_noise_texture) {
                             &img.texture_view
                         } else {
                             &fallback_img.texture_view
