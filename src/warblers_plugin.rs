@@ -47,7 +47,7 @@ impl Plugin for WarblersPlugin {
 
             // load shader
             let mut shaders = world.resource_mut::<Assets<Shader>>();
-            let grass_shader = Shader::from_wgsl(include_str!("render/grass_shader.wgsl"));
+            let grass_shader = Shader::from_wgsl(include_str!("render/assets/grass_shader.wgsl"));
             shaders.set_untracked(GRASS_SHADER_HANDLE, grass_shader);
         }
         app.init_resource::<RegionConfiguration>()

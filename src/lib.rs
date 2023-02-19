@@ -74,7 +74,7 @@ impl FromWorld for RegionConfiguration {
     fn from_world(world: &mut World) -> Self {
         let mut images = world.resource_mut::<Assets<Image>>();
             let img = Image::from_buffer(
-                include_bytes!("render/default_noise.png"),
+                include_bytes!("render/assets/default_noise.png"),
                 ImageType::Extension("png"),
                 CompressedImageFormats::default(),
                 false,
