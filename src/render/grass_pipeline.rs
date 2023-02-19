@@ -88,7 +88,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
             array_stride: std::mem::size_of::<GrassBlade>() as u64,
             step_mode: VertexStepMode::Instance,
             attributes: vec![
-                // position
+                // position of the mesh
                 VertexAttribute {
                     format: VertexFormat::Float32x3,
                     offset: 0,
