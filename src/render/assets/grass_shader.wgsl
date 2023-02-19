@@ -6,7 +6,7 @@ struct Config {
     wind: vec2<f32>,
 };
 @group(1) @binding(0)
-var<uniform> mesh: Mesh;
+var<uniform> grassblade_mesh: Mesh;
 
 @group(2) @binding(0)
 var<uniform> color: vec4<f32>;
@@ -40,7 +40,7 @@ fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     // dimensions of noise texture in vec2<u32>
     let dim = textureDimensions(noise_texture, 0);
 
-    // readjust position in case of a over/under flow of tex. coords
+    // read just position in case of a over/under flow of tex. coords
     texture_position = abs(texture_position % vec2<f32>(dim));
     var texture_pixel = textureLoad(noise_texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0);
     return texture_pixel.xy * wind;
@@ -53,11 +53,11 @@ fn vertex(vertex: Vertex) -> VertexOutput {
 
     // only applies wind if the vertex is not on the ground
     if vertex.position.y > 0.1 {
-        let offset = wind_offset(vec2<f32>(vertex.position_field_offset.x ,vertex.position_field_offset.z));
+        let offset = wind_offset(vec2<f32>(vertex.position_field_offset.x, vertex.position_field_offset.z));
         position.x += offset.x;
         position.z += offset.y;
     }
-    out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
+    out.clip_position = mesh_position_local_to_clip(grassblade_mesh.model, vec4<f32>(position, 1.0));
 
     // The grass should be darker at the buttom
     out.color = color * (vertex.position.y + 0.1) * 0.3;
