@@ -1,7 +1,7 @@
 use bevy::prelude::Vec3;
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 
-use crate::{file_loader::GrassFields, Grass, GrassBlade};
+use crate::{file_loader::GrassFields, Grass, grass::GrassBlade};
 
 use super::{GrassGenerator, StandardGeneratorConfig};
 
@@ -50,6 +50,6 @@ impl GrassGenerator<StandardGeneratorConfig> for GrassFieldGenerator<'_> {
                 .map(|(position, height)| GrassBlade { position, height });
             blades.extend(rect_blades);
         }
-        Grass(blades)
+        Grass::new(blades)
     }
 }

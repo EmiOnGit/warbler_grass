@@ -1,4 +1,4 @@
-use bevy::core_pipeline::core_3d::Transparent3d;
+use bevy::core_pipeline::core_3d::Opaque3d;
 use bevy::pbr::{MeshPipelineKey, MeshUniform};
 use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssets;
@@ -22,6 +22,7 @@ mod draw_mesh;
 pub(crate) mod grass_pipeline;
 
 pub(crate) type GrassDrawCall = (
+    // caches pipeline instead of reinit every call
     SetItemPipeline,
     SetMeshViewBindGroup<0>,
     SetMeshBindGroup<1>,
@@ -47,7 +48,7 @@ pub(crate) fn prepare_instance_buffers(
     for (entity, instance_data) in &query {
         let entity_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("instance entity data buffer"),
-            contents: bytemuck::cast_slice(instance_data.0.as_slice()),
+            contents: bytemuck::cast_slice(instance_data.instances.as_slice()),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
         let region_color_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -98,7 +99,7 @@ pub(crate) fn prepare_instance_buffers(
         let bind_group = render_device.create_bind_group(&bind_group_des);
         commands.entity(entity).insert(InstanceBuffer {
             entity_buffer,
-            length: instance_data.0.len(),
+            length: instance_data.instances.len(),
             uniform_bindgroup: bind_group,
         });
     }
@@ -106,14 +107,14 @@ pub(crate) fn prepare_instance_buffers(
 
 #[allow(clippy::too_many_arguments)]
 pub fn queue_grass_buffers(
-    transparent_3d_draw_functions: Res<DrawFunctions<Transparent3d>>,
+    transparent_3d_draw_functions: Res<DrawFunctions<Opaque3d>>,
     grass_pipeline: Res<GrassPipeline>,
     msaa: Res<Msaa>,
     mut pipelines: ResMut<SpecializedMeshPipelines<GrassPipeline>>,
     mut pipeline_cache: ResMut<PipelineCache>,
     meshes: Res<RenderAssets<Mesh>>,
     material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>), With<Grass>>,
-    mut views: Query<(&ExtractedView, &mut RenderPhase<Transparent3d>)>,
+    mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
 ) {
     let draw_custom = transparent_3d_draw_functions
         .read()
@@ -133,7 +134,7 @@ pub fn queue_grass_buffers(
                 let pipeline = pipelines
                     .specialize(&mut pipeline_cache, &grass_pipeline, key, &mesh.layout)
                     .unwrap();
-                transparent_phase.add(Transparent3d {
+                transparent_phase.add(Opaque3d {
                     entity,
                     pipeline,
                     draw_function: draw_custom,

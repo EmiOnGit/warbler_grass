@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use warblersneeds::{prelude::*, Grass, GrassBlade};
+use warblersneeds::prelude::*;
 mod helper;
 fn main() {
     App::new()
@@ -24,7 +24,7 @@ fn setup_grass(mut commands: Commands) {
         .collect();
 
     commands.spawn((WarblersBundle {
-        grass: Grass(blades),
+        grass: Grass::new(blades),
         ..default()
     },));
 }

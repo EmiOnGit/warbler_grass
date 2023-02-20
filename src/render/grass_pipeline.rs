@@ -13,7 +13,7 @@ use bevy::{
     },
 };
 
-use crate::{warblers_plugin::GRASS_SHADER_HANDLE, GrassBlade};
+use crate::{warblers_plugin::GRASS_SHADER_HANDLE, grass::GrassBlade};
 #[derive(Resource)]
 pub struct GrassPipeline {
     shader: Handle<Shader>,
@@ -88,13 +88,13 @@ impl SpecializedMeshPipeline for GrassPipeline {
             array_stride: std::mem::size_of::<GrassBlade>() as u64,
             step_mode: VertexStepMode::Instance,
             attributes: vec![
-                // position of the mesh
+                // position of the mesh as instance
                 VertexAttribute {
                     format: VertexFormat::Float32x3,
                     offset: 0,
                     shader_location: 1,
                 },
-                // height
+                // height scale
                 VertexAttribute {
                     format: VertexFormat::Float32,
                     offset: VertexFormat::Float32x3.size(),
