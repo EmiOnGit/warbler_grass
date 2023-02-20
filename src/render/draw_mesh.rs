@@ -33,8 +33,11 @@ impl EntityRenderCommand for DrawMeshInstanced {
             Some(gpu_mesh) => gpu_mesh,
             None => return RenderCommandResult::Failure,
         };
-        // set uniforms
+        if !cache.contains_key(&item) {
+            return RenderCommandResult::Failure;
+        }
         let chunk = &cache.into_inner()[&item];
+        // set uniforms
         pass.set_bind_group(2, chunk.uniform_bindgroup.as_ref().unwrap(), &[]);
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
         pass.set_vertex_buffer(1, chunk.grass_buffer.as_ref().unwrap().slice(..));
