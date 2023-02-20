@@ -15,7 +15,7 @@ use bevy::{
     render::render_phase::SetItemPipeline,
 };
 
-use crate::{Grass, RegionConfiguration};
+use crate::RegionConfiguration;
 
 use self::cache::GrassCache;
 use self::grass_pipeline::GrassPipeline;
@@ -105,7 +105,7 @@ pub fn queue_grass_buffers(
     mut pipelines: ResMut<SpecializedMeshPipelines<GrassPipeline>>,
     mut pipeline_cache: ResMut<PipelineCache>,
     meshes: Res<RenderAssets<Mesh>>,
-    material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>), With<Grass>>,
+    material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>)>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
 ) {
     let draw_custom = transparent_3d_draw_functions

@@ -3,7 +3,6 @@ use bevy::{
     prelude::*,
     reflect::TypeUuid,
     render::{
-        extract_component::ExtractComponentPlugin,
         extract_resource::ExtractResourcePlugin,
         mesh::Indices,
         render_phase::AddRenderCommand,
@@ -15,8 +14,7 @@ use bevy::{
 
 use crate::{
     file_loader::{GrassFields, GrassFieldsAssetLoader},
-    render::{self, grass_pipeline::GrassPipeline, cache::GrassCache},
-    Grass, RegionConfiguration, prelude::add_aabb_box_to_grass,
+    render::{self, grass_pipeline::GrassPipeline, cache::GrassCache}, RegionConfiguration, prelude::add_aabb_box_to_grass,
 };
 
 pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
@@ -47,7 +45,6 @@ impl Plugin for WarblersPlugin {
             .init_asset_loader::<GrassFieldsAssetLoader>();
         // Add extraction
         app
-            .add_plugin(ExtractComponentPlugin::<Grass>::default())
             .add_plugin(ExtractResourcePlugin::<RegionConfiguration>::default());
         // Init render app
         app.sub_app_mut(RenderApp)
