@@ -20,8 +20,11 @@ var noise_texture: texture_2d<f32>;
 #import bevy_pbr::mesh_functions
 
 struct Vertex {
-    @location(0) position: vec4<f32>,
+    // position of the local vertex in the blade
+    @location(0) position: vec3<f32>,
+    // position of the blade as an instance
     @location(1) position_field_offset: vec3<f32>,
+    // height of the blade
     @location(2) height: f32,
 };
 
@@ -48,10 +51,9 @@ fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
     var out: VertexOutput;
-    let height = vertex.position.y * vertex.height;
     var position = vertex.position.xyz * vec3<f32>(1.,vertex.height, 1.) + vertex.position_field_offset;
 
-    // only applies wind if the vertex is not on the ground
+    // only applies wind if the vertex is not on the bottom of the grass (or very small)
     if vertex.position.y > 0.1 {
         let offset = wind_offset(vec2<f32>(vertex.position_field_offset.x, vertex.position_field_offset.z));
         position.x += offset.x;

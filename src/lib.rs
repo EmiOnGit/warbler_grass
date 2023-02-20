@@ -2,8 +2,8 @@ use bevy::{
     prelude::*,
     render::{
         extract_component::ExtractComponent, extract_resource::ExtractResource,
-        view::NoFrustumCulling, texture::{CompressedImageFormats, ImageType},
-    },
+        view::NoFrustumCulling, texture::{CompressedImageFormats, ImageType}, primitives::Aabb,
+    }, math::Vec3A,
 };
 use bytemuck::{Pod, Zeroable};
 mod render;
@@ -24,7 +24,8 @@ pub struct WarblersBundle {
     pub grass: Grass,
     pub grass_mesh: Handle<Mesh>,
     pub transform: Transform,
-    pub no_frustum_calling: NoFrustumCulling,
+    // pub no_frustum_calling: NoFrustumCulling,
+    // pub bounds: Aabb,
     pub global_transform: GlobalTransform,
     pub visibility: Visibility,
     pub computed_visibility: ComputedVisibility,
@@ -36,7 +37,8 @@ impl Default for WarblersBundle {
             grass: Default::default(),
             grass_mesh: GRASS_MESH_HANDLE.typed(),
             transform: Default::default(),
-            no_frustum_calling: NoFrustumCulling,
+            // bounds: Aabb { center: Vec3A::new(10.,1.,100.), half_extents: Vec3A::new(10.,1.,100.) },
+            // no_frustum_calling: NoFrustumCulling,
             global_transform: Default::default(),
             visibility: Default::default(),
             computed_visibility: Default::default(),

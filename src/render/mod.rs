@@ -22,6 +22,7 @@ mod draw_mesh;
 pub(crate) mod grass_pipeline;
 
 pub(crate) type GrassDrawCall = (
+    // caches pipeline instead of reinit every call
     SetItemPipeline,
     SetMeshViewBindGroup<0>,
     SetMeshBindGroup<1>,
