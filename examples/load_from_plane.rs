@@ -32,7 +32,6 @@ fn setup_grass(mut commands: Commands) {
 }
 fn debug (mut aabb: Query<&mut Aabb, With<Handle<Mesh>>>) {
     for mut aabb in aabb.iter_mut() {
-        println!("{:?}",aabb);
         aabb.half_extents.x =5.;
         aabb.half_extents.z =5.;
     }
