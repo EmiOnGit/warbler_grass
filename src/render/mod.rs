@@ -1,4 +1,4 @@
-use bevy::core_pipeline::core_3d::{Transparent3d, Opaque3d};
+use bevy::core_pipeline::core_3d::Opaque3d;
 use bevy::pbr::{MeshPipelineKey, MeshUniform};
 use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssets;
@@ -48,7 +48,7 @@ pub(crate) fn prepare_instance_buffers(
     for (entity, instance_data) in &query {
         let entity_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("instance entity data buffer"),
-            contents: bytemuck::cast_slice(instance_data.0.as_slice()),
+            contents: bytemuck::cast_slice(instance_data.instances.as_slice()),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
         let region_color_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -99,7 +99,7 @@ pub(crate) fn prepare_instance_buffers(
         let bind_group = render_device.create_bind_group(&bind_group_des);
         commands.entity(entity).insert(InstanceBuffer {
             entity_buffer,
-            length: instance_data.0.len(),
+            length: instance_data.instances.len(),
             uniform_bindgroup: bind_group,
         });
     }

@@ -1,5 +1,5 @@
 use super::{GrassGenerator, StandardGeneratorConfig};
-use crate::{Grass, GrassBlade};
+use crate::{Grass, grass::GrassBlade};
 use bevy::prelude::{Transform, Vec3};
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 pub struct Plane {
@@ -36,6 +36,6 @@ impl GrassGenerator<StandardGeneratorConfig> for Plane {
             // collect as GrassBlade
             .map(|(position, height)| GrassBlade { position, height })
             .collect();
-        Grass(blades)
+        Grass::new(blades)
     }
 }

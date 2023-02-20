@@ -1,12 +1,14 @@
 use bevy::{
     prelude::*,
     render::{
-        extract_component::ExtractComponent, extract_resource::ExtractResource, texture::{CompressedImageFormats, ImageType},
-    }, sprite::Material2d,
+        extract_resource::ExtractResource, texture::{CompressedImageFormats, ImageType},
+    },
 };
-use bytemuck::{Pod, Zeroable};
+
 mod render;
+pub mod grass;
 use bevy_inspector_egui::prelude::*;
+use grass::Grass;
 use warblers_plugin::GRASS_MESH_HANDLE;
 pub mod file_loader;
 pub mod generator;
@@ -16,6 +18,7 @@ pub mod prelude {
     pub use crate::warblers_plugin::WarblersPlugin;
     pub use crate::RegionConfiguration;
     pub use crate::WarblersBundle;
+    pub use crate::grass::*;
 }
 
 #[derive(Bundle)]
@@ -45,23 +48,6 @@ impl Default for WarblersBundle {
     }
 }
 
-#[derive(Clone, Debug, Component, Default)]
-pub struct Grass(pub Vec<GrassBlade>);
-
-impl ExtractComponent for Grass {
-    type Query = &'static Grass;
-    type Filter = ();
-
-    fn extract_component(item: bevy::ecs::query::QueryItem<'_, Self::Query>) -> Self {
-        item.clone()
-    }
-}
-#[derive(Copy, Clone, Debug, Pod, Zeroable)]
-#[repr(C)]
-pub struct GrassBlade {
-    pub position: Vec3,
-    pub height: f32,
-}
 #[cfg_attr(feature = "debug", derive(InspectorOptions))]
 #[derive(Resource, Clone, Reflect)]
 #[reflect(Resource)]

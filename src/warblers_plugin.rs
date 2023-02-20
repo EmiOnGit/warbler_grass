@@ -1,5 +1,5 @@
 use bevy::{
-    core_pipeline::core_3d::{Transparent3d, Opaque3d},
+    core_pipeline::core_3d::Opaque3d,
     prelude::*,
     reflect::TypeUuid,
     render::{
