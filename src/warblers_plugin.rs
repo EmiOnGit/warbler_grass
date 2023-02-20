@@ -3,7 +3,6 @@ use bevy::{
     prelude::*,
     reflect::TypeUuid,
     render::{
-        extract_component::ExtractComponentPlugin,
         extract_resource::ExtractResourcePlugin,
         mesh::Indices,
         render_phase::AddRenderCommand,
@@ -15,8 +14,7 @@ use bevy::{
 
 use crate::{
     file_loader::{GrassFields, GrassFieldsAssetLoader},
-    render::{self, grass_pipeline::GrassPipeline},
-    Grass, RegionConfiguration, prelude::add_aabb_box_to_grass,
+    render::{self, grass_pipeline::GrassPipeline, cache::GrassCache}, RegionConfiguration, prelude::add_aabb_box_to_grass,
 };
 
 pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
@@ -46,16 +44,16 @@ impl Plugin for WarblersPlugin {
             .add_asset::<GrassFields>()
             .init_asset_loader::<GrassFieldsAssetLoader>();
         // Add extraction
-        app.add_plugin(ExtractComponentPlugin::<Grass>::extract_visible())
+        app
             .add_plugin(ExtractResourcePlugin::<RegionConfiguration>::default());
         // Init render app
         app.sub_app_mut(RenderApp)
             .add_render_command::<Opaque3d, render::GrassDrawCall>()
-            // .add_render_command::<Transparent3d, render::GrassDrawCall>()
-
             .init_resource::<FallbackImage>()
             .init_resource::<GrassPipeline>()
+            .init_resource::<GrassCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
+            .add_system_to_stage(RenderStage::Extract, render::extract::extract_grass)
             .add_system_to_stage(RenderStage::Prepare, render::prepare_instance_buffers)
             .add_system_to_stage(RenderStage::Queue, render::queue_grass_buffers);
     }

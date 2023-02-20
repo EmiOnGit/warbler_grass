@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::primitives::Aabb};
+use bevy::prelude::*;
 use warblersneeds::prelude::*;
 mod helper;
 fn main() {
@@ -7,7 +7,6 @@ fn main() {
         .add_plugin(WarblersPlugin)
         .add_plugin(helper::SimpleCamera)
         .add_startup_system(setup_grass)
-        .add_system(debug)
         .run();
 }
 // In this example 2 planes are used for generating grass blades
@@ -29,11 +28,4 @@ fn setup_grass(mut commands: Commands) {
     let mut grass = plane1.generate_grass(config.clone());
     grass.instances.extend(plane2.generate_grass(config).instances);
     commands.spawn((WarblersBundle { grass, ..default() },));
-}
-fn debug (mut aabb: Query<&mut Aabb, With<Handle<Mesh>>>) {
-    for mut aabb in aabb.iter_mut() {
-        println!("{:?}",aabb);
-        aabb.half_extents.x =5.;
-        aabb.half_extents.z =5.;
-    }
 }

@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_phase::{DrawFunctions, RenderPhase};
 use bevy::render::render_resource::{
-    BindGroup, BindGroupDescriptor, BindGroupEntry, BindingResource, Buffer, BufferBinding,
+    BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding,
     BufferInitDescriptor, BufferUsages, PipelineCache, SpecializedMeshPipelines,
 };
 use bevy::render::renderer::RenderDevice;
@@ -15,11 +15,14 @@ use bevy::{
     render::render_phase::SetItemPipeline,
 };
 
-use crate::{Grass, RegionConfiguration};
+use crate::RegionConfiguration;
 
+use self::cache::GrassCache;
 use self::grass_pipeline::GrassPipeline;
 mod draw_mesh;
 pub(crate) mod grass_pipeline;
+pub mod extract;
+pub mod cache;
 
 pub(crate) type GrassDrawCall = (
     // caches pipeline instead of reinit every call
@@ -29,26 +32,18 @@ pub(crate) type GrassDrawCall = (
     draw_mesh::DrawMeshInstanced,
 );
 
-#[derive(Component)]
-pub struct InstanceBuffer {
-    entity_buffer: Buffer,
-    uniform_bindgroup: BindGroup,
-    length: usize,
-}
-
 pub(crate) fn prepare_instance_buffers(
-    mut commands: Commands,
     pipeline: Res<GrassPipeline>,
-    query: Query<(Entity, &Grass)>,
+    mut cache: ResMut<GrassCache>,
     region_config: Res<RegionConfiguration>,
     fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
 ) {
-    for (entity, instance_data) in &query {
+    for instance_data in cache.values_mut() {
         let entity_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("instance entity data buffer"),
-            contents: bytemuck::cast_slice(instance_data.instances.as_slice()),
+            contents: bytemuck::cast_slice(instance_data.grass.instances.as_slice()),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
         let region_color_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -97,11 +92,8 @@ pub(crate) fn prepare_instance_buffers(
         };
 
         let bind_group = render_device.create_bind_group(&bind_group_des);
-        commands.entity(entity).insert(InstanceBuffer {
-            entity_buffer,
-            length: instance_data.instances.len(),
-            uniform_bindgroup: bind_group,
-        });
+        instance_data.grass_buffer = Some(entity_buffer);
+        instance_data.uniform_bindgroup = Some(bind_group);
     }
 }
 
@@ -113,7 +105,7 @@ pub fn queue_grass_buffers(
     mut pipelines: ResMut<SpecializedMeshPipelines<GrassPipeline>>,
     mut pipeline_cache: ResMut<PipelineCache>,
     meshes: Res<RenderAssets<Mesh>>,
-    material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>), With<Grass>>,
+    material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>)>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
 ) {
     let draw_custom = transparent_3d_draw_functions
