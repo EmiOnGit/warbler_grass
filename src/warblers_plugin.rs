@@ -16,7 +16,7 @@ use bevy::{
 use crate::{
     file_loader::{GrassFields, GrassFieldsAssetLoader},
     render::{self, grass_pipeline::GrassPipeline},
-    Grass, RegionConfiguration,
+    Grass, RegionConfiguration, prelude::add_aabb_box_to_grass,
 };
 
 pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
@@ -38,7 +38,8 @@ impl Plugin for WarblersPlugin {
         // Load default grass blade mesh
         let mut meshes = app.world.resource_mut::<Assets<Mesh>>();
         meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
-        
+        // Add systems
+        app.add_system(add_aabb_box_to_grass);
         // Init resources
         app.init_resource::<RegionConfiguration>()
             .register_type::<RegionConfiguration>()

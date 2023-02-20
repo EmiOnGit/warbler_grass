@@ -45,3 +45,13 @@ impl ExtractComponent for Grass {
         item.clone()
     }
 }
+pub(crate) fn add_aabb_box_to_grass(
+    mut commands: Commands,
+    grasses: Query<(Entity, &Grass), Added<Grass>>
+) {
+    for (e, grass) in grasses.iter() {
+        let aabb = grass.calculate_aabb();
+        commands.entity(e).insert(aabb);
+    }
+
+}
