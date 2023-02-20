@@ -46,7 +46,7 @@ impl Plugin for WarblersPlugin {
             .add_asset::<GrassFields>()
             .init_asset_loader::<GrassFieldsAssetLoader>();
         // Add extraction
-        app.add_plugin(ExtractComponentPlugin::<Grass>::default())
+        app.add_plugin(ExtractComponentPlugin::<Grass>::extract_visible())
             .add_plugin(ExtractResourcePlugin::<RegionConfiguration>::default());
         // Init render app
         app.sub_app_mut(RenderApp)
