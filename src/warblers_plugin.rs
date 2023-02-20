@@ -1,5 +1,5 @@
 use bevy::{
-    core_pipeline::core_3d::Transparent3d,
+    core_pipeline::core_3d::{Transparent3d, Opaque3d},
     prelude::*,
     reflect::TypeUuid,
     render::{
@@ -37,18 +37,7 @@ impl Plugin for WarblersPlugin {
 
         // Load default grass blade mesh
         let mut meshes = app.world.resource_mut::<Assets<Mesh>>();
-        let mut grass_mesh = Mesh::new(PrimitiveTopology::TriangleList);
-        grass_mesh.insert_attribute(
-            Mesh::ATTRIBUTE_POSITION,
-            vec![
-                [0., 0., 0.],
-                [0.5, 0., 0.],
-                [0.25, 0., 0.4],
-                [0.25, 1., 0.15],
-            ],
-        );
-        grass_mesh.set_indices(Some(Indices::U32(vec![1, 0, 3, 2, 1, 3, 0, 2, 3])));
-        meshes.set_untracked(GRASS_MESH_HANDLE, grass_mesh);
+        meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
         
         // Init resources
         app.init_resource::<RegionConfiguration>()
@@ -60,11 +49,29 @@ impl Plugin for WarblersPlugin {
             .add_plugin(ExtractResourcePlugin::<RegionConfiguration>::default());
         // Init render app
         app.sub_app_mut(RenderApp)
+            .add_render_command::<Opaque3d, render::GrassDrawCall>()
+            // .add_render_command::<Transparent3d, render::GrassDrawCall>()
+
             .init_resource::<FallbackImage>()
             .init_resource::<GrassPipeline>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
-            .add_render_command::<Transparent3d, render::GrassDrawCall>()
             .add_system_to_stage(RenderStage::Prepare, render::prepare_instance_buffers)
             .add_system_to_stage(RenderStage::Queue, render::queue_grass_buffers);
     }
+}
+
+/// simply the default look of the grass, as shown in the examples
+fn default_grass_mesh() -> Mesh {
+    let mut grass_mesh = Mesh::new(PrimitiveTopology::TriangleList);
+        grass_mesh.insert_attribute(
+            Mesh::ATTRIBUTE_POSITION,
+            vec![
+                [0., 0., 0.],
+                [0.5, 0., 0.],
+                [0.25, 0., 0.4],
+                [0.25, 1., 0.15],
+            ],
+        );
+        grass_mesh.set_indices(Some(Indices::U32(vec![1, 0, 3, 2, 1, 3, 0, 2, 3])));
+        grass_mesh
 }

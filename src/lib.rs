@@ -1,9 +1,8 @@
 use bevy::{
     prelude::*,
     render::{
-        extract_component::ExtractComponent, extract_resource::ExtractResource,
-        view::NoFrustumCulling, texture::{CompressedImageFormats, ImageType}, primitives::Aabb,
-    }, math::Vec3A,
+        extract_component::ExtractComponent, extract_resource::ExtractResource, texture::{CompressedImageFormats, ImageType},
+    }, sprite::Material2d,
 };
 use bytemuck::{Pod, Zeroable};
 mod render;
@@ -71,7 +70,6 @@ pub struct RegionConfiguration {
     pub wind: Vec2,
     pub wind_noise_texture: Handle<Image>,
 }
-
 impl FromWorld for RegionConfiguration {
     fn from_world(world: &mut World) -> Self {
         let mut images = world.resource_mut::<Assets<Image>>();
