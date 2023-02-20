@@ -27,7 +27,7 @@ fn setup_grass(mut commands: Commands) {
     };
 
     let mut grass = plane1.generate_grass(config.clone());
-    grass.0.extend(plane2.generate_grass(config).0);
+    grass.instances.extend(plane2.generate_grass(config).instances);
     commands.spawn((WarblersBundle { grass, ..default() },));
 }
 fn debug (mut aabb: Query<&mut Aabb, With<Handle<Mesh>>>) {
