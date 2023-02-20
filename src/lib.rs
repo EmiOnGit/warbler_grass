@@ -25,12 +25,10 @@ pub mod prelude {
 pub struct WarblersBundle {
     pub grass: Grass,
     pub grass_mesh: Handle<Mesh>,
-    pub transform: Transform,
     // pub no_frustum_calling: NoFrustumCulling,
     // pub bounds: Aabb,
-    pub global_transform: GlobalTransform,
-    pub visibility: Visibility,
-    pub computed_visibility: ComputedVisibility,
+    #[bundle]
+    pub spatial: SpatialBundle
 }
 
 impl Default for WarblersBundle {
@@ -38,12 +36,9 @@ impl Default for WarblersBundle {
         Self {
             grass: Default::default(),
             grass_mesh: GRASS_MESH_HANDLE.typed(),
-            transform: Default::default(),
             // bounds: Aabb { center: Vec3A::new(10.,1.,100.), half_extents: Vec3A::new(10.,1.,100.) },
             // no_frustum_calling: NoFrustumCulling,
-            global_transform: Default::default(),
-            visibility: Default::default(),
-            computed_visibility: Default::default(),
+            spatial: Default::default()
         }
     }
 }

@@ -1,5 +1,6 @@
-use bevy::{prelude::*, render::{render_resource::ShaderType, extract_component::ExtractComponent}};
+use bevy::{prelude::*, render::{render_resource::ShaderType, extract_component::ExtractComponent, primitives::Aabb}};
 use bytemuck::{Pod, Zeroable};
+
 /// An single grassblade, with the lower part at `position`
 #[derive(Copy, Clone, Debug, Pod, Zeroable, ShaderType)]
 #[repr(C)]
@@ -20,6 +21,20 @@ impl Grass {
         Grass {
             instances
         }
+    }
+    /// Calculates an [`Aabb`] box which contains all grass blades in self.
+    /// 
+    /// This can be used to check if the grass is in the camera view
+    pub fn calculate_aabb(&self) -> Aabb {
+        let mut outer = Vec3::new(f32::MIN, f32::MIN, f32::MIN);
+        let mut inner = Vec3::new(f32::MAX, f32::MAX, f32::MAX);
+        self.instances.iter()
+            .map(|blade|  (blade.position,blade.height))
+            .for_each(|(blade_pos,height)| {
+                inner = inner.min(blade_pos);
+                outer = outer.max(blade_pos + Vec3::Y * height);
+            });
+        Aabb::from_min_max(inner, outer)
     }
 }
 impl ExtractComponent for Grass {
