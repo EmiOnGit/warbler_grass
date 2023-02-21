@@ -54,10 +54,10 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     var position = vertex.position.xyz * vec3<f32>(1.,vertex.height, 1.) + vertex.position_field_offset;
 
     // only applies wind if the vertex is not on the bottom of the grass (or very small)
-    if vertex.position.y > 0.1 {
+    if vertex.position.y > 0.{
         let offset = wind_offset(vec2<f32>(vertex.position_field_offset.x, vertex.position_field_offset.z));
-        position.x += offset.x;
-        position.z += offset.y;
+        position.x += offset.x * log(vertex.position.y + 1.);
+        position.z += offset.y * log(vertex.position.y + 1.);
     }
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
 

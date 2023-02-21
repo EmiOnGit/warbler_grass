@@ -22,7 +22,7 @@ use crate::{
 
 pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
     HandleUntyped::weak_from_u64(Shader::TYPE_UUID, 2263343952151597127);
-pub(crate) const GRASS_MESH_HANDLE: HandleUntyped =
+pub const GRASS_MESH_HANDLE: HandleUntyped =
     HandleUntyped::weak_from_u64(Mesh::TYPE_UUID, 9357128457583957921);
 
 pub struct WarblersPlugin;
