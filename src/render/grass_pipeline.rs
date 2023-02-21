@@ -13,7 +13,7 @@ use bevy::{
     },
 };
 
-use crate::{warblers_plugin::GRASS_SHADER_HANDLE, grass::GrassBlade};
+use crate::{grass::GrassBlade, warblers_plugin::GRASS_SHADER_HANDLE};
 #[derive(Resource)]
 pub struct GrassPipeline {
     shader: Handle<Shader>,

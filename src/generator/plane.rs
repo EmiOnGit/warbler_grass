@@ -1,5 +1,5 @@
 use super::{GrassGenerator, StandardGeneratorConfig};
-use crate::{Grass, grass::GrassBlade};
+use crate::{grass::GrassBlade, Grass};
 use bevy::prelude::{Transform, Vec3};
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 pub struct Plane {

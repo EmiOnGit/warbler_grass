@@ -1,4 +1,5 @@
 use bevy::{
+    asset::load_internal_asset,
     core_pipeline::core_3d::Opaque3d,
     prelude::*,
     reflect::TypeUuid,
@@ -9,12 +10,14 @@ use bevy::{
         render_resource::{PrimitiveTopology, SpecializedMeshPipelines},
         texture::FallbackImage,
         RenderApp, RenderStage,
-    }, asset::load_internal_asset,
+    },
 };
 
 use crate::{
     file_loader::{GrassFields, GrassFieldsAssetLoader},
-    render::{self, grass_pipeline::GrassPipeline, cache::GrassCache}, RegionConfiguration, prelude::add_aabb_box_to_grass,
+    prelude::add_aabb_box_to_grass,
+    render::{self, cache::GrassCache, grass_pipeline::GrassPipeline},
+    RegionConfiguration,
 };
 
 pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
@@ -44,8 +47,7 @@ impl Plugin for WarblersPlugin {
             .add_asset::<GrassFields>()
             .init_asset_loader::<GrassFieldsAssetLoader>();
         // Add extraction
-        app
-            .add_plugin(ExtractResourcePlugin::<RegionConfiguration>::default());
+        app.add_plugin(ExtractResourcePlugin::<RegionConfiguration>::default());
         // Init render app
         app.sub_app_mut(RenderApp)
             .add_render_command::<Opaque3d, render::GrassDrawCall>()
@@ -54,23 +56,26 @@ impl Plugin for WarblersPlugin {
             .init_resource::<GrassCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_system_to_stage(RenderStage::Extract, render::extract::extract_grass)
-            .add_system_to_stage(RenderStage::Prepare, render::prepare_instance_buffers)
-            .add_system_to_stage(RenderStage::Queue, render::queue_grass_buffers);
+            .add_system_to_stage(
+                RenderStage::Prepare,
+                render::prepare::prepare_instance_buffers,
+            )
+            .add_system_to_stage(RenderStage::Queue, render::queue::queue_grass_buffers);
     }
 }
 
 /// simply the default look of the grass, as shown in the examples
 fn default_grass_mesh() -> Mesh {
     let mut grass_mesh = Mesh::new(PrimitiveTopology::TriangleList);
-        grass_mesh.insert_attribute(
-            Mesh::ATTRIBUTE_POSITION,
-            vec![
-                [0., 0., 0.],
-                [0.5, 0., 0.],
-                [0.25, 0., 0.4],
-                [0.25, 1., 0.15],
-            ],
-        );
-        grass_mesh.set_indices(Some(Indices::U32(vec![1, 0, 3, 2, 1, 3, 0, 2, 3])));
-        grass_mesh
+    grass_mesh.insert_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        vec![
+            [0., 0., 0.],
+            [0.5, 0., 0.],
+            [0.25, 0., 0.4],
+            [0.25, 1., 0.15],
+        ],
+    );
+    grass_mesh.set_indices(Some(Indices::U32(vec![1, 0, 3, 2, 1, 3, 0, 2, 3])));
+    grass_mesh
 }

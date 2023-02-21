@@ -1,12 +1,13 @@
 use bevy::{
     prelude::*,
     render::{
-        extract_resource::ExtractResource, texture::{CompressedImageFormats, ImageType},
+        extract_resource::ExtractResource,
+        texture::{CompressedImageFormats, ImageType},
     },
 };
 
-mod render;
 pub mod grass;
+mod render;
 use bevy_inspector_egui::prelude::*;
 use grass::Grass;
 use warblers_plugin::GRASS_MESH_HANDLE;
@@ -15,10 +16,10 @@ pub mod generator;
 pub mod warblers_plugin;
 pub mod prelude {
     pub use crate::generator::standard_generator::*;
+    pub use crate::grass::*;
     pub use crate::warblers_plugin::WarblersPlugin;
     pub use crate::RegionConfiguration;
     pub use crate::WarblersBundle;
-    pub use crate::grass::*;
 }
 
 #[derive(Bundle)]
@@ -28,7 +29,7 @@ pub struct WarblersBundle {
     // pub no_frustum_calling: NoFrustumCulling,
     // pub bounds: Aabb,
     #[bundle]
-    pub spatial: SpatialBundle
+    pub spatial: SpatialBundle,
 }
 
 impl Default for WarblersBundle {
@@ -38,7 +39,7 @@ impl Default for WarblersBundle {
             grass_mesh: GRASS_MESH_HANDLE.typed(),
             // bounds: Aabb { center: Vec3A::new(10.,1.,100.), half_extents: Vec3A::new(10.,1.,100.) },
             // no_frustum_calling: NoFrustumCulling,
-            spatial: Default::default()
+            spatial: Default::default(),
         }
     }
 }
@@ -54,13 +55,13 @@ pub struct RegionConfiguration {
 impl FromWorld for RegionConfiguration {
     fn from_world(world: &mut World) -> Self {
         let mut images = world.resource_mut::<Assets<Image>>();
-            let img = Image::from_buffer(
-                include_bytes!("render/assets/default_noise.png"),
-                ImageType::Extension("png"),
-                CompressedImageFormats::default(),
-                false,
-            )
-            .unwrap();
+        let img = Image::from_buffer(
+            include_bytes!("render/assets/default_noise.png"),
+            ImageType::Extension("png"),
+            CompressedImageFormats::default(),
+            false,
+        )
+        .unwrap();
         RegionConfiguration {
             color: Color::rgb(0.3, 0.6, 0.0),
             wind: Vec2::new(0., 1.0),

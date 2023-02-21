@@ -1,7 +1,7 @@
 use bevy::prelude::Vec3;
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 
-use crate::{file_loader::GrassFields, Grass, grass::GrassBlade};
+use crate::{file_loader::GrassFields, grass::GrassBlade, Grass};
 
 use super::{GrassGenerator, StandardGeneratorConfig};
 

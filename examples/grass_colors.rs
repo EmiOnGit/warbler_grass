@@ -31,15 +31,19 @@ fn setup_grass(mut commands: Commands) {
     commands.spawn((WarblersBundle { grass, ..default() },));
 }
 
-fn change_colors(input: Res<Input<KeyCode>>, mut config: ResMut<RegionConfiguration>, time: Res<Time>) {
-    let r = ((time.raw_elapsed_seconds()  / 2.).sin() / 2.) + 0.5;
+fn change_colors(
+    input: Res<Input<KeyCode>>,
+    mut config: ResMut<RegionConfiguration>,
+    time: Res<Time>,
+) {
+    let r = ((time.raw_elapsed_seconds() / 2.).sin() / 2.) + 0.5;
     let g = 1. - r;
     config.color.set_r(r);
     config.color.set_g(g);
     // if the right arrow key is pressed the color gets more blue
     if input.pressed(KeyCode::Right) {
         let b = config.color.b();
-        
+
         config.color.set_b((b + 0.005).min(1.));
     }
     // if the left arrow key is pressed the color gets less blue

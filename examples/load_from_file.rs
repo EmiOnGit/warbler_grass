@@ -48,7 +48,7 @@ fn load_from_file(
             commands.spawn((WarblersBundle {
                 grass,
                 spatial: SpatialBundle {
-                    transform: Transform::from_xyz(-150., 1., -10.), 
+                    transform: Transform::from_xyz(-150., 1., -10.),
                     ..default()
                 },
                 ..default()

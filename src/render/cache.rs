@@ -1,4 +1,8 @@
-use bevy::{prelude::*, utils::HashMap, render::render_resource::{Buffer, BindGroup}};
+use bevy::{
+    prelude::*,
+    render::render_resource::{BindGroup, Buffer},
+    utils::HashMap,
+};
 
 use crate::prelude::Grass;
 

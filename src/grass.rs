@@ -1,4 +1,7 @@
-use bevy::{prelude::*, render::{render_resource::ShaderType, extract_component::ExtractComponent, primitives::Aabb}};
+use bevy::{
+    prelude::*,
+    render::{extract_component::ExtractComponent, primitives::Aabb, render_resource::ShaderType},
+};
 use bytemuck::{Pod, Zeroable};
 
 /// An single grassblade, with the lower part at `position`
@@ -13,24 +16,23 @@ pub struct GrassBlade {
 
 /// A collection of grassblades to be extracted later into the render world
 #[derive(Clone, Debug, Component, Default)]
-pub struct Grass{
-    pub instances: Vec<GrassBlade>
+pub struct Grass {
+    pub instances: Vec<GrassBlade>,
 }
 impl Grass {
     pub fn new(instances: Vec<GrassBlade>) -> Self {
-        Grass {
-            instances
-        }
+        Grass { instances }
     }
     /// Calculates an [`Aabb`] box which contains all grass blades in self.
-    /// 
+    ///
     /// This can be used to check if the grass is in the camera view
     pub fn calculate_aabb(&self) -> Aabb {
         let mut outer = Vec3::new(f32::MIN, f32::MIN, f32::MIN);
         let mut inner = Vec3::new(f32::MAX, f32::MAX, f32::MAX);
-        self.instances.iter()
-            .map(|blade|  (blade.position,blade.height))
-            .for_each(|(blade_pos,height)| {
+        self.instances
+            .iter()
+            .map(|blade| (blade.position, blade.height))
+            .for_each(|(blade_pos, height)| {
                 inner = inner.min(blade_pos);
                 outer = outer.max(blade_pos + Vec3::Y * height);
             });
@@ -47,11 +49,10 @@ impl ExtractComponent for Grass {
 }
 pub(crate) fn add_aabb_box_to_grass(
     mut commands: Commands,
-    grasses: Query<(Entity, &Grass), Added<Grass>>
+    grasses: Query<(Entity, &Grass), Added<Grass>>,
 ) {
     for (e, grass) in grasses.iter() {
         let aabb = grass.calculate_aabb();
         commands.entity(e).insert(aabb);
     }
-
 }

@@ -26,6 +26,8 @@ fn setup_grass(mut commands: Commands) {
     };
 
     let mut grass = plane1.generate_grass(config.clone());
-    grass.instances.extend(plane2.generate_grass(config).instances);
+    grass
+        .instances
+        .extend(plane2.generate_grass(config).instances);
     commands.spawn((WarblersBundle { grass, ..default() },));
 }
