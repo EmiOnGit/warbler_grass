@@ -30,11 +30,12 @@ pub(crate) fn prepare_instance_buffers(
             contents: bytemuck::cast_slice(&region_config.main_color.as_rgba_f32()),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
-        let region_bottom_color_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-            label: Some("region bottom color buffer"),
-            contents: bytemuck::cast_slice(&region_config.bottom_color.as_rgba_f32()),
-            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-        });
+        let region_bottom_color_buffer =
+            render_device.create_buffer_with_data(&BufferInitDescriptor {
+                label: Some("region bottom color buffer"),
+                contents: bytemuck::cast_slice(&region_config.bottom_color.as_rgba_f32()),
+                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            });
         let region_wind_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("region wind buffer"),
             contents: bytemuck::cast_slice(&region_config.wind.to_array()),
