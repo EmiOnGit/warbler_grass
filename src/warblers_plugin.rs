@@ -16,7 +16,7 @@ use bevy::{
 use crate::{
     file_loader::{GrassFields, GrassFieldsAssetLoader},
     prelude::add_aabb_box_to_grass,
-    render::{self, cache::GrassCache, grass_pipeline::GrassPipeline},
+    render::{self, cache::{GrassCache, EntityCache}, grass_pipeline::GrassPipeline},
     RegionConfiguration,
 };
 
@@ -54,6 +54,7 @@ impl Plugin for WarblersPlugin {
             .init_resource::<FallbackImage>()
             .init_resource::<GrassPipeline>()
             .init_resource::<GrassCache>()
+            .init_resource::<EntityCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_system_to_stage(RenderStage::Extract, render::extract::extract_grass)
             .add_system_to_stage(

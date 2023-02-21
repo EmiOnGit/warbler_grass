@@ -2,7 +2,7 @@ use bevy::{prelude::*, render::Extract};
 
 use crate::prelude::Grass;
 
-use super::cache::GrassCache;
+use super::cache::{GrassCache, EntityCache};
 
 pub(crate) fn extract_grass(
     grasses: Extract<
@@ -11,14 +11,18 @@ pub(crate) fn extract_grass(
             Or<(Added<Grass>, Changed<Grass>)>,
         >,
     >,
-    mut cache: ResMut<GrassCache>,
+    mut grass_cache: ResMut<GrassCache>,
+    mut entity_cache: ResMut<EntityCache>,
 ) {
     for (entity, grass, global_transform, comp_visibility) in grasses.iter() {
         if !comp_visibility.is_visible() {
             continue;
         }
-        let cache_value = cache.entry(entity).or_default();
+        let cache_value = grass_cache.entry(entity).or_default();
         cache_value.transform = global_transform.clone();
         cache_value.grass = grass.clone();
+        if !entity_cache.contains(&entity) {
+            entity_cache.push(entity);
+        }
     }
 }

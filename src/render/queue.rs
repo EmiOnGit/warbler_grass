@@ -6,7 +6,7 @@ use bevy::render::render_phase::{DrawFunctions, RenderPhase};
 use bevy::render::render_resource::{PipelineCache, SpecializedMeshPipelines};
 use bevy::render::view::ExtractedView;
 
-use super::cache::GrassCache;
+use super::cache::EntityCache;
 use super::grass_pipeline::GrassPipeline;
 use super::GrassDrawCall;
 
@@ -17,7 +17,7 @@ pub fn queue_grass_buffers(
     msaa: Res<Msaa>,
     mut pipelines: ResMut<SpecializedMeshPipelines<GrassPipeline>>,
     mut pipeline_cache: ResMut<PipelineCache>,
-    cacher: Res<GrassCache>,
+    cacher: Res<EntityCache>,
     meshes: Res<RenderAssets<Mesh>>,
     material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>)>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
@@ -34,7 +34,7 @@ pub fn queue_grass_buffers(
         let rangefinder = view.rangefinder3d();
         for (entity, mesh_uniform, mesh_handle) in material_meshes
             .iter()
-            .filter(|(e, _, _)| cacher.contains_key(e))
+            .filter(|(e, _, _)| cacher.contains(e))
         {
             if let Some(mesh) = meshes.get(mesh_handle) {
                 let key =
