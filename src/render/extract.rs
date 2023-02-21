@@ -2,8 +2,9 @@ use bevy::{prelude::*, render::Extract};
 
 use crate::prelude::Grass;
 
-use super::cache::{GrassCache, EntityCache};
+use super::cache::{EntityCache, GrassCache};
 
+#[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass(
     grasses: Extract<
         Query<
@@ -19,7 +20,7 @@ pub(crate) fn extract_grass(
             continue;
         }
         let cache_value = grass_cache.entry(entity).or_default();
-        cache_value.transform = global_transform.clone();
+        cache_value.transform = *global_transform;
         cache_value.grass = grass.clone();
         if !entity_cache.contains(&entity) {
             entity_cache.push(entity);

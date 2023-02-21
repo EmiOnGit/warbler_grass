@@ -11,7 +11,6 @@ pub struct GrassCache {
     pub data: HashMap<Entity, CachedGrassChunk>,
 }
 
-
 #[derive(Debug, Default)]
 pub struct CachedGrassChunk {
     pub grass: Grass,
@@ -21,5 +20,5 @@ pub struct CachedGrassChunk {
 }
 #[derive(Resource, DerefMut, Deref, Debug, Default)]
 pub struct EntityCache {
-    pub entities: Vec<Entity>
+    pub entities: Vec<Entity>,
 }

@@ -16,7 +16,11 @@ use bevy::{
 use crate::{
     file_loader::{GrassFields, GrassFieldsAssetLoader},
     prelude::add_aabb_box_to_grass,
-    render::{self, cache::{GrassCache, EntityCache}, grass_pipeline::GrassPipeline},
+    render::{
+        self,
+        cache::{EntityCache, GrassCache},
+        grass_pipeline::GrassPipeline,
+    },
     RegionConfiguration,
 };
 

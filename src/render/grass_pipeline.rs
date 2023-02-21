@@ -92,7 +92,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
         let mut descriptor = self.mesh_pipeline.specialize(key, layout)?;
         descriptor.label = Some("Grass Render Pipeline".into());
         descriptor.vertex.shader = self.shader.clone();
-        let layouts = descriptor.layout.get_or_insert_with(|| Vec::new());
+        let layouts = descriptor.layout.get_or_insert(Vec::new());
         layouts.push(self.region_layout.clone());
         descriptor.vertex.buffers.push(VertexBufferLayout {
             array_stride: std::mem::size_of::<GrassBlade>() as u64,

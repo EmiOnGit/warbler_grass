@@ -60,8 +60,8 @@ impl FromWorld for RegionConfiguration {
         )
         .unwrap();
         RegionConfiguration {
-            main_color: Color::rgb(0.3, 0.6, 0.0),
-            bottom_color: Color::rgb(0.1, 0.3, 0.0),
+            main_color: Color::rgb(0.2, 0.5, 0.0),
+            bottom_color: Color::rgb(0.1, 0.1, 0.0),
             wind: Vec2::new(0., 1.0),
             wind_noise_texture: images.add(img),
         }
