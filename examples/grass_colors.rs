@@ -38,17 +38,17 @@ fn change_colors(
 ) {
     let r = ((time.raw_elapsed_seconds() / 2.).sin() / 2.) + 0.5;
     let g = 1. - r;
-    config.color.set_r(r);
-    config.color.set_g(g);
+    config.main_color.set_r(r);
+    config.main_color.set_g(g);
     // if the right arrow key is pressed the color gets more blue
     if input.pressed(KeyCode::Right) {
-        let b = config.color.b();
+        let b = config.main_color.b();
 
-        config.color.set_b((b + 0.005).min(1.));
+        config.main_color.set_b((b + 0.005).min(1.));
     }
     // if the left arrow key is pressed the color gets less blue
     if input.pressed(KeyCode::Left) {
-        let b = config.color.b();
-        config.color.set_b((b - 0.005).max(0.));
+        let b = config.main_color.b();
+        config.main_color.set_b((b - 0.005).max(0.));
     }
 }

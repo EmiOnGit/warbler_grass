@@ -27,6 +27,8 @@ fn setup_grass(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
 
     // The interesting part in this example
     // (The capsules would looks cool in the water!) :)
+    // Normally the grass mesh should start at y>=0.
+    // Fixing this would make the grass look even nicer! 
     let grass_mesh: Handle<Mesh> = meshes.add(shape::Capsule {
         radius: 0.1,
         depth: 0.5,

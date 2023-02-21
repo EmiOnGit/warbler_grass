@@ -38,7 +38,6 @@ impl FromWorld for GrassPipeline {
                     },
                     count: None,
                 },
-                // Wind
                 BindGroupLayoutEntry {
                     binding: 1,
                     visibility: ShaderStages::VERTEX,
@@ -49,9 +48,20 @@ impl FromWorld for GrassPipeline {
                     },
                     count: None,
                 },
-                // Wind noise Texture
+                // Wind
                 BindGroupLayoutEntry {
                     binding: 2,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+                // Wind noise Texture
+                BindGroupLayoutEntry {
+                    binding: 3,
                     visibility: ShaderStages::VERTEX,
                     ty: BindingType::Texture {
                         sample_type: TextureSampleType::Float { filterable: false },

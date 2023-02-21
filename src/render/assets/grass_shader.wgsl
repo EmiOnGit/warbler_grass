@@ -10,11 +10,13 @@ var<uniform> mesh: Mesh;
 
 @group(2) @binding(0)
 var<uniform> color: vec4<f32>;
-
 @group(2) @binding(1)
-var<uniform> wind: vec2<f32>;
+var<uniform> bottom_color: vec4<f32>;
 
 @group(2) @binding(2)
+var<uniform> wind: vec2<f32>;
+
+@group(2) @binding(3)
 var noise_texture: texture_2d<f32>;
 
 #import bevy_pbr::mesh_functions
@@ -54,15 +56,14 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     var position = vertex.position.xyz * vec3<f32>(1.,vertex.height, 1.) + vertex.position_field_offset;
 
     // only applies wind if the vertex is not on the bottom of the grass (or very small)
-    if vertex.position.y > 0.{
-        let offset = wind_offset(vec2<f32>(vertex.position_field_offset.x, vertex.position_field_offset.z));
-        position.x += offset.x * log(vertex.position.y + 1.);
-        position.z += offset.y * log(vertex.position.y + 1.);
-    }
+    let offset = wind_offset(vec2<f32>(vertex.position_field_offset.x, vertex.position_field_offset.z));
+    let strength = max(0.,log(vertex.position.y + 1.));
+    position.x += offset.x * strength;
+    position.z += offset.y * strength;
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
 
-    // The grass should be darker at the buttom
-    out.color = color * (vertex.position.y + 0.1) * 0.3;
+    let lambda = clamp(vertex.position.y, 0.,1.);
+    out.color = mix(bottom_color, color, lambda);
     return out;
 }
 

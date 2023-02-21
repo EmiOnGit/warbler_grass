@@ -27,7 +27,12 @@ pub(crate) fn prepare_instance_buffers(
         });
         let region_color_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("region color buffer"),
-            contents: bytemuck::cast_slice(&region_config.color.as_rgba_f32()),
+            contents: bytemuck::cast_slice(&region_config.main_color.as_rgba_f32()),
+            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+        });
+        let region_bottom_color_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            label: Some("region bottom color buffer"),
+            contents: bytemuck::cast_slice(&region_config.bottom_color.as_rgba_f32()),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
         let region_wind_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -52,13 +57,21 @@ pub(crate) fn prepare_instance_buffers(
                 BindGroupEntry {
                     binding: 1,
                     resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &region_wind_buffer,
+                        buffer: &region_bottom_color_buffer,
                         offset: 0,
                         size: None,
                     }),
                 },
                 BindGroupEntry {
                     binding: 2,
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &region_wind_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 3,
                     resource: BindingResource::TextureView({
                         if let Some(img) = images.get(&region_config.wind_noise_texture) {
                             &img.texture_view
