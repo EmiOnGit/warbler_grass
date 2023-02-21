@@ -29,8 +29,8 @@ fn setup_grass(mut commands: Commands) {
             (i % 1000., i / 1000.)
         })
         .map(|(x, z)| GrassBlade {
-            position: Vec3::new(x / 10., 0., z / 10.),
-            height: 1.,
+            position: Vec3::new(x / 10., 2., z / 10.),
+            height: ((x.sin() + z.sin()).cos() + 5.) / 10.,
         })
         .collect();
 
