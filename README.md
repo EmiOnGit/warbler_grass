@@ -29,22 +29,19 @@ fn main() {
         .run();
 }
 fn setup_grass(mut commands: Commands) {
-    let config = StandardGeneratorConfig {
-        density: 10.,
-        height: 3.,
-        height_deviation: 0.5,
-        seed: Some(0x121),
-    };
-    // translation indicates the outer point
-    let plane = Plane {
-        dimensions: Transform::from_xyz(30., 0., 10.),
-    };
-   
-    // create the grass from the plane generator
-    let grass = plane.generate_grass(config.clone());
+   let blades = (0..10000)
+        .into_iter()
+        .map(|i| GrassBlade {
+            // making a grid
+            position: Vec3::new(i / 100, 0., i % 100),
+            height: i.ln(),
+        })
+        .collect();
 
-    // spawn the grass into the world
-    commands.spawn((WarblersBundle { grass, ..default() },));
+    commands.spawn((WarblersBundle {
+        grass: Grass::new(blades),
+        ..default()
+    },));
 }
 
 ```
