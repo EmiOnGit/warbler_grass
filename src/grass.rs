@@ -4,13 +4,17 @@ use bevy::{
 };
 use bytemuck::{Pod, Zeroable};
 
-/// An single grassblade, with the lower part at `position`
+/// Representation of a single grassblade
 #[derive(Copy, Clone, Debug, Pod, Zeroable, ShaderType)]
 #[repr(C)]
 pub struct GrassBlade {
-    /// The position of the lower part of the mesh.(At least for the default grass mesh)
+    /// The position of the [GrassBlade].
+    ///
+    /// Note that the end position is also relative to the [`Transform`] of the entity containing the blades.
     pub position: Vec3,
-    /// The height of the grass blade. Internally scales the the grass mesh in the y direction
+    /// The height of the grass blade.
+    ///
+    /// Internally scales the the grass mesh in the y direction
     pub height: f32,
 }
 
@@ -47,6 +51,9 @@ impl ExtractComponent for Grass {
         item.clone()
     }
 }
+/// To calculate frustum culling we need the [Aabb] box of the entity
+///
+/// Note that it is in the responsabilty of the user to minimize the [Aabb] boxes of the chunks if high performance is needed
 pub(crate) fn add_aabb_box_to_grass(
     mut commands: Commands,
     grasses: Query<(Entity, &Grass), Added<Grass>>,

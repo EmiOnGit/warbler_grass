@@ -22,9 +22,24 @@ pub mod prelude {
     pub use crate::WarblersBundle;
 }
 
+/// A component bundle for a chunk of grass.
+///
+/// Note that each position of a [`GrassBlade`](crate::prelude::GrassBlade) is also relative to the [`Transform`] component of the entity
 #[derive(Bundle)]
 pub struct WarblersBundle {
+    /// The [`Grass`] to spawn in your world.
+    ///
+    /// ## Usage Detail
+    /// Be aware that frustum culling is done using the minimal [Aabb](bevy::render::primitives::Aabb) box containing all elements in [Grass].
+    /// Also since all elements in [Grass] are instanced together,
+    /// it might be more performant to spawn multiple entities each containing locally seperate portions of the grass in the game.
+    /// This however, will only be noticable at high number of grassblades.
     pub grass: Grass,
+    /// The [`Mesh`] used to render each grassblade.
+    ///
+    /// The mesh can be changed to however needed,
+    /// however note that the lowest vertex of the mesh should be around y=0
+    /// in most cases.
     pub grass_mesh: Handle<Mesh>,
     #[bundle]
     pub spatial: SpatialBundle,
@@ -39,14 +54,31 @@ impl Default for WarblersBundle {
         }
     }
 }
-
+/// A [resource](bevy::prelude::Resource) used to globally define parameters about the grass.
+///
+/// A default [`RegionConfiguration`] is inserted by the [`WarblersPlugin`](crate::warblers_plugin::WarblersPlugin).
 #[cfg_attr(feature = "debug", derive(InspectorOptions))]
 #[derive(Resource, Clone, Reflect)]
 #[reflect(Resource)]
 pub struct RegionConfiguration {
+    /// The main [Color] of the grass used in your game.
     pub main_color: Color,
+    /// The bottom [Color] of the grass.
+    ///
+    /// Normally, a darker variant of the main color is choosen to reflect the natural behavior of light.
     pub bottom_color: Color,
+    /// The direction and strength of wind.
+    ///
+    /// The direction of the wind is on the x,z plane.
+    ///
+    /// Be aware that the strength of the wind is controlled by the (euclidean) norm of the vector.
+    /// If you want to turn of wind in your game, you can just set this to [`Vec2::ZERO`]
     pub wind: Vec2,
+    /// The texture used to animate the wind on the grass.
+    ///
+    /// Most likely you don't need to change that unless you want your wind to feel different.
+    /// If you decide to swap it, note that you want the texture to be tileable,
+    /// also currently only the red and green chanel are used
     pub wind_noise_texture: Handle<Image>,
 }
 impl FromWorld for RegionConfiguration {

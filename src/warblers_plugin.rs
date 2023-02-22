@@ -23,12 +23,18 @@ use crate::{
     },
     RegionConfiguration,
 };
-
+/// A raw handle which points to the shader used to render the grass.
 pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
     HandleUntyped::weak_from_u64(Shader::TYPE_UUID, 2263343952151597127);
+
+/// A raw handle to the default mesh used for grass.
+///
+/// The [`WarblersPlugin`] adds the corresponding mesh to the world.
+/// So you should only convert the raw handle when the plugin is used
 pub const GRASS_MESH_HANDLE: HandleUntyped =
     HandleUntyped::weak_from_u64(Mesh::TYPE_UUID, 9357128457583957921);
 
+/// Adds the render pipeline for drawing grass to an App
 pub struct WarblersPlugin;
 impl Plugin for WarblersPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
@@ -69,7 +75,7 @@ impl Plugin for WarblersPlugin {
     }
 }
 
-/// simply the default look of the grass, as shown in the examples
+/// Constructs the default look of the grass, as shown in the examples
 fn default_grass_mesh() -> Mesh {
     let mut grass_mesh = Mesh::new(PrimitiveTopology::TriangleList);
     grass_mesh.insert_attribute(
