@@ -19,6 +19,10 @@ pub(crate) fn prepare_instance_buffers(
     render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
 ) {
+    if !cache.is_changed() && !region_config.is_changed() {
+        return;
+    }
+    
     for instance_data in cache.values_mut() {
         let entity_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("instance entity data buffer"),
