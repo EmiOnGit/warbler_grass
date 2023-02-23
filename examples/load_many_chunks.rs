@@ -15,14 +15,13 @@ fn main() {
             ..default()
         }))
         .add_plugin(WarblersPlugin)
-        .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(helper::SimpleCamera)
         .add_startup_system(setup_grass_chunks)
         .run();
 }
 fn setup_grass_chunks(mut commands: Commands) {
-    let blades: Vec<GrassBlade> = (0..10_000)
+    /// in total we are loading 100_000 = 1_000 * 100 grass blades into the world
+    let blades: Vec<GrassBlade> = (0..1_000)
             .into_iter()
             .map(|i| {
                 let i = i as f32;
