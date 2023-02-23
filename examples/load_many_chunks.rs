@@ -1,5 +1,4 @@
 use bevy::{
-    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
     window::PresentMode,
 };
@@ -20,7 +19,7 @@ fn main() {
         .run();
 }
 fn setup_grass_chunks(mut commands: Commands) {
-    /// in total we are loading 100_000 = 1_000 * 100 grass blades into the world
+    // in total we are loading 100_000 = 1_000 * 100 grass blades into the world
     let blades: Vec<GrassBlade> = (0..1_000)
             .into_iter()
             .map(|i| {
