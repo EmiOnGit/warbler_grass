@@ -12,7 +12,7 @@ use crate::render::cache::GrassCache;
 
 use super::grass_pipeline::GrassPipeline;
 
-pub fn prepare_uniform_buffers(mut cache: ResMut<GrassCache>, render_device: Res<RenderDevice>) {
+pub(crate) fn prepare_uniform_buffers(mut cache: ResMut<GrassCache>, render_device: Res<RenderDevice>) {
     if !cache.is_changed() {
         return;
     }
@@ -26,21 +26,37 @@ pub fn prepare_uniform_buffers(mut cache: ResMut<GrassCache>, render_device: Res
     }
 }
 
-pub fn prepare_instance_buffer(
+pub(crate) fn prepare_instance_buffer(
     pipeline: Res<GrassPipeline>,
     mut cache: ResMut<GrassCache>,
     region_config: Res<RegionConfig>,
     render_device: Res<RenderDevice>,
+    fallback_img: Res<FallbackImage>,
+    images: Res<RenderAssets<Image>>,
 ) {
     if !region_config.is_changed() {
         return;
     }
     for instance_data in cache.values_mut() {
-        let color_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-            label: Some("Color buffer"),
-            contents: bytemuck::cast_slice(&region_config.color.as_rgba_f32()),
+        let entity_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            label: Some("instance entity data buffer"),
+            contents: bytemuck::cast_slice(instance_data.grass.instances.as_slice()),
+            usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
+        });
+        let region_color_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            label: Some("region color buffer"),
+            contents: bytemuck::cast_slice(&region_config.main_color.as_rgba_f32()),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
+        let region_bottom_color_buffer =
+            render_device.create_buffer_with_data(&BufferInitDescriptor {
+                label: Some("region bottom color buffer"),
+                contents: bytemuck::cast_slice(&region_config.bottom_color.as_rgba_f32()),
+                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            });
+        let region_wind_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            label: Some("region wind buffer"),
+            contents: bytemuck::cast_slice(&region_config.wind.to_array()),
         let layout = pipeline.region_outline.clone();
         let bind_group_descriptor = BindGroupDescriptor {
             label: Some("Grass uniform bind group"),
@@ -50,9 +66,35 @@ pub fn prepare_instance_buffer(
                 BindGroupEntry {
                     binding: 0,
                     resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &color_buffer,
+                        buffer: &region_color_buffer,
                         offset: 0,
                         size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 1,
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &region_bottom_color_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 2,
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &region_wind_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 3,
+                    resource: BindingResource::TextureView({
+                        if let Some(img) = images.get(&region_config.wind_noise_texture) {
+                            &img.texture_view
+                        } else {
+                            &fallback_img.texture_view
+                        }
                     }),
                 },
             ],
