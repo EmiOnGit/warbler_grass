@@ -52,7 +52,9 @@ pub(crate) fn prepare_instance_buffer(
         let region_wind_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("region wind buffer"),
             contents: bytemuck::cast_slice(&region_config.wind.to_array()),
-        let layout = pipeline.region_outline.clone();
+            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+        });
+        let layout = pipeline.region_layout.clone();
         let bind_group_descriptor = BindGroupDescriptor {
             label: Some("Grass uniform bind group"),
             layout: &layout,
