@@ -34,7 +34,7 @@ pub fn queue_grass_buffers(
         let rangefinder = view.rangefinder3d();
         for (entity, mesh_uniform, mesh_handle) in material_meshes
             .iter()
-            .filter(|(e, _, _)| cacher.contains(e))
+            .filter(|(e, _, _)| cacher.contains_key(e))
         {
             if let Some(mesh) = meshes.get(mesh_handle) {
                 let key =
