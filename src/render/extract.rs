@@ -9,7 +9,7 @@ pub(crate) fn extract_grass(
     grasses: Extract<
         Query<
             (Entity, &Grass, &GlobalTransform, &ComputedVisibility),
-            Or<(Added<Grass>, Changed<Grass>)>,
+            Changed<Grass>,
         >,
     >,
     mut grass_cache: ResMut<GrassCache>,
