@@ -7,16 +7,12 @@ use super::cache::{EntityCache, GrassCache};
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass(
     grasses: Extract<
-        Query<
-            (Entity, &Grass, &GlobalTransform, &ComputedVisibility),
-            Or<(Changed<ComputedVisibility>, Changed<Grass>)>,
-        >,
+        Query<(Entity, &Grass, &GlobalTransform, &ComputedVisibility), Changed<Grass>>,
     >,
     mut grass_cache: ResMut<GrassCache>,
     mut entity_cache: ResMut<EntityCache>,
 ) {
     for (entity, grass, global_transform, comp_visibility) in grasses.iter() {
-
         if !comp_visibility.is_visible() {
             entity_cache.remove(&entity);
             continue;
@@ -26,5 +22,4 @@ pub(crate) fn extract_grass(
         cache_value.grass = grass.clone();
         entity_cache.insert(entity);
     }
-
 }
