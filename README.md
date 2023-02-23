@@ -8,7 +8,8 @@ However, every type of contribution is currently highly appreciated, so feel fre
 
 ## Warning
 The code is very young and surely still changes every now and then.
-When the base is suifficently figured out however, I will swap to making proper notes on changes I do, as well as versioning.
+
+When the base is suifficently figured out however, I will swap to making proper notes on changes I do, as well as using versioning.
 
 ## Contributing
 If you read this part, you might consider to help this project grow.
