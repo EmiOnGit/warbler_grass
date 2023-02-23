@@ -12,7 +12,7 @@ use crate::render::cache::GrassCache;
 
 use super::grass_pipeline::GrassPipeline;
 
-pub(crate) fn prepare_instance_buffers(
+pub(crate) fn prepare_instance_buffer(
     mut cache: ResMut<GrassCache>,
     render_device: Res<RenderDevice>,
 ) {
@@ -29,7 +29,7 @@ pub(crate) fn prepare_instance_buffers(
     }
 }
 
-pub(crate) fn prepare_uniform_buffer(
+pub(crate) fn prepare_uniform_buffers(
     pipeline: Res<GrassPipeline>,
     mut cache: ResMut<GrassCache>,
     region_config: Res<RegionConfiguration>,
