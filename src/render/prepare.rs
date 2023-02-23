@@ -29,20 +29,15 @@ pub(crate) fn prepare_uniform_buffers(mut cache: ResMut<GrassCache>, render_devi
 pub(crate) fn prepare_instance_buffer(
     pipeline: Res<GrassPipeline>,
     mut cache: ResMut<GrassCache>,
-    region_config: Res<RegionConfig>,
-    render_device: Res<RenderDevice>,
+    region_config: Res<RegionConfiguration>,
     fallback_img: Res<FallbackImage>,
+    render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
 ) {
     if !region_config.is_changed() {
         return;
     }
     for instance_data in cache.values_mut() {
-        let entity_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-            label: Some("instance entity data buffer"),
-            contents: bytemuck::cast_slice(instance_data.grass.instances.as_slice()),
-            usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
-        });
         let region_color_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("region color buffer"),
             contents: bytemuck::cast_slice(&region_config.main_color.as_rgba_f32()),
