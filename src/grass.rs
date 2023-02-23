@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::{extract_component::ExtractComponent, primitives::Aabb, render_resource::ShaderType},
+    render::{primitives::Aabb, render_resource::ShaderType},
 };
 use bytemuck::{Pod, Zeroable};
 
@@ -43,14 +43,7 @@ impl Grass {
         Aabb::from_min_max(inner, outer)
     }
 }
-impl ExtractComponent for Grass {
-    type Query = &'static Grass;
-    type Filter = ();
 
-    fn extract_component(item: bevy::ecs::query::QueryItem<'_, Self::Query>) -> Self {
-        item.clone()
-    }
-}
 /// To calculate frustum culling we need the [Aabb] box of the entity
 ///
 /// Note that it is in the responsabilty of the user to minimize the [Aabb] boxes of the chunks if high performance is needed
