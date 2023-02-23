@@ -7,10 +7,7 @@ use super::cache::{EntityCache, GrassCache};
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass(
     grasses: Extract<
-        Query<
-            (Entity, &Grass, &GlobalTransform, &ComputedVisibility),
-            Changed<Grass>,
-        >,
+        Query<(Entity, &Grass, &GlobalTransform, &ComputedVisibility), Changed<Grass>>,
     >,
     mut grass_cache: ResMut<GrassCache>,
     mut entity_cache: ResMut<EntityCache>,
