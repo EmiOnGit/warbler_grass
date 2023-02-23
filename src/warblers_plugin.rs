@@ -69,7 +69,11 @@ impl Plugin for WarblersPlugin {
             .add_system_to_stage(RenderStage::Extract, render::extract::extract_grass)
             .add_system_to_stage(
                 RenderStage::Prepare,
-                render::prepare::prepare_instance_buffers,
+                render::prepare::prepare_uniform_buffers,
+            )
+            .add_system_to_stage(
+                RenderStage::Prepare,
+                render::prepare::prepare_instance_buffer,
             )
             .add_system_to_stage(RenderStage::Queue, render::queue::queue_grass_buffers);
     }
