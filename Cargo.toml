@@ -37,6 +37,9 @@ path = "examples/load_from_file.rs"
 [[example]]
 name = "load_custom"
 path = "examples/load_custom.rs"
+[[example]]
+name = "load_many_chunks"
+path = "examples/load_many_chunks.rs"
 
 [[example]]
 name = "grass_colors"
