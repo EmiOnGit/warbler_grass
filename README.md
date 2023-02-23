@@ -6,11 +6,26 @@ This crate is meant to make the warblers happy by implementing a simple way to s
 The crate is not mature and shouldn't be used seriously yet.
 However, every type of contribution is currently highly appreciated, so feel free to open an issue with your suggestion!
 
-The code base is very young and will be redesigned soon.
-I'd love it if you would tell me your thoughts on how the redesign might look like. Make sure to comment on the [issue I created for that](https://github.com/EmiOnGit/warblersneeds/issues/1)
+## Warning
+The code is very young and surely still changes every now and then.
+When the base is suifficently figured out however, I will swap to making proper notes on changes I do, as well as versioning.
 
-The current implementation is fairly performant. The stress test with 5_000_000 grass blades animated with wind currently runs at around 350 fps on my hardware.
-This is because most of the work is done on the GPU and the grass is instanced properly.
+## Contributing
+If you read this part, you might consider to help this project grow.
+First of, I consider this project very beginner friendly. 
+It is relatively easy to grasp the workings since the usecase is clear; to draw grass efficiently.
+Don't fear if you are a beginner in bevy or even rust!
+
+Currently, the code can be optimized in many places and many features I'd like to have are partially or completely missing.
+You can always just create an issue and ask if something you want to do is needed.
+I'll try to make issues in advance about the larger topics I'll want to be implemented.
+Look at the [milestones](https://github.com/emiongit/warblersneeds/milestones) for inspirations.
+
+## Performance
+The current implementation is already "fairly" performant. 
+The stress test with 5_000_000 grass blades animated with wind currently runs at around 350 fps on my hardware.
+This has been achieved by extensively using the GPU, proper instancing, as well as caching.
+However, there are still many improvements to be made.
 
 If you want to look at examples, you can take a look at the [examples](./examples/) folder of this project
 
