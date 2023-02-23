@@ -19,8 +19,6 @@ pub(crate) fn extract_grass(
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.transform = *global_transform;
         cache_value.grass = grass.clone();
-        if !entity_cache.contains(&entity) {
-            entity_cache.push(entity);
-        }
+        entity_cache.insert(entity);
     }
 }

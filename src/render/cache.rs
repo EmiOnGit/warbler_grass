@@ -1,7 +1,7 @@
 use bevy::{
     prelude::*,
     render::render_resource::{BindGroup, Buffer},
-    utils::HashMap,
+    utils::{HashMap, HashSet},
 };
 
 use crate::prelude::Grass;
@@ -20,5 +20,5 @@ pub struct CachedGrassChunk {
 }
 #[derive(Resource, DerefMut, Deref, Debug, Default)]
 pub struct EntityCache {
-    pub entities: Vec<Entity>,
+    pub entities: HashSet<Entity>,
 }
