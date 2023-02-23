@@ -56,10 +56,9 @@ pub(crate) fn prepare_instance_buffer(
         });
         let layout = pipeline.region_layout.clone();
         let bind_group_descriptor = BindGroupDescriptor {
-            label: Some("Grass uniform bind group"),
+            label: Some("grass uniform bind group"),
             layout: &layout,
             entries: &[
-                // color
                 BindGroupEntry {
                     binding: 0,
                     resource: BindingResource::Buffer(BufferBinding {
@@ -97,6 +96,6 @@ pub(crate) fn prepare_instance_buffer(
             ],
         };
         let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-        instance_data.uniform_bind_ground = Some(bind_group);
+        instance_data.uniform_bindgroup = Some(bind_group);
     }
 }
