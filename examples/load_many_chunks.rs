@@ -1,15 +1,9 @@
-use bevy::{prelude::*, window::PresentMode};
+use bevy::prelude::*;
 use warblersneeds::prelude::*;
 mod helper;
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            window: WindowDescriptor {
-                present_mode: PresentMode::Immediate,
-                ..default()
-            },
-            ..default()
-        }))
+        .add_plugins(DefaultPlugins)
         .add_plugin(WarblersPlugin)
         .add_plugin(helper::SimpleCamera)
         .add_startup_system(setup_grass_chunks)
