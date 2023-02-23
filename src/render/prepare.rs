@@ -22,7 +22,7 @@ pub(crate) fn prepare_uniform_buffers(mut cache: ResMut<GrassCache>, render_devi
             contents: bytemuck::cast_slice(&instance_data.grass.instances.as_slice()),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
-        instance_data.buffer = Some(entity_buffer);
+        instance_data.grass_buffer = Some(entity_buffer);
     }
 }
 
