@@ -12,7 +12,10 @@ use crate::render::cache::GrassCache;
 
 use super::grass_pipeline::GrassPipeline;
 
-pub(crate) fn prepare_uniform_buffers(mut cache: ResMut<GrassCache>, render_device: Res<RenderDevice>) {
+pub(crate) fn prepare_uniform_buffers(
+    mut cache: ResMut<GrassCache>,
+    render_device: Res<RenderDevice>,
+) {
     if !cache.is_changed() {
         return;
     }
