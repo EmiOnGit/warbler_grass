@@ -58,7 +58,7 @@ impl Default for WarblersBundle {
 ///
 /// A default [`RegionConfiguration`] is inserted by the [`WarblersPlugin`](crate::warblers_plugin::WarblersPlugin).
 #[cfg_attr(feature = "debug", derive(InspectorOptions))]
-#[derive(Resource, Clone, Reflect)]
+#[derive(Resource, Clone, Reflect, ExtractResource)]
 #[reflect(Resource)]
 pub struct RegionConfiguration {
     /// The main [Color] of the grass used in your game.
@@ -97,12 +97,5 @@ impl FromWorld for RegionConfiguration {
             wind: Vec2::new(0., 1.0),
             wind_noise_texture: images.add(img),
         }
-    }
-}
-impl ExtractResource for RegionConfiguration {
-    type Source = Self;
-
-    fn extract_resource(source: &Self::Source) -> Self {
-        source.clone()
     }
 }
