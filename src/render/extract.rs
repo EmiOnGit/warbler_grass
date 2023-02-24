@@ -28,7 +28,6 @@ pub(crate) fn extract_visibility(
 ) {
     entity_cache.entities = visibility_queue
         .iter()
-        .filter(|(_e, visibility)| visibility.is_visible())
-        .map(|(e, _visibility)| e)
+        .filter_map(|(e, visibility)| visibility.is_visible().then(|| e))
         .collect();
 }
