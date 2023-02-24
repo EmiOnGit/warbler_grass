@@ -39,12 +39,7 @@ pub(crate) fn prepare_uniform_buffers(
     if !region_config.is_changed() {
         return;
     }
-    let shader_config = ShaderRegionConfiguration {
-        main_color: region_config.main_color.into(),
-        bottom_color: region_config.bottom_color.into(),
-        wind: region_config.wind,
-        _wasm_padding: Vec2::ZERO,
-    };
+    let shader_config = ShaderRegionConfiguration::from(region_config.as_ref());
     let config_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
         label: Some("region config buffer"),
         contents: bytemuck::bytes_of(&shader_config),
@@ -85,8 +80,20 @@ pub(crate) fn prepare_uniform_buffers(
 #[derive(Debug, Clone, Copy, Pod, Zeroable, ShaderType)]
 #[repr(C)]
 struct ShaderRegionConfiguration {
-    pub main_color: Vec4,
-    pub bottom_color: Vec4,
-    pub wind: Vec2,
-    pub _wasm_padding: Vec2,
+    main_color: Vec4,
+    bottom_color: Vec4,
+    wind: Vec2,
+    /// Wasm requires shader uniforms to be aligned to 16 bytes
+    _wasm_padding: Vec2,
+}
+
+impl From<&RegionConfiguration> for ShaderRegionConfiguration {
+    fn from(config: &RegionConfiguration) -> Self {
+        Self {
+            main_color: config.main_color.into(),
+            bottom_color: config.bottom_color.into(),
+            wind: config.wind,
+            _wasm_padding: Vec2::ZERO,
+        }
+    }
 }
