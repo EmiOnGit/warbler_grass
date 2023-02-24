@@ -35,8 +35,9 @@ pub(crate) fn prepare_uniform_buffers(
     fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
+    mut loaded: Local<bool>,
 ) {
-    if !region_config.is_changed() && images.contains_key(&region_config.wind_noise_texture) {
+    if !region_config.is_changed() && *loaded {
         return;
     }
     let shader_config = ShaderRegionConfiguration::from(region_config.as_ref());
@@ -45,10 +46,13 @@ pub(crate) fn prepare_uniform_buffers(
         contents: bytemuck::bytes_of(&shader_config),
         usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
     });
-    let texture = &images
-        .get(&region_config.wind_noise_texture)
-        .unwrap_or(&fallback_img)
-        .texture_view;
+
+    let texture = if let Some(image) = images.get(&region_config.wind_noise_texture) {
+        *loaded = true;
+        &image.texture_view
+    } else {
+        &fallback_img.texture_view
+    };
 
     let layout = pipeline.region_layout.clone();
     let bind_group_descriptor = BindGroupDescriptor {
