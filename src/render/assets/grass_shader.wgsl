@@ -62,7 +62,7 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     position.z += offset.y * strength;
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
 
-    let lambda = clamp(vertex.position.y, 0.,1.);
+    let lambda = vertex.position.y;
     out.color = mix(bottom_color, color, lambda);
     return out;
 }
