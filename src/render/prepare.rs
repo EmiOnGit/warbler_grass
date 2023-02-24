@@ -35,9 +35,9 @@ pub(crate) fn prepare_uniform_buffers(
     fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
-    mut loaded: Local<bool>,
+    mut texture_loaded: Local<bool>,
 ) {
-    if !region_config.is_changed() && *loaded {
+    if !region_config.is_changed() && *texture_loaded {
         return;
     }
     let shader_config = ShaderRegionConfiguration::from(region_config.as_ref());
@@ -48,7 +48,7 @@ pub(crate) fn prepare_uniform_buffers(
     });
 
     let texture = if let Some(image) = images.get(&region_config.wind_noise_texture) {
-        *loaded = true;
+        *texture_loaded = true;
         &image.texture_view
     } else {
         &fallback_img.texture_view
