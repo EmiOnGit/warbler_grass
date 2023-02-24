@@ -27,7 +27,7 @@ impl FromWorld for GrassPipeline {
         let region_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
             label: Some("warblersneeds configuration layout"),
             entries: &[
-                // color
+                // config
                 BindGroupLayoutEntry {
                     binding: 0,
                     visibility: ShaderStages::VERTEX,
@@ -38,30 +38,9 @@ impl FromWorld for GrassPipeline {
                     },
                     count: None,
                 },
-                BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: ShaderStages::VERTEX,
-                    ty: BindingType::Buffer {
-                        ty: BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-                // Wind
-                BindGroupLayoutEntry {
-                    binding: 2,
-                    visibility: ShaderStages::VERTEX,
-                    ty: BindingType::Buffer {
-                        ty: BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
                 // Wind noise Texture
                 BindGroupLayoutEntry {
-                    binding: 3,
+                    binding: 1,
                     visibility: ShaderStages::VERTEX,
                     ty: BindingType::Texture {
                         sample_type: TextureSampleType::Float { filterable: false },

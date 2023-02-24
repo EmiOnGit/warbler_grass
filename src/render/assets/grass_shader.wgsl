@@ -1,22 +1,19 @@
 #import bevy_pbr::mesh_types
 #import bevy_pbr::mesh_view_bindings
 
-struct Config {
-    color: vec4<f32>,
+struct ShaderRegionConfiguration {
+    main_color: vec4<f32>,
+    bottom_color: vec4<f32>,
     wind: vec2<f32>,
+    _wasm_padding: vec2<f32>,
 };
 @group(1) @binding(0)
 var<uniform> mesh: Mesh;
 
 @group(2) @binding(0)
-var<uniform> color: vec4<f32>;
+var<uniform> config: ShaderRegionConfiguration;
+
 @group(2) @binding(1)
-var<uniform> bottom_color: vec4<f32>;
-
-@group(2) @binding(2)
-var<uniform> wind: vec2<f32>;
-
-@group(2) @binding(3)
 var noise_texture: texture_2d<f32>;
 
 #import bevy_pbr::mesh_functions
@@ -39,7 +36,7 @@ let NOISE_TEXTURE_SPEED: f32 = 30.;
 let NOISE_TEXTURE_ZOOM: f32 = 5.;
 
 fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
-    var texture_offset = wind * globals.time * NOISE_TEXTURE_SPEED;
+    var texture_offset = config.wind.xy * globals.time * NOISE_TEXTURE_SPEED;
     var texture_position = vec2<f32>(vertex_position.x ,vertex_position.y) * NOISE_TEXTURE_ZOOM + texture_offset;
     
     // dimensions of noise texture in vec2<u32>
@@ -48,7 +45,7 @@ fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     // read just position in case of a over/under flow of tex. coords
     texture_position = abs(texture_position % vec2<f32>(dim));
     var texture_pixel = textureLoad(noise_texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0);
-    return texture_pixel.xy * wind;
+    return texture_pixel.xy * config.wind;
 }
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
@@ -63,7 +60,7 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
 
     let lambda = clamp(vertex.position.y, 0.,1.);
-    out.color = mix(bottom_color, color, lambda);
+    out.color = mix(config.bottom_color, config.main_color, lambda);
     return out;
 }
 
