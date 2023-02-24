@@ -36,7 +36,7 @@ pub(crate) fn prepare_uniform_buffers(
     render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
 ) {
-    if !region_config.is_changed() {
+    if !region_config.is_changed() && images.contains_key(&region_config.wind_noise_texture) {
         return;
     }
     let shader_config = ShaderRegionConfiguration::from(region_config.as_ref());
@@ -45,6 +45,11 @@ pub(crate) fn prepare_uniform_buffers(
         contents: bytemuck::bytes_of(&shader_config),
         usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
     });
+    let texture = &images
+        .get(&region_config.wind_noise_texture)
+        .unwrap_or(&fallback_img)
+        .texture_view;
+
     let layout = pipeline.region_layout.clone();
     let bind_group_descriptor = BindGroupDescriptor {
         label: Some("grass uniform bind group"),
@@ -60,13 +65,7 @@ pub(crate) fn prepare_uniform_buffers(
             },
             BindGroupEntry {
                 binding: 1,
-                resource: BindingResource::TextureView({
-                    if let Some(img) = images.get(&region_config.wind_noise_texture) {
-                        &img.texture_view
-                    } else {
-                        &fallback_img.texture_view
-                    }
-                }),
+                resource: BindingResource::TextureView(texture),
             },
         ],
     };
