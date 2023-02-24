@@ -5,7 +5,7 @@ use bevy::{
 use bytemuck::{Pod, Zeroable};
 
 /// Representation of a single grassblade
-#[derive(Copy, Clone, Debug, Pod, Zeroable, ShaderType)]
+#[derive(Copy, Clone, Debug, Pod, Zeroable, ShaderType, Default, Reflect, FromReflect)]
 #[repr(C)]
 pub struct GrassBlade {
     /// The position of the [GrassBlade].
@@ -19,7 +19,7 @@ pub struct GrassBlade {
 }
 
 /// A collection of grassblades to be extracted later into the render world
-#[derive(Clone, Debug, Component, Default)]
+#[derive(Clone, Debug, Component, Default, Reflect)]
 pub struct Grass {
     pub instances: Vec<GrassBlade>,
 }
