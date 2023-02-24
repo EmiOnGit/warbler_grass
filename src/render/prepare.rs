@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::{
     BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor,
-    BufferUsages, ShaderType,
+    BufferUsages, ShaderType, TextureViewId,
 };
 use bevy::render::renderer::RenderDevice;
 use bevy::render::texture::FallbackImage;
@@ -35,16 +35,24 @@ pub(crate) fn prepare_uniform_buffers(
     fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
+    mut last_texture_id: Local<Option<TextureViewId>>,
 ) {
-    if !region_config.is_changed() {
+    let texture = &images
+        .get(&region_config.wind_noise_texture)
+        .unwrap_or(&fallback_img)
+        .texture_view;
+    if !region_config.is_changed() && Some(texture.id()) == *last_texture_id {
         return;
     }
+    *last_texture_id = Some(texture.id());
+
     let shader_config = ShaderRegionConfiguration::from(region_config.as_ref());
     let config_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
         label: Some("region config buffer"),
         contents: bytemuck::bytes_of(&shader_config),
         usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
     });
+
     let layout = pipeline.region_layout.clone();
     let bind_group_descriptor = BindGroupDescriptor {
         label: Some("grass uniform bind group"),
@@ -60,13 +68,7 @@ pub(crate) fn prepare_uniform_buffers(
             },
             BindGroupEntry {
                 binding: 1,
-                resource: BindingResource::TextureView({
-                    if let Some(img) = images.get(&region_config.wind_noise_texture) {
-                        &img.texture_view
-                    } else {
-                        &fallback_img.texture_view
-                    }
-                }),
+                resource: BindingResource::TextureView(texture),
             },
         ],
     };
