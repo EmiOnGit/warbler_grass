@@ -30,5 +30,5 @@ pub(crate) fn extract_visibility(
         .iter()
         .filter(|(_e, visibility)| visibility.is_visible())
         .map(|(e, _visibility)| e)
-        .collect::<HashSet<Entity>>();
+        .collect();
 }
