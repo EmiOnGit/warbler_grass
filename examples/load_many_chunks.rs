@@ -22,7 +22,7 @@ fn setup_grass_chunks(mut commands: Commands) {
             height: ((x.sin() + z.sin()).cos() + 5.) / 10.,
         })
         .collect();
-    
+
     for chunk in 0..100 {
         let offset = Vec3::new((chunk / 10) as f32 * 6., 0., (chunk % 10) as f32 * 6.);
         commands.spawn(WarblersBundle {
