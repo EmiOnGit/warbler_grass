@@ -41,7 +41,8 @@ pub(crate) fn prepare_uniform_buffers(
         .get(&region_config.wind_noise_texture)
         .unwrap_or(&fallback_img)
         .texture_view;
-    if (!region_config.is_changed() && Some(texture.id()) == *last_texture_id) || cache.is_empty() {
+    if !region_config.is_changed() && Some(texture.id()) == *last_texture_id && !cache.is_changed()
+    {
         return;
     }
     *last_texture_id = Some(texture.id());
