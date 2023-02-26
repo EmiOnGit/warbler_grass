@@ -1,6 +1,6 @@
 use super::cache::{EntityCache, GrassCache};
 use crate::prelude::Grass;
-use bevy::{prelude::*, render::Extract, utils::HashSet};
+use bevy::{prelude::*, render::Extract};
 
 /// Extracts the grass data into the render world.
 ///
