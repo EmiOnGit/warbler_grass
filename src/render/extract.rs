@@ -12,6 +12,7 @@ use bevy::{prelude::*, render::Extract};
 /// 2) If you are changing your grass data constantly you might run into performance problems rather quickly
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass(
+    mut commands: Commands,
     grasses: Extract<Query<(Entity, &Grass, &GlobalTransform), Changed<Grass>>>,
     mut grass_cache: ResMut<GrassCache>,
 ) {
@@ -19,8 +20,11 @@ pub(crate) fn extract_grass(
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.transform = *global_transform;
         cache_value.grass = grass.clone();
+        commands.spawn(grass.clone()).insert(EntityStore(entity));
     }
 }
+#[derive(Clone, Component)]
+pub(crate) struct EntityStore(pub Entity);
 /// Extracts all visible grass entities into the render world.
 pub(crate) fn extract_visibility(
     visibility_queue: Extract<Query<(Entity, &ComputedVisibility), (With<Grass>, With<Transform>)>>,

@@ -1,4 +1,6 @@
+use super::extract::EntityStore;
 use super::grass_pipeline::GrassPipeline;
+use crate::prelude::Grass;
 use crate::render::cache::GrassCache;
 use crate::RegionConfiguration;
 use bevy::prelude::*;
@@ -14,17 +16,21 @@ use bytemuck::{Pod, Zeroable};
 pub(crate) fn prepare_instance_buffer(
     mut cache: ResMut<GrassCache>,
     render_device: Res<RenderDevice>,
+    inserted_grass: Query<(&Grass, &EntityStore)>,
 ) {
-    if !cache.is_changed() {
-        return;
-    }
-    for instance_data in cache.values_mut() {
+    for (grass, EntityStore(id)) in inserted_grass.iter() {
         let entity_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("Instance entity buffer"),
-            contents: bytemuck::cast_slice(&instance_data.grass.instances.as_slice()),
+            contents: bytemuck::cast_slice(grass.instances.as_slice()),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
-        instance_data.grass_buffer = Some(entity_buffer);
+
+        if let Some(chunk) = cache.get_mut(&id) {
+            chunk.grass_buffer = Some(entity_buffer);
+            chunk.instance_count = grass.instances.len();
+        } else {
+            warn!("Tried to prepare a entity buffer which wasn't registered before");
+        }
     }
 }
 
@@ -45,6 +51,7 @@ pub(crate) fn prepare_uniform_buffers(
     {
         return;
     }
+    println!("prepare");
     *last_texture_id = Some(texture.id());
 
     let shader_config = ShaderRegionConfiguration::from(region_config.as_ref());
