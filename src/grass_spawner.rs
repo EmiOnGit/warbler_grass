@@ -1,7 +1,7 @@
 use bevy::{math::Vec3Swizzles, prelude::*, render::primitives::Aabb};
 
-use crate::{height_map::HeightMap};
 use crate::grass::GrassBlade;
+use crate::height_map::HeightMap;
 #[derive(Default, Component, Clone)]
 pub struct GrassSpawner {
     pub(crate) positions_xz: Vec<Vec2>,
@@ -16,7 +16,7 @@ impl GrassSpawner {
     pub fn new() -> GrassSpawner {
         Self::default()
     }
-    
+
     /// Defines the positions of all grass blades.
     pub fn with_positions(mut self, positions: Vec<Vec3>) -> GrassSpawner {
         assert!(!positions.is_empty());
@@ -26,12 +26,12 @@ impl GrassSpawner {
             .unzip();
         self = self.with_positions_xz(positions_xz);
         self = self.with_positions_y(positions_y);
-        
+
         self.validate();
         self
     }
     /// Defines the xz positions of all grass blades.
-    /// 
+    ///
     /// ## Note:
     /// If you just want to define all world positions of all grass blades,
     /// consider using [`Self::with_positions`] instead.
@@ -51,7 +51,7 @@ impl GrassSpawner {
         self
     }
     /// Defines the y position of all grass blades.
-    /// 
+    ///
     /// You can only use this function or use a heightmap.
     /// Both at the same time are not supported
     pub fn with_positions_y(mut self, positions_y: Vec<f32>) -> GrassSpawner {
@@ -80,7 +80,7 @@ impl GrassSpawner {
         self
     }
     /// Defines the height of all grass blades.
-    /// 
+    ///
     /// Every blade will have the same height
     pub fn with_height_uniform(mut self, uniform_height: f32) -> GrassSpawner {
         assert!(uniform_height > 0.);
@@ -89,7 +89,7 @@ impl GrassSpawner {
         self
     }
     /// Defines you height map for loading the y positions of your grass
-    /// 
+    ///
     /// Note that the heightmap texture gets stretched over the minimal [Aabb] containing all defined grass blades.
     pub fn with_height_map(mut self, height_map: HeightMap) -> GrassSpawner {
         if self.flags.contains(GrassSpawnerFlags::Y_DEFINED) {
@@ -102,7 +102,7 @@ impl GrassSpawner {
         self.height_map = Some(height_map);
         self
     }
-    /// Defines the [`GrassSpawner`] from [`GrassBlade`]s 
+    /// Defines the [`GrassSpawner`] from [`GrassBlade`]s
     pub fn from_grass_blades(mut self, grass_blades: Vec<GrassBlade>) -> GrassSpawner {
         assert!(!grass_blades.is_empty());
         let (positions, heights) = grass_blades
@@ -111,7 +111,7 @@ impl GrassSpawner {
             .unzip();
         self = self.with_positions(positions);
         self = self.with_heights(heights);
-        
+
         self.validate();
         self
     }

@@ -1,7 +1,4 @@
-use bevy::{
-    prelude::*,
-};
-
+use bevy::prelude::*;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct GrassBlade {
