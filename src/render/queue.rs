@@ -43,7 +43,12 @@ pub fn queue_grass_buffers(
                 let grass_key = GrassRenderKey::from(mesh_key)
                     .with_flags(grass_cacher.get(&entity).unwrap().flags);
                 let pipeline = pipelines
-                    .specialize(&mut pipeline_cache, &grass_pipeline, grass_key, &mesh.layout)
+                    .specialize(
+                        &mut pipeline_cache,
+                        &grass_pipeline,
+                        grass_key,
+                        &mesh.layout,
+                    )
                     .unwrap();
                 transparent_phase.add(Opaque3d {
                     entity,

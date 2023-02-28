@@ -13,7 +13,7 @@ use bevy::{
     },
 };
 
-use crate::{warblers_plugin::GRASS_SHADER_HANDLE, grass_spawner::GrassSpawnerFlags};
+use crate::{grass_spawner::GrassSpawnerFlags, warblers_plugin::GRASS_SHADER_HANDLE};
 #[derive(Resource)]
 pub struct GrassPipeline {
     shader: Handle<Shader>,
@@ -100,14 +100,12 @@ impl SpecializedMeshPipeline for GrassPipeline {
         key: Self::Key,
         layout: &MeshVertexBufferLayout,
     ) -> Result<RenderPipelineDescriptor, SpecializedMeshPipelineError> {
-
         let mut descriptor = self.mesh_pipeline.specialize(key.mesh_key, layout)?;
         descriptor.label = Some("Grass Render Pipeline".into());
         let vertex = &mut descriptor.vertex;
         vertex.shader = self.shader.clone();
         if key.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             vertex.shader_defs.push("HEIGHT_MAP".into());
-
         }
         let layouts = descriptor.layout.get_or_insert(Vec::new());
         layouts.push(self.region_layout.clone());
@@ -143,7 +141,6 @@ pub struct GrassRenderKey {
 
 impl From<MeshPipelineKey> for GrassRenderKey {
     fn from(mesh_key: MeshPipelineKey) -> Self {
-
         Self {
             mesh_key,
             flags: GrassSpawnerFlags::NONE,

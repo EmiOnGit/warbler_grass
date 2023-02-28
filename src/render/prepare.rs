@@ -32,7 +32,6 @@ pub(crate) fn prepare_instance_buffer(
             HeightRepresentation::Uniform(height) => vec![*height; spawner.positions_xz.len()],
             HeightRepresentation::PerBlade(heights) => heights.clone(),
         };
-        println!("heights: {:?}", &heights[..5]);
         let instance_slice: Vec<Vec4> = if spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             spawner
                 .positions_xz
@@ -49,7 +48,6 @@ pub(crate) fn prepare_instance_buffer(
                 .map(|((xz, y), height)| Vec4::new(xz.x, *y, xz.y, height))
                 .collect()
         };
-        println!(" {:?}", &instance_slice[..6]);
         if let Some(chunk) = cache.get_mut(&id) {
             chunk.instances = Some(instance_slice);
             let inst = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -109,7 +107,6 @@ pub(crate) fn prepare_height_map_buffer(
             let bind_group = render_device.create_bind_group(&bind_group_descriptor);
             if let Some(chunk) = cache.get_mut(&e) {
                 chunk.height_map = Some(bind_group);
-                println!("loaded!");
             } else {
                 warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
             }
@@ -124,35 +121,30 @@ pub(crate) fn prepare_height_map_buffer(
                 local_height_map_buffer.push((entity_store.clone(), handle.clone(), aabb.clone()));
             }
         }
-        let (height_map_texture, aabb_buffer) = if !spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
-            let height_map_texture = &fallback_img.texture_view;
-            let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                label: Some("aabb buffer"),
-                contents: &[0],
-                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-            });
-            (height_map_texture, aabb_buffer)
-        } else {
-            let handle = spawner.height_map.as_ref().unwrap().height_map.clone();
-            let height_map_texture = if let Some(tex) = images.get(&handle) {
-                &tex.texture_view
+        let (height_map_texture, aabb_buffer) =
+            if !spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+                let height_map_texture = &fallback_img.texture_view;
+                let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                    label: Some("aabb buffer"),
+                    contents: &[0],
+                    usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+                });
+                (height_map_texture, aabb_buffer)
             } else {
-                &fallback_img.texture_view
-            };
+                let handle = spawner.height_map.as_ref().unwrap().height_map.clone();
+                let height_map_texture = if let Some(tex) = images.get(&handle) {
+                    &tex.texture_view
+                } else {
+                    &fallback_img.texture_view
+                };
 
-            println!(
-                "loaded: {}",
-                images
-                    .get(&spawner.height_map.as_ref().unwrap().height_map)
-                    .is_some()
-            );
-            let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                label: Some("aabb buffer"),
-                contents: bytemuck::bytes_of(&aabb.half_extents.mul(2.).as_dvec3().as_vec3()),
-                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-            });
-            (height_map_texture, aabb_buffer)
-        };
+                let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                    label: Some("aabb buffer"),
+                    contents: bytemuck::bytes_of(&aabb.half_extents.mul(2.).as_dvec3().as_vec3()),
+                    usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+                });
+                (height_map_texture, aabb_buffer)
+            };
         let layout = pipeline.height_map_layout.clone();
 
         let bind_group_descriptor = BindGroupDescriptor {

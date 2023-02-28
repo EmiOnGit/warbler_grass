@@ -1,4 +1,4 @@
-use bevy::{prelude::*};
+use bevy::prelude::*;
 use warblersneeds::{
     grass_spawner::GrassSpawner, height_map::HeightMap, warblers_plugin::WarblersPlugin,
     WarblersBundle,
@@ -18,7 +18,7 @@ fn main() {
 }
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     let height_map = asset_server.load("grass_height_map.png");
-    
+
     let positions_xz: Vec<Vec2> = (0..10_000)
         .into_iter()
         .map(|i| (i / 100, i % 100))

@@ -124,23 +124,21 @@ impl GrassSpawner {
         let mut inner = Vec3::new(f32::MAX, f32::MAX, f32::MAX);
         if self.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             let height = self.height_map.as_ref().unwrap().height;
-            self.positions_xz
-                .iter()
-                .for_each(|xz| {
-                    let blade_pos = Vec3::new(xz.x, 0., xz.y);
-                    inner = inner.min(blade_pos);
-                    outer = outer.max(blade_pos + Vec3::Y * height);
-                });    
-        } else {
-            self.positions_xz
-            .iter()
-            .zip(self.positions_y.iter())
-            .for_each(|(xz, y)| {
-                let blade_pos = Vec3::new(xz.x, *y, xz.y);
-                let height = 1.;
+            self.positions_xz.iter().for_each(|xz| {
+                let blade_pos = Vec3::new(xz.x, 0., xz.y);
                 inner = inner.min(blade_pos);
                 outer = outer.max(blade_pos + Vec3::Y * height);
             });
+        } else {
+            self.positions_xz
+                .iter()
+                .zip(self.positions_y.iter())
+                .for_each(|(xz, y)| {
+                    let blade_pos = Vec3::new(xz.x, *y, xz.y);
+                    let height = 1.;
+                    inner = inner.min(blade_pos);
+                    outer = outer.max(blade_pos + Vec3::Y * height);
+                });
         }
         Aabb::from_min_max(inner, outer)
     }
