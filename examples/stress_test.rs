@@ -22,7 +22,7 @@ fn main() {
         .run();
 }
 fn setup_grass(mut commands: Commands) {
-    let positions = (0..1_000_000)
+    let positions = (0..5_000_000)
         .into_iter()
         .map(|i| {
             let i = i as f32;
