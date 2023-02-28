@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use warblersneeds::{prelude::*, warblers_plugin::GRASS_MESH_HANDLE, grass_spawner::GrassSpawner};
 mod helper;
-mod load_height_map;
 
 fn main() {
     App::new()

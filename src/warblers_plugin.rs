@@ -20,7 +20,7 @@ use crate::{
         cache::{EntityCache, GrassCache},
         grass_pipeline::GrassPipeline,
     },
-    RegionConfiguration, grass_spawner::add_aabb_box_to_grass,
+    RegionConfiguration, grass_spawner::add_aabb_box_to_grass, hot_reloading,
 };
 
 /// A raw handle which points to the shader used to render the grass.
@@ -51,6 +51,7 @@ impl Plugin for WarblersPlugin {
         meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
         // Add systems
         app.add_system(add_aabb_box_to_grass);
+        app.add_system(hot_reloading::hot_reload_height_map);
         // Init resources
         app.init_resource::<RegionConfiguration>()
             .register_type::<RegionConfiguration>()
