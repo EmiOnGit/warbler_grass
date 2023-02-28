@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::view::NoFrustumCulling};
+use bevy::prelude::*;
 use warblersneeds::{prelude::*, grass_spawner::GrassSpawner};
 mod helper;
 fn main() {
@@ -24,8 +24,8 @@ fn setup_grass(mut commands: Commands) {
     let grass_spawner = GrassSpawner::new()
         .with_positions(positions)
         .with_heights(heights);
-    commands.spawn((WarblersBundle {
+    commands.spawn(WarblersBundle {
         grass_spawner,
         ..default()
-    },NoFrustumCulling));
+    });
 }

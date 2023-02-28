@@ -10,11 +10,11 @@ fn main() {
         .run();
 }
 fn setup_grass_chunks(mut commands: Commands) {
-    // in total we are loading 250_000 = 2_500 * 100 grass blades into the world
+    // in total we are loading 10_000 = 100 * 100 grass blades into the world
     let spawner = helper::get_grass_grid();
 
     for chunk in 0..100 {
-        let offset = Vec3::new((chunk / 10) as f32 * 6., 0., (chunk % 10) as f32 * 6.);
+        let offset = Vec3::new((chunk / 10) as f32 * 11., 0., (chunk % 10) as f32 * 11.);
         commands.spawn(WarblersBundle {
             grass_spawner: spawner.clone(),
             spatial: SpatialBundle {
