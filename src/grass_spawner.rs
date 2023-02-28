@@ -1,4 +1,4 @@
-use bevy::{math::Vec3Swizzles, prelude::*};
+use bevy::{math::Vec3Swizzles, prelude::*, render::primitives::Aabb};
 
 use crate::height_map::HeightMap;
 #[derive(Default, Component, Clone)]
@@ -131,6 +131,20 @@ impl GrassSpawner {
             }
         }
     }
+    pub fn calculate_aabb(&self) -> Aabb {
+        let mut outer = Vec3::new(f32::MIN, f32::MIN, f32::MIN);
+        let mut inner = Vec3::new(f32::MAX, f32::MAX, f32::MAX);
+        self.positions_xz
+            .iter()
+            .zip(self.positions_y.iter())
+            .for_each(|(xz, y)| {
+                let blade_pos = Vec3::new(xz.x,*y, xz.y);
+                let height = 1.;
+                inner = inner.min(blade_pos);
+                outer = outer.max(blade_pos + Vec3::Y * height);
+            });
+        Aabb::from_min_max(inner, outer)
+    }
 }
 bitflags::bitflags! {
     #[repr(transparent)]
@@ -152,5 +166,14 @@ pub enum HeightRepresentation {
 impl Default for HeightRepresentation {
     fn default() -> Self {
         HeightRepresentation::Uniform(1.)
+    }
+}
+pub(crate) fn add_aabb_box_to_grass(
+    mut commands: Commands,
+    grasses: Query<(Entity, &GrassSpawner), Without<Aabb>>,
+) {
+    for (e, spawner) in grasses.iter() {
+        let aabb = spawner.calculate_aabb();
+        commands.entity(e).insert(aabb);
     }
 }

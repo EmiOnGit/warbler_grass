@@ -15,13 +15,12 @@ use bevy::{
 
 use crate::{
     file_loader::{GrassFields, GrassFieldsAssetLoader},
-    prelude::{add_aabb_box_to_grass, Grass},
     render::{
         self,
         cache::{EntityCache, GrassCache},
         grass_pipeline::GrassPipeline,
     },
-    RegionConfiguration,
+    RegionConfiguration, grass_spawner::add_aabb_box_to_grass,
 };
 
 /// A raw handle which points to the shader used to render the grass.
@@ -55,7 +54,6 @@ impl Plugin for WarblersPlugin {
         // Init resources
         app.init_resource::<RegionConfiguration>()
             .register_type::<RegionConfiguration>()
-            .register_type::<Grass>()
             .add_asset::<GrassFields>()
             .init_asset_loader::<GrassFieldsAssetLoader>();
         // Add extraction

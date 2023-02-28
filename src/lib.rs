@@ -6,20 +6,15 @@ use bevy::{
     },
 };
 
-pub mod grass;
 pub mod grass_spawner;
 pub mod height_map;
 mod render;
 use bevy_inspector_egui::prelude::*;
-use grass::Grass;
 use grass_spawner::GrassSpawner;
 use warblers_plugin::GRASS_MESH_HANDLE;
 pub mod file_loader;
-pub mod generator;
 pub mod warblers_plugin;
 pub mod prelude {
-    pub use crate::generator::standard_generator::*;
-    pub use crate::grass::*;
     pub use crate::warblers_plugin::WarblersPlugin;
     pub use crate::RegionConfiguration;
     pub use crate::WarblersBundle;

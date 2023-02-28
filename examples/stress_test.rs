@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
     window::PresentMode,
 };
-use warblersneeds::prelude::*;
+use warblersneeds::{prelude::*, grass_spawner::GrassSpawner};
 mod helper;
 fn main() {
     App::new()
@@ -22,20 +22,19 @@ fn main() {
         .run();
 }
 fn setup_grass(mut commands: Commands) {
-    let blades = (0..1_000_000)
+    let positions = (0..1_000_000)
         .into_iter()
         .map(|i| {
             let i = i as f32;
             (i % 1000., i / 1000.)
         })
-        .map(|(x, z)| GrassBlade {
-            position: Vec3::new(x / 10., 2., z / 10.),
-            height: ((x.sin() + z.sin()).cos() + 5.) / 10.,
-        })
+        .map(|(x, z)| 
+            Vec3::new(x / 10., 2., z / 10.),
+        )
         .collect();
 
     commands.spawn((WarblersBundle {
-        grass: Grass::new(blades),
+        grass_spawner: GrassSpawner::new().with_positions(positions),
         ..default()
     },));
 }
