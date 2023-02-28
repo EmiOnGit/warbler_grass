@@ -78,6 +78,10 @@ impl Plugin for WarblersPlugin {
                 RenderStage::Prepare,
                 render::prepare::prepare_instance_buffer,
             )
+            .add_system_to_stage(
+                RenderStage::Prepare,
+                render::prepare::prepare_height_map_buffer,
+            )
             .add_system_to_stage(RenderStage::Queue, render::queue::queue_grass_buffers);
     }
 }

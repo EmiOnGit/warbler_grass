@@ -3,12 +3,12 @@ use bevy::{math::Vec3Swizzles, prelude::*};
 use crate::height_map::HeightMap;
 #[derive(Default, Component, Clone)]
 pub struct GrassSpawner {
-    positions_xz: Vec<Vec2>,
-    positions_y: Vec<f32>,
-    heights: HeightRepresentation,
-    height_map: Option<HeightMap>,
+    pub(crate) positions_xz: Vec<Vec2>,
+    pub(crate) positions_y: Vec<f32>,
+    pub(crate) heights: HeightRepresentation,
+    pub(crate) height_map: Option<HeightMap>,
     _density_map: Option<Handle<Image>>,
-    flags: u32,
+    pub(crate) flags: u32,
 }
 
 impl GrassSpawner {

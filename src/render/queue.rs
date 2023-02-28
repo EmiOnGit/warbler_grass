@@ -30,6 +30,7 @@ pub fn queue_grass_buffers(
     let msaa_key = MeshPipelineKey::from_msaa_samples(msaa.samples);
 
     for (view, mut transparent_phase) in &mut views {
+
         let view_key = msaa_key | MeshPipelineKey::from_hdr(view.hdr);
         let rangefinder = view.rangefinder3d();
         for (entity, mesh_uniform, mesh_handle) in material_meshes

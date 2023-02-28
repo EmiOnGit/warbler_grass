@@ -1,5 +1,5 @@
-use bevy::prelude::*;
-use warblersneeds::prelude::*;
+use bevy::{prelude::*, render::view::NoFrustumCulling};
+use warblersneeds::{prelude::*, grass_spawner::GrassSpawner};
 mod helper;
 fn main() {
     App::new()
@@ -11,20 +11,21 @@ fn main() {
 }
 fn setup_grass(mut commands: Commands) {
     // we can define our blades how we want
-    let blades = (0..1000)
+    let (positions, heights) = (0..1000)
         .into_iter()
         .map(|i| {
             let i = i as f32;
             (i.sin() * 20. / i.ln(), i.cos() * 20. / i.ln())
         })
-        .map(|(x, z)| GrassBlade {
-            position: Vec3::new(x, 0., z),
-            height: (x * x + z * z).ln(),
-        })
-        .collect();
-
+        .map(|(x, z)| 
+           (Vec3::new(x, 0., z),
+            (x * x + z * z).ln()))
+        .unzip();
+    let grass_spawner = GrassSpawner::new()
+        .with_positions(positions)
+        .with_heights(heights);
     commands.spawn((WarblersBundle {
-        grass: Grass::new(blades),
+        grass_spawner,
         ..default()
-    },));
+    },NoFrustumCulling));
 }

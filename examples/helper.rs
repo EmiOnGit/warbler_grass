@@ -9,7 +9,7 @@ impl Plugin for SimpleCamera {
 }
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-5.0, 10., 15.0).looking_at(Vec3::new(5., 4., 5.), Vec3::Y),
+        transform: Transform::from_xyz(-5.0, 10., 15.0).looking_at(Vec3::new(0., 4., 0.), Vec3::Y),
         ..default()
     });
 }

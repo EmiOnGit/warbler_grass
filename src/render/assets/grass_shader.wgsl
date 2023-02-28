@@ -64,6 +64,44 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     return out;
 }
 
+// @fragment
+// fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
+//     return in.color;
+// }
+// @vertex
+// fn vertex( @builtin(vertex_index) in_vertex_index: u32, @location(0) positions: vec3<f32>) -> VertexOutput {
+//     var out: VertexOutput;
+//     // var position = vertex.position.xyz * vec3<f32>(1.,vertex.height, 1.) + vertex.position_field_offset;
+//     // only applies wind if the vertex is not on the bottom of the grass (or very small)
+//     // let offset = wind_offset(vec2<f32>(vertex.position_field_offset.x, vertex.position_field_offset.z));
+//     // let strength = max(0.,log(vertex.position.y + 1.));
+//     // position.x += offset.x * strength;
+//     // position.z += offset.y * strength;
+//     if in_vertex_index == 0u {
+//         out.clip_position = vec4<f32>(-1., -1., 0., 1.0) * 5.;
+//     }
+//     if in_vertex_index == 3u {
+//         out.clip_position = vec4<f32>(1., -1., 1., 1.0) * 5.;
+//     }
+//     if in_vertex_index == 2u {
+//         out.clip_position = vec4<f32>(1., 1., 1., 1.0) * 5.;
+//     }
+//     if in_vertex_index == 1u {
+//         out.clip_position = vec4<f32>(-1., 1., 0., 1.0) * 5.;
+//     }
+//     let x = f32(1 - i32(in_vertex_index)) * 0.5;
+//     let y = f32(i32(in_vertex_index & 1u) * 2 - 1) * 0.5;
+//     // out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(x,y,0., 1.0));
+//     // let x = (sin(f32(in_vertex_index)) + f32(in_vertex_index)) * 10.;
+//     // let y = (cos(f32(in_vertex_index)) - f32(in_vertex_index)) * 10.;
+//     // out.clip_position = vec4<f32>(x, y, 0., 1.0);
+//     // out.clip_position = vec4<f32>(positions, 1.0);
+//     // let lambda = clamp(vertex.position.y, 0.,1.);
+//     // out.color = mix(config.bottom_color, config.main_color, lambda);
+//     out.color = vec4<f32>(0.1,0.5,0.8,1.);
+//     return out;
+// }
+
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     return in.color;

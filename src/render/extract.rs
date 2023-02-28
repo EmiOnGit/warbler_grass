@@ -1,5 +1,5 @@
 use super::cache::{EntityCache, GrassCache};
-use crate::{prelude::Grass, grass_spawner::GrassSpawner};
+use crate::grass_spawner::GrassSpawner;
 use bevy::{prelude::*, render::Extract};
 
 /// Extracts the grass data into the render world.
@@ -26,7 +26,7 @@ pub(crate) fn extract_grass(
 pub(crate) struct EntityStore(pub Entity);
 /// Extracts all visible grass entities into the render world.
 pub(crate) fn extract_visibility(
-    visibility_queue: Extract<Query<(Entity, &ComputedVisibility), (With<Grass>, With<Transform>)>>,
+    visibility_queue: Extract<Query<(Entity, &ComputedVisibility), (With<GrassSpawner>, With<Transform>)>>,
     mut entity_cache: ResMut<EntityCache>,
 ) {
     entity_cache.entities = visibility_queue
