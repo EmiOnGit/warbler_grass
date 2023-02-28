@@ -1,7 +1,7 @@
 use bevy::{math::Vec3Swizzles, prelude::*};
 
 use crate::height_map::HeightMap;
-#[derive(Default, Component)]
+#[derive(Default, Component, Clone)]
 pub struct GrassSpawner {
     positions_xz: Vec<Vec2>,
     positions_y: Vec<f32>,
@@ -144,6 +144,7 @@ bitflags::bitflags! {
         const UNINITIALIZED  = 0xFFFF;
     }
 }
+#[derive(Clone)]
 pub enum HeightRepresentation {
     PerBlade(Vec<f32>),
     Uniform(f32),
