@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use warblersneeds::{warblers_plugin::WarblersPlugin, RegionConfiguration, WarblersBundle};
+use warblersneeds::{warblers_plugin::WarblersPlugin, GrassConfiguration, WarblersBundle};
 mod helper;
 fn main() {
     App::new()
@@ -19,7 +19,7 @@ fn setup_grass(mut commands: Commands) {
 
 fn change_colors(
     input: Res<Input<KeyCode>>,
-    mut config: ResMut<RegionConfiguration>,
+    mut config: ResMut<GrassConfiguration>,
     time: Res<Time>,
 ) {
     let r = ((time.raw_elapsed_seconds() / 2.).sin() / 2.) + 0.5;

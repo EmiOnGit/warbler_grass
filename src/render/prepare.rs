@@ -4,7 +4,7 @@ use super::extract::EntityStore;
 use super::grass_pipeline::GrassPipeline;
 use crate::grass_spawner::{GrassSpawner, GrassSpawnerFlags, HeightRepresentation};
 use crate::render::cache::GrassCache;
-use crate::RegionConfiguration;
+use crate::GrassConfiguration;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
@@ -177,7 +177,7 @@ pub(crate) fn prepare_height_map_buffer(
 pub(crate) fn prepare_uniform_buffers(
     pipeline: Res<GrassPipeline>,
     mut cache: ResMut<GrassCache>,
-    region_config: Res<RegionConfiguration>,
+    region_config: Res<GrassConfiguration>,
     fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
@@ -236,8 +236,8 @@ struct ShaderRegionConfiguration {
     _wasm_padding: Vec2,
 }
 
-impl From<&RegionConfiguration> for ShaderRegionConfiguration {
-    fn from(config: &RegionConfiguration) -> Self {
+impl From<&GrassConfiguration> for ShaderRegionConfiguration {
+    fn from(config: &GrassConfiguration) -> Self {
         Self {
             main_color: config.main_color.into(),
             bottom_color: config.bottom_color.into(),
