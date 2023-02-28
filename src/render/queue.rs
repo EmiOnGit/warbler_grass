@@ -6,7 +6,7 @@ use bevy::render::render_phase::{DrawFunctions, RenderPhase};
 use bevy::render::render_resource::{PipelineCache, SpecializedMeshPipelines};
 use bevy::render::view::ExtractedView;
 
-use super::cache::{EntityCache, GrassCache};
+use super::cache::GrassCache;
 use super::grass_pipeline::{GrassPipeline, GrassRenderKey};
 use super::GrassDrawCall;
 
