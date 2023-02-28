@@ -7,8 +7,8 @@ use bevy::{
 };
 
 pub mod grass;
-pub mod height_map;
 pub mod grass_spawner;
+pub mod height_map;
 mod render;
 use bevy_inspector_egui::prelude::*;
 use grass::Grass;

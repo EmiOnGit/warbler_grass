@@ -77,7 +77,9 @@ impl GrassSpawner {
 
         let mut flags = GrassSpawnerFlags::from_bits(self.flags).unwrap();
         if flags.contains(GrassSpawnerFlags::HEIGHT_DEFINED) {
-            panic!("Can not insert heights to `GrassSpawner` since the heights are already defined");
+            panic!(
+                "Can not insert heights to `GrassSpawner` since the heights are already defined"
+            );
         }
 
         flags.insert(GrassSpawnerFlags::HEIGHT_DEFINED);
@@ -89,10 +91,11 @@ impl GrassSpawner {
         self
     }
     pub fn with_height_uniform(mut self, uniform_height: f32) -> GrassSpawner {
-
         let mut flags = GrassSpawnerFlags::from_bits(self.flags).unwrap();
         if flags.contains(GrassSpawnerFlags::HEIGHT_DEFINED) {
-            panic!("Can not insert heights to `GrassSpawner` since the heights are already defined");
+            panic!(
+                "Can not insert heights to `GrassSpawner` since the heights are already defined"
+            );
         }
 
         flags.insert(GrassSpawnerFlags::HEIGHT_DEFINED);
@@ -143,7 +146,7 @@ bitflags::bitflags! {
 }
 pub enum HeightRepresentation {
     PerBlade(Vec<f32>),
-    Uniform(f32)
+    Uniform(f32),
 }
 impl Default for HeightRepresentation {
     fn default() -> Self {
