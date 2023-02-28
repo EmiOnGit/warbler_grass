@@ -12,6 +12,7 @@ pub mod grass_spawner;
 mod render;
 use bevy_inspector_egui::prelude::*;
 use grass::Grass;
+use grass_spawner::GrassSpawner;
 use warblers_plugin::GRASS_MESH_HANDLE;
 pub mod file_loader;
 pub mod generator;
@@ -36,7 +37,7 @@ pub struct WarblersBundle {
     /// Also since all elements in [Grass] are instanced together,
     /// it might be more performant to spawn multiple entities each containing locally seperate portions of the grass in the game.
     /// This however, will only be noticable at high number of grassblades.
-    pub grass: Grass,
+    pub grass_spawner: GrassSpawner,
     /// The [`Mesh`] used to render each grassblade.
     ///
     /// The mesh can be changed to however needed,
@@ -50,7 +51,7 @@ pub struct WarblersBundle {
 impl Default for WarblersBundle {
     fn default() -> Self {
         Self {
-            grass: Default::default(),
+            grass_spawner: Default::default(),
             grass_mesh: GRASS_MESH_HANDLE.typed(),
             spatial: Default::default(),
         }
