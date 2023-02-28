@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use warblersneeds::{prelude::*, warblers_plugin::GRASS_MESH_HANDLE};
+use warblersneeds::{grass_spawner::GrassSpawner, prelude::*, warblers_plugin::GRASS_MESH_HANDLE};
 mod helper;
 
 fn main() {
@@ -14,18 +14,6 @@ fn main() {
 
 // In this example 2 planes are used for generating grass blades
 fn setup_grass(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let config = StandardGeneratorConfig {
-        density: 10.,
-        height: 3.,
-        height_deviation: 0.5,
-        seed: Some(0x121),
-    };
-    // translation indicates the outer point
-    let plane = Plane {
-        dimensions: Transform::from_xyz(30., 0., 10.),
-    };
-    let grass = plane.generate_grass(config.clone());
-
     // The interesting part in this example
     // (The capsules would looks cool in the water!) :)
     // Normally the grass mesh should start at y>=0.
@@ -46,7 +34,7 @@ fn setup_grass(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     commands.insert_resource(store);
     // simple add the grass mesh in the warblersbundle, instead of using the default
     commands.spawn((WarblersBundle {
-        grass,
+        grass_spawner: helper::get_grass_grid(),
         grass_mesh,
         ..default()
     },));
@@ -59,7 +47,7 @@ struct GrassMeshStore {
 // press tab to swap meshes
 fn swap_grass_mesh(
     mut commands: Commands,
-    mut queue: Query<(Entity, &mut Handle<Mesh>), With<Grass>>,
+    mut queue: Query<(Entity, &mut Handle<Mesh>), With<GrassSpawner>>,
     input: Res<Input<KeyCode>>,
     store: Res<GrassMeshStore>,
 ) {

@@ -16,6 +16,12 @@ var<uniform> config: ShaderRegionConfiguration;
 @group(2) @binding(1)
 var noise_texture: texture_2d<f32>;
 
+@group(3) @binding(0)
+var height_map: texture_2d<f32>;
+
+@group(3) @binding(1)
+var<uniform> aabb: vec3<f32>;
+
 #import bevy_pbr::mesh_functions
 
 struct Vertex {
@@ -47,13 +53,23 @@ fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     var texture_pixel = textureLoad(noise_texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0);
     return texture_pixel.xy * config.wind;
 }
+fn height_map_offset(vertex_position: vec2<f32>) -> f32 {
+
+    let dim = textureDimensions(height_map, 0);
+    let texture_position = abs((vertex_position.xy / aabb.xz ) * vec2<f32>(dim)) ;
+    var texture_r = textureLoad(height_map, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0).r;
+    return texture_r * aabb.y;
+}
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
     var out: VertexOutput;
     var position = vertex.position.xyz * vec3<f32>(1.,vertex.height, 1.) + vertex.position_field_offset;
-
+    let local_field_position = vec2<f32>(vertex.position_field_offset.x, vertex.position_field_offset.z);
+    #ifdef HEIGHT_MAP
+        position.y += height_map_offset(vertex.position_field_offset.xz );
+    #endif
     // only applies wind if the vertex is not on the bottom of the grass (or very small)
-    let offset = wind_offset(vec2<f32>(vertex.position_field_offset.x, vertex.position_field_offset.z));
+    let offset = wind_offset(local_field_position);
     let strength = max(0.,log(vertex.position.y + 1.));
     position.x += offset.x * strength;
     position.z += offset.y * strength;
@@ -63,6 +79,7 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     out.color = mix(config.bottom_color, config.main_color, lambda);
     return out;
 }
+
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {

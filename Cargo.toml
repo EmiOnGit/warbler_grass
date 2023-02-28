@@ -18,7 +18,7 @@ debug = ["dep:bevy-inspector-egui"]
 bytemuck = "1.13.0"
 rand = {version = "0.8.5", features = ["small_rng"]}
 bevy = {version = "0.9.1"}
-
+bitflags = "*"
 # needed for serialize feature
 serde = {version = "1.0.152", optional = true}
 ron = {version = "0.8", optional = true}
@@ -26,17 +26,15 @@ ron = {version = "0.8", optional = true}
 bevy-inspector-egui = {version = "0.17.0", optional = true}
 
 
-[[example]]
-name = "load_from_plane"
-path = "examples/load_from_plane.rs"
-
-[[example]]
-name = "load_from_file"
-path = "examples/load_from_file.rs"
 
 [[example]]
 name = "load_custom"
 path = "examples/load_custom.rs"
+
+[[example]]
+name = "load_height_map"
+path = "examples/load_height_map.rs"
+
 [[example]]
 name = "load_many_chunks"
 path = "examples/load_many_chunks.rs"

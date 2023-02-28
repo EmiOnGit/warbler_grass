@@ -33,15 +33,17 @@ impl EntityRenderCommand for DrawMeshInstanced {
             Some(gpu_mesh) => gpu_mesh,
             None => return RenderCommandResult::Failure,
         };
+
         if !cache.contains_key(&item) {
             return RenderCommandResult::Failure;
         }
         let chunk = &cache.into_inner()[&item];
         // set uniforms
         pass.set_bind_group(2, chunk.uniform_bindgroup.as_ref().unwrap(), &[]);
+        pass.set_bind_group(3, chunk.height_map.as_ref().unwrap(), &[]);
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
-        pass.set_vertex_buffer(1, chunk.grass_buffer.as_ref().unwrap().slice(..));
-        let grass_blade_count = chunk.grass.instances.len() as u32;
+        pass.set_vertex_buffer(1, chunk.instance_buffer.as_ref().unwrap().slice(..));
+        let grass_blade_count = chunk.instances.as_ref().unwrap().len() as u32;
         match &gpu_mesh.buffer_info {
             GpuBufferInfo::Indexed {
                 buffer,

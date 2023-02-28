@@ -1,9 +1,5 @@
 use bevy::prelude::*;
-use warblersneeds::{
-    generator::{plane::Plane, GrassGenerator, StandardGeneratorConfig},
-    warblers_plugin::WarblersPlugin,
-    RegionConfiguration, WarblersBundle,
-};
+use warblersneeds::{warblers_plugin::WarblersPlugin, GrassConfiguration, WarblersBundle};
 mod helper;
 fn main() {
     App::new()
@@ -14,26 +10,16 @@ fn main() {
         .add_system(change_colors)
         .run();
 }
-// In this example 2 planes are used for generating grass blades
 fn setup_grass(mut commands: Commands) {
-    let config = StandardGeneratorConfig {
-        density: 10.,
-        height: 3.,
-        height_deviation: 0.5,
-        seed: Some(0x121),
-    };
-    // translation indicates the outer point
-    let plane1 = Plane {
-        dimensions: Transform::from_xyz(30., 0., 30.),
-    };
-
-    let grass = plane1.generate_grass(config.clone());
-    commands.spawn((WarblersBundle { grass, ..default() },));
+    commands.spawn((WarblersBundle {
+        grass_spawner: helper::get_grass_grid(),
+        ..default()
+    },));
 }
 
 fn change_colors(
     input: Res<Input<KeyCode>>,
-    mut config: ResMut<RegionConfiguration>,
+    mut config: ResMut<GrassConfiguration>,
     time: Res<Time>,
 ) {
     let r = ((time.raw_elapsed_seconds() / 2.).sin() / 2.) + 0.5;

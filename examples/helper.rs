@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use warblersneeds::grass_spawner::GrassSpawner;
 
 pub struct SimpleCamera;
 impl Plugin for SimpleCamera {
@@ -9,7 +10,7 @@ impl Plugin for SimpleCamera {
 }
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-5.0, 10., 15.0).looking_at(Vec3::new(5., 4., 5.), Vec3::Y),
+        transform: Transform::from_xyz(-5.0, 8., -5.0).looking_at(Vec3::new(0., 5., 0.), Vec3::Y),
         ..default()
     });
 }
@@ -41,6 +42,15 @@ fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transform, 
         }
     }
 }
+#[allow(dead_code)]
+pub fn get_grass_grid() -> GrassSpawner {
+    let positions = (0..10000)
+        .into_iter()
+        .map(|i| Vec3::new((i / 100) as f32, 0., (i % 100) as f32) / 2.)
+        .collect();
+    GrassSpawner::new().with_positions(positions)
+}
+
 // needed for rust-analyzer to be happy
 #[allow(dead_code)]
 fn main() {}

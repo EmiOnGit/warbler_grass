@@ -1,7 +1,12 @@
+use std::ops::Mul;
+
+use super::extract::EntityStore;
 use super::grass_pipeline::GrassPipeline;
+use crate::grass_spawner::{GrassSpawner, GrassSpawnerFlags, HeightRepresentation};
 use crate::render::cache::GrassCache;
-use crate::RegionConfiguration;
+use crate::GrassConfiguration;
 use bevy::prelude::*;
+use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::{
     BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor,
@@ -14,24 +19,165 @@ use bytemuck::{Pod, Zeroable};
 pub(crate) fn prepare_instance_buffer(
     mut cache: ResMut<GrassCache>,
     render_device: Res<RenderDevice>,
+    inserted_grass: Query<(&GrassSpawner, &EntityStore)>,
 ) {
-    if !cache.is_changed() {
-        return;
-    }
-    for instance_data in cache.values_mut() {
-        let entity_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-            label: Some("Instance entity buffer"),
-            contents: bytemuck::cast_slice(&instance_data.grass.instances.as_slice()),
-            usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
-        });
-        instance_data.grass_buffer = Some(entity_buffer);
+    for (spawner, EntityStore(id)) in inserted_grass.iter() {
+        if !spawner.flags.contains(GrassSpawnerFlags::Y_DEFINED) {
+            panic!("Cannot spawn grass without the y-positions defined");
+        }
+        if !spawner.flags.contains(GrassSpawnerFlags::XZ_DEFINED) {
+            panic!("Cannot spawn grass without the xz-positions defined");
+        }
+        let heights = match &spawner.heights {
+            HeightRepresentation::Uniform(height) => vec![*height; spawner.positions_xz.len()],
+            HeightRepresentation::PerBlade(heights) => heights.clone(),
+        };
+        let instance_slice: Vec<Vec4> = if spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+            spawner
+                .positions_xz
+                .iter()
+                .zip(heights)
+                .map(|(xz, height)| Vec4::new(xz.x, 0.0, xz.y, height))
+                .collect()
+        } else {
+            spawner
+                .positions_xz
+                .iter()
+                .zip(spawner.positions_y.iter())
+                .zip(heights)
+                .map(|((xz, y), height)| Vec4::new(xz.x, *y, xz.y, height))
+                .collect()
+        };
+        if let Some(chunk) = cache.get_mut(&id) {
+            chunk.instances = Some(instance_slice);
+            let inst = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                label: Some("Instance entity buffer"),
+                contents: bytemuck::cast_slice(chunk.instances.as_ref().unwrap().as_slice()),
+                usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
+            });
+            chunk.instance_buffer = Some(inst);
+            chunk.flags = spawner.flags;
+        } else {
+            warn!(
+                "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"
+            );
+        }
     }
 }
+pub(crate) fn prepare_height_map_buffer(
+    mut cache: ResMut<GrassCache>,
+    render_device: Res<RenderDevice>,
+    pipeline: Res<GrassPipeline>,
+    fallback_img: Res<FallbackImage>,
+    images: Res<RenderAssets<Image>>,
+    inserted_grass: Query<(&GrassSpawner, &EntityStore, &Aabb)>,
+    mut local_height_map_buffer: Local<Vec<(EntityStore, Handle<Image>, Aabb)>>,
+) {
+    let mut to_remove = Vec::new();
 
+    for (EntityStore(e), handle, aabb) in local_height_map_buffer.iter() {
+        if let Some(tex) = images.get(&handle) {
+            to_remove.push(*e);
+            let height_map_texture = &tex.texture_view;
+            let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                label: Some("aabb buffer"),
+                contents: bytemuck::bytes_of(&aabb.half_extents.mul(2.).as_dvec3().as_vec3()),
+                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            });
+            let layout = pipeline.height_map_layout.clone();
+            let bind_group_descriptor = BindGroupDescriptor {
+                label: Some("grass height map bind group"),
+                layout: &layout,
+                entries: &[
+                    BindGroupEntry {
+                        binding: 0,
+                        resource: BindingResource::TextureView(height_map_texture),
+                    },
+                    BindGroupEntry {
+                        binding: 1,
+                        resource: BindingResource::Buffer(BufferBinding {
+                            buffer: &aabb_buffer,
+                            offset: 0,
+                            size: None,
+                        }),
+                    },
+                ],
+            };
+
+            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+            if let Some(chunk) = cache.get_mut(&e) {
+                chunk.height_map = Some(bind_group);
+            } else {
+                warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
+            }
+        }
+    }
+    local_height_map_buffer.retain(|map| !to_remove.contains(&map.0 .0));
+    for (spawner, entity_store, aabb) in inserted_grass.iter() {
+        let id = entity_store.0;
+        if spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+            let handle = &spawner.height_map.as_ref().unwrap().height_map;
+            if images.get(&handle).is_none() {
+                local_height_map_buffer.push((entity_store.clone(), handle.clone(), aabb.clone()));
+            }
+        }
+        let (height_map_texture, aabb_buffer) =
+            if !spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+                let height_map_texture = &fallback_img.texture_view;
+                let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                    label: Some("aabb buffer"),
+                    contents: &[0],
+                    usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+                });
+                (height_map_texture, aabb_buffer)
+            } else {
+                let handle = spawner.height_map.as_ref().unwrap().height_map.clone();
+                let height_map_texture = if let Some(tex) = images.get(&handle) {
+                    &tex.texture_view
+                } else {
+                    &fallback_img.texture_view
+                };
+
+                let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                    label: Some("aabb buffer"),
+                    contents: bytemuck::bytes_of(&aabb.half_extents.mul(2.).as_dvec3().as_vec3()),
+                    usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+                });
+                (height_map_texture, aabb_buffer)
+            };
+        let layout = pipeline.height_map_layout.clone();
+
+        let bind_group_descriptor = BindGroupDescriptor {
+            label: Some("grass height map bind group"),
+            layout: &layout,
+            entries: &[
+                BindGroupEntry {
+                    binding: 0,
+                    resource: BindingResource::TextureView(height_map_texture),
+                },
+                BindGroupEntry {
+                    binding: 1,
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &aabb_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+            ],
+        };
+
+        let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+        if let Some(chunk) = cache.get_mut(&id) {
+            chunk.height_map = Some(bind_group);
+        } else {
+            warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
+        }
+    }
+}
 pub(crate) fn prepare_uniform_buffers(
     pipeline: Res<GrassPipeline>,
     mut cache: ResMut<GrassCache>,
-    region_config: Res<RegionConfiguration>,
+    region_config: Res<GrassConfiguration>,
     fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
@@ -90,8 +236,8 @@ struct ShaderRegionConfiguration {
     _wasm_padding: Vec2,
 }
 
-impl From<&RegionConfiguration> for ShaderRegionConfiguration {
-    fn from(config: &RegionConfiguration) -> Self {
+impl From<&GrassConfiguration> for ShaderRegionConfiguration {
+    fn from(config: &GrassConfiguration) -> Self {
         Self {
             main_color: config.main_color.into(),
             bottom_color: config.bottom_color.into(),

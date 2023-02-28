@@ -7,34 +7,26 @@ use bevy::{
 };
 
 pub mod grass;
+pub mod grass_spawner;
+pub mod height_map;
+pub mod hot_reloading;
 mod render;
 use bevy_inspector_egui::prelude::*;
-use grass::Grass;
+use grass_spawner::GrassSpawner;
 use warblers_plugin::GRASS_MESH_HANDLE;
-pub mod file_loader;
-pub mod generator;
 pub mod warblers_plugin;
 pub mod prelude {
-    pub use crate::generator::standard_generator::*;
-    pub use crate::grass::*;
     pub use crate::warblers_plugin::WarblersPlugin;
-    pub use crate::RegionConfiguration;
+    pub use crate::GrassConfiguration;
     pub use crate::WarblersBundle;
 }
 
 /// A component bundle for a chunk of grass.
 ///
-/// Note that each position of a [`GrassBlade`](crate::prelude::GrassBlade) is also relative to the [`Transform`] component of the entity
+/// Note that each position of a [`GrassBlade`](crate::grass::GrassBlade) is also relative to the [`Transform`] component of the entity
 #[derive(Bundle)]
 pub struct WarblersBundle {
-    /// The [`Grass`] to spawn in your world.
-    ///
-    /// ## Usage Detail
-    /// Be aware that frustum culling is done using the minimal [Aabb](bevy::render::primitives::Aabb) box containing all elements in [Grass].
-    /// Also since all elements in [Grass] are instanced together,
-    /// it might be more performant to spawn multiple entities each containing locally seperate portions of the grass in the game.
-    /// This however, will only be noticable at high number of grassblades.
-    pub grass: Grass,
+    pub grass_spawner: GrassSpawner,
     /// The [`Mesh`] used to render each grassblade.
     ///
     /// The mesh can be changed to however needed,
@@ -48,7 +40,7 @@ pub struct WarblersBundle {
 impl Default for WarblersBundle {
     fn default() -> Self {
         Self {
-            grass: Default::default(),
+            grass_spawner: Default::default(),
             grass_mesh: GRASS_MESH_HANDLE.typed(),
             spatial: Default::default(),
         }
@@ -56,11 +48,11 @@ impl Default for WarblersBundle {
 }
 /// A [resource](bevy::prelude::Resource) used to globally define parameters about the grass.
 ///
-/// A default [`RegionConfiguration`] is inserted by the [`WarblersPlugin`](crate::warblers_plugin::WarblersPlugin).
+/// A default [`GrassConfiguration`] is inserted by the [`WarblersPlugin`](crate::warblers_plugin::WarblersPlugin).
 #[cfg_attr(feature = "debug", derive(InspectorOptions))]
 #[derive(Resource, Clone, Reflect, ExtractResource)]
 #[reflect(Resource)]
-pub struct RegionConfiguration {
+pub struct GrassConfiguration {
     /// The main [Color] of the grass used in your game.
     pub main_color: Color,
     /// The bottom [Color] of the grass.
@@ -81,7 +73,7 @@ pub struct RegionConfiguration {
     /// also currently only the red and green chanel are used
     pub wind_noise_texture: Handle<Image>,
 }
-impl FromWorld for RegionConfiguration {
+impl FromWorld for GrassConfiguration {
     fn from_world(world: &mut World) -> Self {
         let mut images = world.resource_mut::<Assets<Image>>();
         let img = Image::from_buffer(
@@ -91,7 +83,7 @@ impl FromWorld for RegionConfiguration {
             false,
         )
         .unwrap();
-        RegionConfiguration {
+        GrassConfiguration {
             main_color: Color::rgb(0.2, 0.5, 0.0),
             bottom_color: Color::rgb(0.1, 0.1, 0.0),
             wind: Vec2::new(0., 1.0),

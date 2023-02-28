@@ -14,14 +14,14 @@ use bevy::{
 };
 
 use crate::{
-    file_loader::{GrassFields, GrassFieldsAssetLoader},
-    prelude::{add_aabb_box_to_grass, Grass},
+    grass_spawner::add_aabb_box_to_grass,
+    hot_reloading,
     render::{
         self,
         cache::{EntityCache, GrassCache},
         grass_pipeline::GrassPipeline,
     },
-    RegionConfiguration,
+    GrassConfiguration,
 };
 
 /// A raw handle which points to the shader used to render the grass.
@@ -52,14 +52,12 @@ impl Plugin for WarblersPlugin {
         meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
         // Add systems
         app.add_system(add_aabb_box_to_grass);
+        app.add_system(hot_reloading::hot_reload_height_map);
         // Init resources
-        app.init_resource::<RegionConfiguration>()
-            .register_type::<RegionConfiguration>()
-            .register_type::<Grass>()
-            .add_asset::<GrassFields>()
-            .init_asset_loader::<GrassFieldsAssetLoader>();
+        app.init_resource::<GrassConfiguration>()
+            .register_type::<GrassConfiguration>();
         // Add extraction
-        app.add_plugin(ExtractResourcePlugin::<RegionConfiguration>::default());
+        app.add_plugin(ExtractResourcePlugin::<GrassConfiguration>::default());
         // Init render app
         app.sub_app_mut(RenderApp)
             .add_render_command::<Opaque3d, render::GrassDrawCall>()
@@ -77,6 +75,10 @@ impl Plugin for WarblersPlugin {
             .add_system_to_stage(
                 RenderStage::Prepare,
                 render::prepare::prepare_instance_buffer,
+            )
+            .add_system_to_stage(
+                RenderStage::Prepare,
+                render::prepare::prepare_height_map_buffer,
             )
             .add_system_to_stage(RenderStage::Queue, render::queue::queue_grass_buffers);
     }

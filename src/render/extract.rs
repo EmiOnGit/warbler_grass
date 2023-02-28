@@ -1,6 +1,9 @@
 use super::cache::{EntityCache, GrassCache};
-use crate::prelude::Grass;
-use bevy::{prelude::*, render::Extract};
+use crate::grass_spawner::GrassSpawner;
+use bevy::{
+    prelude::*,
+    render::{primitives::Aabb, Extract},
+};
 
 /// Extracts the grass data into the render world.
 ///
@@ -12,18 +15,28 @@ use bevy::{prelude::*, render::Extract};
 /// 2) If you are changing your grass data constantly you might run into performance problems rather quickly
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass(
-    grasses: Extract<Query<(Entity, &Grass, &GlobalTransform), Changed<Grass>>>,
+    mut commands: Commands,
+    grass_spawner: Extract<
+        Query<(Entity, &GrassSpawner, &GlobalTransform, &Aabb), Changed<GrassSpawner>>,
+    >,
     mut grass_cache: ResMut<GrassCache>,
 ) {
-    for (entity, grass, global_transform) in grasses.iter() {
+    for (entity, spawner, global_transform, aabb) in grass_spawner.iter() {
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.transform = *global_transform;
-        cache_value.grass = grass.clone();
+        commands
+            .spawn(spawner.clone())
+            .insert(EntityStore(entity))
+            .insert(aabb.clone());
     }
 }
+#[derive(Clone, Component)]
+pub(crate) struct EntityStore(pub Entity);
 /// Extracts all visible grass entities into the render world.
 pub(crate) fn extract_visibility(
-    visibility_queue: Extract<Query<(Entity, &ComputedVisibility), (With<Grass>, With<Transform>)>>,
+    visibility_queue: Extract<
+        Query<(Entity, &ComputedVisibility), (With<GrassSpawner>, With<Transform>)>,
+    >,
     mut entity_cache: ResMut<EntityCache>,
 ) {
     entity_cache.entities = visibility_queue

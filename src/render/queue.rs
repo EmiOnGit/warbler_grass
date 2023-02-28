@@ -6,8 +6,8 @@ use bevy::render::render_phase::{DrawFunctions, RenderPhase};
 use bevy::render::render_resource::{PipelineCache, SpecializedMeshPipelines};
 use bevy::render::view::ExtractedView;
 
-use super::cache::EntityCache;
-use super::grass_pipeline::GrassPipeline;
+use super::cache::{EntityCache, GrassCache};
+use super::grass_pipeline::{GrassPipeline, GrassRenderKey};
 use super::GrassDrawCall;
 
 #[allow(clippy::too_many_arguments)]
@@ -18,6 +18,7 @@ pub fn queue_grass_buffers(
     mut pipelines: ResMut<SpecializedMeshPipelines<GrassPipeline>>,
     mut pipeline_cache: ResMut<PipelineCache>,
     cacher: Res<EntityCache>,
+    grass_cacher: Res<GrassCache>,
     meshes: Res<RenderAssets<Mesh>>,
     material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>)>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
@@ -37,11 +38,17 @@ pub fn queue_grass_buffers(
             .filter(|(e, _, _)| cacher.contains(e))
         {
             if let Some(mesh) = meshes.get(mesh_handle) {
-                let key =
+                let mesh_key =
                     view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);
-
+                let grass_key = GrassRenderKey::from(mesh_key)
+                    .with_flags(grass_cacher.get(&entity).unwrap().flags);
                 let pipeline = pipelines
-                    .specialize(&mut pipeline_cache, &grass_pipeline, key, &mesh.layout)
+                    .specialize(
+                        &mut pipeline_cache,
+                        &grass_pipeline,
+                        grass_key,
+                        &mesh.layout,
+                    )
                     .unwrap();
                 transparent_phase.add(Opaque3d {
                     entity,
