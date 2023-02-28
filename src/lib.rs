@@ -30,13 +30,6 @@ pub mod prelude {
 /// Note that each position of a [`GrassBlade`](crate::prelude::GrassBlade) is also relative to the [`Transform`] component of the entity
 #[derive(Bundle)]
 pub struct WarblersBundle {
-    /// The [`Grass`] to spawn in your world.
-    ///
-    /// ## Usage Detail
-    /// Be aware that frustum culling is done using the minimal [Aabb](bevy::render::primitives::Aabb) box containing all elements in [Grass].
-    /// Also since all elements in [Grass] are instanced together,
-    /// it might be more performant to spawn multiple entities each containing locally seperate portions of the grass in the game.
-    /// This however, will only be noticable at high number of grassblades.
     pub grass_spawner: GrassSpawner,
     /// The [`Mesh`] used to render each grassblade.
     ///

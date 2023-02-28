@@ -1,5 +1,5 @@
 use super::cache::{EntityCache, GrassCache};
-use crate::prelude::Grass;
+use crate::{prelude::Grass, grass_spawner::GrassSpawner};
 use bevy::{prelude::*, render::Extract};
 
 /// Extracts the grass data into the render world.
@@ -13,14 +13,13 @@ use bevy::{prelude::*, render::Extract};
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass(
     mut commands: Commands,
-    grasses: Extract<Query<(Entity, &Grass, &GlobalTransform), Changed<Grass>>>,
+    grass_spawner: Extract<Query<(Entity, &GrassSpawner, &GlobalTransform), Changed<GrassSpawner>>>,
     mut grass_cache: ResMut<GrassCache>,
 ) {
-    for (entity, grass, global_transform) in grasses.iter() {
+    for (entity, spawner, global_transform) in grass_spawner.iter() {
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.transform = *global_transform;
-        cache_value.grass = grass.clone();
-        commands.spawn(grass.clone()).insert(EntityStore(entity));
+        commands.spawn(spawner.clone()).insert(EntityStore(entity));
     }
 }
 #[derive(Clone, Component)]
