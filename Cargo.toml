@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 exclude = ["assets/", "scripts/"]
 keywords = ["bevy", "gamedev", "graphics", "grass", "rendering"]
 repository = "https://github.com/EmiOnGit/warbler_grass"
-describtion = "A bevy plugin for creating 3d grass in your game"
+description = "A bevy plugin for creating 3d grass in your game"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
