@@ -103,9 +103,6 @@ impl GrassSpawner {
         self
     }
     /// Defines the [`GrassSpawner`] from [`GrassBlade`]s 
-    /// # NOTE
-    /// It is not recommended to use this function since I plan on removing it.
-    /// It is just meant as an temporarly transition for users which were using the old way of creating Grass.
     pub fn from_grass_blades(mut self, grass_blades: Vec<GrassBlade>) -> GrassSpawner {
         assert!(!grass_blades.is_empty());
         let (positions, heights) = grass_blades
