@@ -17,7 +17,6 @@ pub fn queue_grass_buffers(
     msaa: Res<Msaa>,
     mut pipelines: ResMut<SpecializedMeshPipelines<GrassPipeline>>,
     mut pipeline_cache: ResMut<PipelineCache>,
-    cacher: Res<EntityCache>,
     grass_cacher: Res<GrassCache>,
     meshes: Res<RenderAssets<Mesh>>,
     material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>)>,
@@ -35,7 +34,7 @@ pub fn queue_grass_buffers(
         let rangefinder = view.rangefinder3d();
         for (entity, mesh_uniform, mesh_handle) in material_meshes
             .iter()
-            .filter(|(e, _, _)| cacher.contains(e))
+            .filter(|(e, _, _)| grass_cacher.contains_key(&e))
         {
             if let Some(mesh) = meshes.get(mesh_handle) {
                 let mesh_key =

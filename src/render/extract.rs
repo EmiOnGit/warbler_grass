@@ -17,7 +17,7 @@ use bevy::{
 pub(crate) fn extract_grass(
     mut commands: Commands,
     grass_spawner: Extract<
-        Query<(Entity, &GrassSpawner, &GlobalTransform, &Aabb), Changed<GrassSpawner>>,
+        Query<(Entity, &GrassSpawner, &GlobalTransform, &Aabb), Or<(Changed<GrassSpawner>, Changed<Aabb>)>>,
     >,
     mut grass_cache: ResMut<GrassCache>,
 ) {
