@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use warblersneeds::{warblers_plugin::WarblersPlugin, GrassConfiguration, WarblersBundle};
+use warbler_grass::{warblers_plugin::WarblersPlugin, GrassConfiguration, WarblersBundle};
 mod helper;
 fn main() {
     App::new()

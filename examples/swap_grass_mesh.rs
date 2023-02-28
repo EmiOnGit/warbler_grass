@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use warblersneeds::{grass_spawner::GrassSpawner, prelude::*, warblers_plugin::GRASS_MESH_HANDLE};
+use warbler_grass::{grass_spawner::GrassSpawner, prelude::*, warblers_plugin::GRASS_MESH_HANDLE};
 mod helper;
 
 fn main() {

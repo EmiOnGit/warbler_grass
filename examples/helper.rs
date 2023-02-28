@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use warblersneeds::grass_spawner::GrassSpawner;
+use warbler_grass::grass_spawner::GrassSpawner;
 
 pub struct SimpleCamera;
 impl Plugin for SimpleCamera {

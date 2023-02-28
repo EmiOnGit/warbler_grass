@@ -1,6 +1,6 @@
 [package]
-name = "warblersneeds"
-version = "0.1.0"
+name = "warbler_grass"
+version = "0.0.1"
 edition = "2021"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
