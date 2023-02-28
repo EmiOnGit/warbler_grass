@@ -14,7 +14,6 @@ use bevy::{
 };
 
 use crate::{
-    file_loader::{GrassFields, GrassFieldsAssetLoader},
     grass_spawner::add_aabb_box_to_grass,
     hot_reloading,
     render::{
@@ -56,9 +55,7 @@ impl Plugin for WarblersPlugin {
         app.add_system(hot_reloading::hot_reload_height_map);
         // Init resources
         app.init_resource::<RegionConfiguration>()
-            .register_type::<RegionConfiguration>()
-            .add_asset::<GrassFields>()
-            .init_asset_loader::<GrassFieldsAssetLoader>();
+            .register_type::<RegionConfiguration>();
         // Add extraction
         app.add_plugin(ExtractResourcePlugin::<RegionConfiguration>::default());
         // Init render app

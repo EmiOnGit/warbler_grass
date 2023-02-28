@@ -13,7 +13,6 @@ mod render;
 use bevy_inspector_egui::prelude::*;
 use grass_spawner::GrassSpawner;
 use warblers_plugin::GRASS_MESH_HANDLE;
-pub mod file_loader;
 pub mod warblers_plugin;
 pub mod prelude {
     pub use crate::warblers_plugin::WarblersPlugin;
