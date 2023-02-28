@@ -13,7 +13,7 @@ use bevy::{
     },
 };
 
-use crate::warblers_plugin::GRASS_SHADER_HANDLE;
+use crate::{warblers_plugin::GRASS_SHADER_HANDLE, grass_spawner::GrassSpawnerFlags};
 #[derive(Resource)]
 pub struct GrassPipeline {
     shader: Handle<Shader>,
@@ -93,16 +93,22 @@ impl FromWorld for GrassPipeline {
     }
 }
 impl SpecializedMeshPipeline for GrassPipeline {
-    type Key = MeshPipelineKey;
+    type Key = GrassRenderKey;
 
     fn specialize(
         &self,
         key: Self::Key,
         layout: &MeshVertexBufferLayout,
     ) -> Result<RenderPipelineDescriptor, SpecializedMeshPipelineError> {
-        let mut descriptor = self.mesh_pipeline.specialize(key, layout)?;
+
+        let mut descriptor = self.mesh_pipeline.specialize(key.mesh_key, layout)?;
         descriptor.label = Some("Grass Render Pipeline".into());
-        descriptor.vertex.shader = self.shader.clone();
+        let vertex = &mut descriptor.vertex;
+        vertex.shader = self.shader.clone();
+        if key.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+            vertex.shader_defs.push("HEIGHT_MAP".into());
+
+        }
         let layouts = descriptor.layout.get_or_insert(Vec::new());
         layouts.push(self.region_layout.clone());
         layouts.push(self.height_map_layout.clone());
@@ -110,7 +116,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
             array_stride: VertexFormat::Float32x4.size(),
             step_mode: VertexStepMode::Instance,
             attributes: vec![
-                // xzposition of the mesh as instance
+                // position of the mesh as instance
                 VertexAttribute {
                     format: VertexFormat::Float32x3,
                     offset: 0,
@@ -126,5 +132,27 @@ impl SpecializedMeshPipeline for GrassPipeline {
         });
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone();
         Ok(descriptor)
+    }
+}
+
+#[derive(Eq, PartialEq, Hash, Clone)]
+pub struct GrassRenderKey {
+    pub mesh_key: MeshPipelineKey,
+    flags: GrassSpawnerFlags,
+}
+
+impl From<MeshPipelineKey> for GrassRenderKey {
+    fn from(mesh_key: MeshPipelineKey) -> Self {
+
+        Self {
+            mesh_key,
+            flags: GrassSpawnerFlags::NONE,
+        }
+    }
+}
+impl GrassRenderKey {
+    pub fn with_flags(mut self, flags: GrassSpawnerFlags) -> Self {
+        self.flags = flags;
+        self
     }
 }

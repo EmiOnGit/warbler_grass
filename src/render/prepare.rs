@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use super::extract::EntityStore;
 use super::grass_pipeline::GrassPipeline;
 use crate::grass_spawner::{GrassSpawner, GrassSpawnerFlags, HeightRepresentation};
@@ -20,23 +22,23 @@ pub(crate) fn prepare_instance_buffer(
     inserted_grass: Query<(&GrassSpawner, &EntityStore)>,
 ) {
     for (spawner, EntityStore(id)) in inserted_grass.iter() {
-        let flags = GrassSpawnerFlags::from_bits(spawner.flags).unwrap();
-        if !flags.contains(GrassSpawnerFlags::Y_DEFINED) {
+        if !spawner.flags.contains(GrassSpawnerFlags::Y_DEFINED) {
             panic!("Cannot spawn grass without the y-positions defined");
         }
-        if !flags.contains(GrassSpawnerFlags::XZ_DEFINED) {
+        if !spawner.flags.contains(GrassSpawnerFlags::XZ_DEFINED) {
             panic!("Cannot spawn grass without the xz-positions defined");
         }
         let heights = match &spawner.heights {
             HeightRepresentation::Uniform(height) => vec![*height; spawner.positions_xz.len()],
             HeightRepresentation::PerBlade(heights) => heights.clone(),
         };
-        let slice = if flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+        println!("heights: {:?}", &heights[..5]);
+        let instance_slice: Vec<Vec4> = if spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             spawner
                 .positions_xz
                 .iter()
                 .zip(heights)
-                .map(|(xz, height)| Vec4::new(xz.x, 0.5, xz.y, height))
+                .map(|(xz, height)| Vec4::new(xz.x, 0.0, xz.y, height))
                 .collect()
         } else {
             spawner
@@ -47,15 +49,16 @@ pub(crate) fn prepare_instance_buffer(
                 .map(|((xz, y), height)| Vec4::new(xz.x, *y, xz.y, height))
                 .collect()
         };
-
+        println!(" {:?}", &instance_slice[..6]);
         if let Some(chunk) = cache.get_mut(&id) {
-            chunk.instances = Some(slice);
+            chunk.instances = Some(instance_slice);
             let inst = render_device.create_buffer_with_data(&BufferInitDescriptor {
                 label: Some("Instance entity buffer"),
                 contents: bytemuck::cast_slice(chunk.instances.as_ref().unwrap().as_slice()),
                 usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
             });
             chunk.instance_buffer = Some(inst);
+            chunk.flags = spawner.flags;
         } else {
             warn!(
                 "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"
@@ -69,7 +72,7 @@ pub(crate) fn prepare_height_map_buffer(
     pipeline: Res<GrassPipeline>,
     fallback_img: Res<FallbackImage>,
     images: Res<RenderAssets<Image>>,
-    inserted_grass: Query<(&GrassSpawner, &EntityStore)>,
+    inserted_grass: Query<(&GrassSpawner, &EntityStore, &Aabb)>,
     mut local_height_map_buffer: Local<Vec<(EntityStore, Handle<Image>, Aabb)>>,
 ) {
     let mut to_remove = Vec::new();
@@ -80,7 +83,7 @@ pub(crate) fn prepare_height_map_buffer(
             let height_map_texture = &tex.texture_view;
             let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
                 label: Some("aabb buffer"),
-                contents: bytemuck::bytes_of(&aabb.half_extents.as_dvec3().as_vec3()),
+                contents: bytemuck::bytes_of(&aabb.half_extents.mul(2.).as_dvec3().as_vec3()),
                 usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
             });
             let layout = pipeline.height_map_layout.clone();
@@ -113,17 +116,15 @@ pub(crate) fn prepare_height_map_buffer(
         }
     }
     local_height_map_buffer.retain(|map| !to_remove.contains(&map.0 .0));
-    for (spawner, entity_store) in inserted_grass.iter() {
+    for (spawner, entity_store, aabb) in inserted_grass.iter() {
         let id = entity_store.0;
-        let flags = GrassSpawnerFlags::from_bits(spawner.flags).unwrap();
-        if flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+        if spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             let handle = &spawner.height_map.as_ref().unwrap().height_map;
             if images.get(&handle).is_none() {
-                let aabb = &spawner.height_map.as_ref().unwrap().aabb;
                 local_height_map_buffer.push((entity_store.clone(), handle.clone(), aabb.clone()));
             }
         }
-        let (height_map_texture, aabb_buffer) = if !flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+        let (height_map_texture, aabb_buffer) = if !spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             let height_map_texture = &fallback_img.texture_view;
             let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
                 label: Some("aabb buffer"),
@@ -145,10 +146,9 @@ pub(crate) fn prepare_height_map_buffer(
                     .get(&spawner.height_map.as_ref().unwrap().height_map)
                     .is_some()
             );
-            let aabb = &spawner.height_map.as_ref().unwrap().aabb;
             let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
                 label: Some("aabb buffer"),
-                contents: bytemuck::bytes_of(&aabb.half_extents.as_dvec3().as_vec3()),
+                contents: bytemuck::bytes_of(&aabb.half_extents.mul(2.).as_dvec3().as_vec3()),
                 usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
             });
             (height_map_texture, aabb_buffer)

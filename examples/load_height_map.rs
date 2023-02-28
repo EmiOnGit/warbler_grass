@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::primitives::Aabb};
+use bevy::{prelude::*};
 use warblersneeds::{
     grass_spawner::GrassSpawner, height_map::HeightMap, warblers_plugin::WarblersPlugin,
     WarblersBundle,
@@ -18,20 +18,21 @@ fn main() {
 }
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     let height_map = asset_server.load("grass_height_map.png");
-    let positions = (0..10_000)
+    
+    let positions_xz: Vec<Vec2> = (0..10_000)
         .into_iter()
         .map(|i| (i / 100, i % 100))
-        .map(|(x, z)| Vec3::new(x as f32, 0., z as f32))
+        .map(|(x, z)| Vec2::new(x as f32, z as f32))
         .collect();
     let height_map = HeightMap {
         height_map,
-        aabb: Aabb::from_min_max(Vec3::new(0., 0., 0.), Vec3::new(10., 5., 10.)),
+        height: 10.,
     };
     let grass_spawner = GrassSpawner::new()
-        .with_positions(positions)
+        .with_positions_xz(positions_xz)
         .with_height_map(height_map);
-    commands.spawn((WarblersBundle {
+    commands.spawn(WarblersBundle {
         grass_spawner,
         ..default()
-    },));
+    });
 }

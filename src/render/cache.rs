@@ -4,6 +4,8 @@ use bevy::{
     utils::{HashMap, HashSet},
 };
 
+use crate::grass_spawner::GrassSpawnerFlags;
+
 #[derive(Resource, DerefMut, Deref, Debug, Default)]
 pub struct GrassCache {
     pub data: HashMap<Entity, CachedGrassChunk>,
@@ -16,7 +18,7 @@ pub struct CachedGrassChunk {
     pub instance_buffer: Option<Buffer>,
     pub height_map: Option<BindGroup>,
     pub transform: GlobalTransform,
-    pub flags: u32,
+    pub flags: GrassSpawnerFlags,
 }
 #[derive(Resource, DerefMut, Deref, Debug, Default)]
 pub struct EntityCache {

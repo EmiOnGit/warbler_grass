@@ -56,7 +56,7 @@ fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
 fn height_map_offset(vertex_position: vec2<f32>) -> f32 {
 
     let dim = textureDimensions(height_map, 0);
-    let texture_position = abs((vertex_position.xy * aabb.xz) % vec2<f32>(dim)) ;
+    let texture_position = abs((vertex_position.xy / aabb.xz ) * vec2<f32>(dim)) ;
     var texture_r = textureLoad(height_map, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0).r;
     return texture_r * aabb.y;
 }
@@ -65,7 +65,9 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     var out: VertexOutput;
     var position = vertex.position.xyz * vec3<f32>(1.,vertex.height, 1.) + vertex.position_field_offset;
     let local_field_position = vec2<f32>(vertex.position_field_offset.x, vertex.position_field_offset.z);
-    position.y -= height_map_offset(vertex.position_field_offset.xz );
+    #ifdef HEIGHT_MAP
+        position.y += height_map_offset(vertex.position_field_offset.xz );
+    #endif
     // only applies wind if the vertex is not on the bottom of the grass (or very small)
     let offset = wind_offset(local_field_position);
     let strength = max(0.,log(vertex.position.y + 1.));
