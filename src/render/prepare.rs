@@ -1,6 +1,6 @@
 use super::extract::EntityStore;
 use super::grass_pipeline::GrassPipeline;
-use crate::grass_spawner::{GrassSpawner, GrassSpawnerFlags};
+use crate::grass_spawner::{GrassSpawner, GrassSpawnerFlags, HeightRepresentation};
 use crate::render::cache::GrassCache;
 use crate::RegionConfiguration;
 use bevy::prelude::*;
@@ -26,8 +26,14 @@ pub(crate) fn prepare_instance_buffer(
         if !flags.contains(GrassSpawnerFlags::XZ_DEFINED) {
             panic!("Cannot spawn grass without the xz-positions defined");
         }
-        let slice = spawner.positions_xz.iter().zip(spawner.positions_y.iter())
-            .map(|(xz,y)| {Vec4::new(xz.x,  *y,xz.y, 1.)}).collect(); 
+        let heights = match &spawner.heights {
+            HeightRepresentation::Uniform(height) => vec![*height; spawner.positions_xz.len()],
+            HeightRepresentation::PerBlade(heights) => heights.clone(),
+        };
+        let slice = spawner.positions_xz.iter()
+            .zip(spawner.positions_y.iter())
+            .zip(heights)
+            .map(|((xz,y), height)| {Vec4::new(xz.x,  *y,xz.y, height)}).collect(); 
         if let Some(chunk) = cache.get_mut(&id) {
             chunk.instances = Some(slice);
             let inst = render_device.create_buffer_with_data(&BufferInitDescriptor {
