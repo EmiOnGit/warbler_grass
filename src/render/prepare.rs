@@ -51,7 +51,6 @@ pub(crate) fn prepare_uniform_buffers(
     {
         return;
     }
-    println!("prepare");
     *last_texture_id = Some(texture.id());
 
     let shader_config = ShaderRegionConfiguration::from(region_config.as_ref());
