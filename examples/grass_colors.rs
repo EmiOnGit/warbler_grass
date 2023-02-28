@@ -1,8 +1,5 @@
 use bevy::prelude::*;
-use warblersneeds::{
-    warblers_plugin::WarblersPlugin,
-    RegionConfiguration, WarblersBundle,
-};
+use warblersneeds::{warblers_plugin::WarblersPlugin, RegionConfiguration, WarblersBundle};
 mod helper;
 fn main() {
     App::new()
@@ -14,7 +11,10 @@ fn main() {
         .run();
 }
 fn setup_grass(mut commands: Commands) {
-    commands.spawn((WarblersBundle { grass_spawner: helper::get_grass_grid(), ..default() },));
+    commands.spawn((WarblersBundle {
+        grass_spawner: helper::get_grass_grid(),
+        ..default()
+    },));
 }
 
 fn change_colors(

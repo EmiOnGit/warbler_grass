@@ -15,12 +15,14 @@ use bevy::{
 
 use crate::{
     file_loader::{GrassFields, GrassFieldsAssetLoader},
+    grass_spawner::add_aabb_box_to_grass,
+    hot_reloading,
     render::{
         self,
         cache::{EntityCache, GrassCache},
         grass_pipeline::GrassPipeline,
     },
-    RegionConfiguration, grass_spawner::add_aabb_box_to_grass, hot_reloading,
+    RegionConfiguration,
 };
 
 /// A raw handle which points to the shader used to render the grass.

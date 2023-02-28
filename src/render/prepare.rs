@@ -12,7 +12,6 @@ use bevy::render::render_resource::{
 };
 use bevy::render::renderer::RenderDevice;
 use bevy::render::texture::FallbackImage;
-use bevy::utils::HashMap;
 use bytemuck::{Pod, Zeroable};
 
 pub(crate) fn prepare_instance_buffer(
@@ -33,16 +32,22 @@ pub(crate) fn prepare_instance_buffer(
             HeightRepresentation::PerBlade(heights) => heights.clone(),
         };
         let slice = if flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
-            spawner.positions_xz.iter()
+            spawner
+                .positions_xz
+                .iter()
                 .zip(heights)
-                .map(|(xz, height)| {Vec4::new(xz.x,  0.5,xz.y, height)}).collect()
+                .map(|(xz, height)| Vec4::new(xz.x, 0.5, xz.y, height))
+                .collect()
         } else {
-            spawner.positions_xz.iter()
-            .zip(spawner.positions_y.iter())
-            .zip(heights)
-            .map(|((xz,y), height)| {Vec4::new(xz.x,  *y,xz.y, height)}).collect()
+            spawner
+                .positions_xz
+                .iter()
+                .zip(spawner.positions_y.iter())
+                .zip(heights)
+                .map(|((xz, y), height)| Vec4::new(xz.x, *y, xz.y, height))
+                .collect()
         };
-       
+
         if let Some(chunk) = cache.get_mut(&id) {
             chunk.instances = Some(slice);
             let inst = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -52,7 +57,9 @@ pub(crate) fn prepare_instance_buffer(
             });
             chunk.instance_buffer = Some(inst);
         } else {
-            warn!("Tried to prepare a entity buffer for a grass chunk which wasn't registered before");
+            warn!(
+                "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"
+            );
         }
     }
 }
@@ -63,49 +70,49 @@ pub(crate) fn prepare_height_map_buffer(
     fallback_img: Res<FallbackImage>,
     images: Res<RenderAssets<Image>>,
     inserted_grass: Query<(&GrassSpawner, &EntityStore)>,
-    mut local_height_map_buffer: Local<Vec<(EntityStore,Handle<Image>, Aabb)>>,
+    mut local_height_map_buffer: Local<Vec<(EntityStore, Handle<Image>, Aabb)>>,
 ) {
     let mut to_remove = Vec::new();
-    
-    for (EntityStore(e), handle, aabb) in local_height_map_buffer.iter(){
-            if let Some(tex) = images.get(&handle) {
-                to_remove.push(*e);
-                let height_map_texture = &tex.texture_view;
-                let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                    label: Some("aabb buffer"),
-                    contents: bytemuck::bytes_of(&aabb.half_extents.as_dvec3().as_vec3()),
-                    usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST, 
-                }); 
-                let layout = pipeline.height_map_layout.clone();
-                let bind_group_descriptor = BindGroupDescriptor {
-                    label: Some("grass height map bind group"),
-                    layout: &layout,
-                    entries: &[
-                        BindGroupEntry {
-                            binding: 0,
-                            resource: BindingResource::TextureView(height_map_texture),
-                        },
-                        BindGroupEntry {
-                            binding: 1,
-                            resource: BindingResource::Buffer(BufferBinding {
-                                buffer: &aabb_buffer,
-                                offset: 0,
-                                size: None,
-                            }),
-                        },
-                    ],
-                };
-                
-                let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-                if let Some(chunk) = cache.get_mut(&e) {
-                    chunk.height_map = Some(bind_group);
-                    println!("loaded!");
-                } else {
-                    warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
-                }
+
+    for (EntityStore(e), handle, aabb) in local_height_map_buffer.iter() {
+        if let Some(tex) = images.get(&handle) {
+            to_remove.push(*e);
+            let height_map_texture = &tex.texture_view;
+            let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                label: Some("aabb buffer"),
+                contents: bytemuck::bytes_of(&aabb.half_extents.as_dvec3().as_vec3()),
+                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            });
+            let layout = pipeline.height_map_layout.clone();
+            let bind_group_descriptor = BindGroupDescriptor {
+                label: Some("grass height map bind group"),
+                layout: &layout,
+                entries: &[
+                    BindGroupEntry {
+                        binding: 0,
+                        resource: BindingResource::TextureView(height_map_texture),
+                    },
+                    BindGroupEntry {
+                        binding: 1,
+                        resource: BindingResource::Buffer(BufferBinding {
+                            buffer: &aabb_buffer,
+                            offset: 0,
+                            size: None,
+                        }),
+                    },
+                ],
+            };
+
+            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+            if let Some(chunk) = cache.get_mut(&e) {
+                chunk.height_map = Some(bind_group);
+                println!("loaded!");
+            } else {
+                warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
             }
-    };
-    local_height_map_buffer.retain(|map| {!to_remove.contains(&map.0.0)});
+        }
+    }
+    local_height_map_buffer.retain(|map| !to_remove.contains(&map.0 .0));
     for (spawner, entity_store) in inserted_grass.iter() {
         let id = entity_store.0;
         let flags = GrassSpawnerFlags::from_bits(spawner.flags).unwrap();
@@ -121,28 +128,33 @@ pub(crate) fn prepare_height_map_buffer(
             let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
                 label: Some("aabb buffer"),
                 contents: &[0],
-                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST, 
+                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
             });
             (height_map_texture, aabb_buffer)
         } else {
             let handle = spawner.height_map.as_ref().unwrap().height_map.clone();
-            let height_map_texture = if let Some(tex) =  images.get(&handle) {
+            let height_map_texture = if let Some(tex) = images.get(&handle) {
                 &tex.texture_view
             } else {
                 &fallback_img.texture_view
             };
-            
-            println!("loaded: {}", images.get(&spawner.height_map.as_ref().unwrap().height_map).is_some());
+
+            println!(
+                "loaded: {}",
+                images
+                    .get(&spawner.height_map.as_ref().unwrap().height_map)
+                    .is_some()
+            );
             let aabb = &spawner.height_map.as_ref().unwrap().aabb;
             let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
                 label: Some("aabb buffer"),
                 contents: bytemuck::bytes_of(&aabb.half_extents.as_dvec3().as_vec3()),
-                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST, 
-            }); 
+                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            });
             (height_map_texture, aabb_buffer)
         };
         let layout = pipeline.height_map_layout.clone();
-        
+
         let bind_group_descriptor = BindGroupDescriptor {
             label: Some("grass height map bind group"),
             layout: &layout,
@@ -161,14 +173,13 @@ pub(crate) fn prepare_height_map_buffer(
                 },
             ],
         };
-        
+
         let bind_group = render_device.create_bind_group(&bind_group_descriptor);
         if let Some(chunk) = cache.get_mut(&id) {
             chunk.height_map = Some(bind_group);
         } else {
             warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
         }
-        
     }
 }
 pub(crate) fn prepare_uniform_buffers(

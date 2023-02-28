@@ -138,7 +138,7 @@ impl GrassSpawner {
             .iter()
             .zip(self.positions_y.iter())
             .for_each(|(xz, y)| {
-                let blade_pos = Vec3::new(xz.x,*y, xz.y);
+                let blade_pos = Vec3::new(xz.x, *y, xz.y);
                 let height = 1.;
                 inner = inner.min(blade_pos);
                 outer = outer.max(blade_pos + Vec3::Y * height);

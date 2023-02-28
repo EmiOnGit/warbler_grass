@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use warblersneeds::{prelude::*, warblers_plugin::GRASS_MESH_HANDLE, grass_spawner::GrassSpawner};
+use warblersneeds::{grass_spawner::GrassSpawner, prelude::*, warblers_plugin::GRASS_MESH_HANDLE};
 mod helper;
 
 fn main() {
@@ -14,8 +14,6 @@ fn main() {
 
 // In this example 2 planes are used for generating grass blades
 fn setup_grass(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    
-
     // The interesting part in this example
     // (The capsules would looks cool in the water!) :)
     // Normally the grass mesh should start at y>=0.

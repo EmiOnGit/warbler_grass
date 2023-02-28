@@ -4,7 +4,6 @@ use bevy::{
     utils::{HashMap, HashSet},
 };
 
-
 #[derive(Resource, DerefMut, Deref, Debug, Default)]
 pub struct GrassCache {
     pub data: HashMap<Entity, CachedGrassChunk>,

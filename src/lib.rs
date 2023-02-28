@@ -8,8 +8,8 @@ use bevy::{
 
 pub mod grass_spawner;
 pub mod height_map;
-mod render;
 pub mod hot_reloading;
+mod render;
 use bevy_inspector_egui::prelude::*;
 use grass_spawner::GrassSpawner;
 use warblers_plugin::GRASS_MESH_HANDLE;

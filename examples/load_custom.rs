@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use warblersneeds::{prelude::*, grass_spawner::GrassSpawner};
+use warblersneeds::{grass_spawner::GrassSpawner, prelude::*};
 mod helper;
 fn main() {
     App::new()
@@ -17,9 +17,7 @@ fn setup_grass(mut commands: Commands) {
             let i = i as f32;
             (i.sin() * 20. / i.ln(), i.cos() * 20. / i.ln())
         })
-        .map(|(x, z)| 
-           (Vec3::new(x, 0., z),
-            (x * x + z * z).ln()))
+        .map(|(x, z)| (Vec3::new(x, 0., z), (x * x + z * z).ln()))
         .unzip();
     let grass_spawner = GrassSpawner::new()
         .with_positions(positions)
