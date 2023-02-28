@@ -4,6 +4,7 @@ use crate::grass_spawner::{GrassSpawner, GrassSpawnerFlags, HeightRepresentation
 use crate::render::cache::GrassCache;
 use crate::RegionConfiguration;
 use bevy::prelude::*;
+use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::{
     BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor,
@@ -11,6 +12,7 @@ use bevy::render::render_resource::{
 };
 use bevy::render::renderer::RenderDevice;
 use bevy::render::texture::FallbackImage;
+use bevy::utils::HashMap;
 use bytemuck::{Pod, Zeroable};
 
 pub(crate) fn prepare_instance_buffer(
@@ -30,10 +32,17 @@ pub(crate) fn prepare_instance_buffer(
             HeightRepresentation::Uniform(height) => vec![*height; spawner.positions_xz.len()],
             HeightRepresentation::PerBlade(heights) => heights.clone(),
         };
-        let slice = spawner.positions_xz.iter()
+        let slice = if flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+            spawner.positions_xz.iter()
+                .zip(heights)
+                .map(|(xz, height)| {Vec4::new(xz.x,  0.5,xz.y, height)}).collect()
+        } else {
+            spawner.positions_xz.iter()
             .zip(spawner.positions_y.iter())
             .zip(heights)
-            .map(|((xz,y), height)| {Vec4::new(xz.x,  *y,xz.y, height)}).collect(); 
+            .map(|((xz,y), height)| {Vec4::new(xz.x,  *y,xz.y, height)}).collect()
+        };
+       
         if let Some(chunk) = cache.get_mut(&id) {
             chunk.instances = Some(slice);
             let inst = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -54,10 +63,59 @@ pub(crate) fn prepare_height_map_buffer(
     fallback_img: Res<FallbackImage>,
     images: Res<RenderAssets<Image>>,
     inserted_grass: Query<(&GrassSpawner, &EntityStore)>,
+    mut local_height_map_buffer: Local<Vec<(EntityStore,Handle<Image>, Aabb)>>,
 ) {
-    for (spawner, EntityStore(id)) in inserted_grass.iter() {
-
+    let mut to_remove = Vec::new();
+    
+    for (EntityStore(e), handle, aabb) in local_height_map_buffer.iter(){
+            if let Some(tex) = images.get(&handle) {
+                to_remove.push(*e);
+                let height_map_texture = &tex.texture_view;
+                let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                    label: Some("aabb buffer"),
+                    contents: bytemuck::bytes_of(&aabb.half_extents.as_dvec3().as_vec3()),
+                    usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST, 
+                }); 
+                let layout = pipeline.height_map_layout.clone();
+                let bind_group_descriptor = BindGroupDescriptor {
+                    label: Some("grass height map bind group"),
+                    layout: &layout,
+                    entries: &[
+                        BindGroupEntry {
+                            binding: 0,
+                            resource: BindingResource::TextureView(height_map_texture),
+                        },
+                        BindGroupEntry {
+                            binding: 1,
+                            resource: BindingResource::Buffer(BufferBinding {
+                                buffer: &aabb_buffer,
+                                offset: 0,
+                                size: None,
+                            }),
+                        },
+                    ],
+                };
+                
+                let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+                if let Some(chunk) = cache.get_mut(&e) {
+                    chunk.height_map = Some(bind_group);
+                    println!("loaded!");
+                } else {
+                    warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
+                }
+            }
+    };
+    local_height_map_buffer.retain(|map| {!to_remove.contains(&map.0.0)});
+    for (spawner, entity_store) in inserted_grass.iter() {
+        let id = entity_store.0;
         let flags = GrassSpawnerFlags::from_bits(spawner.flags).unwrap();
+        if flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+            let handle = &spawner.height_map.as_ref().unwrap().height_map;
+            if images.get(&handle).is_none() {
+                let aabb = &spawner.height_map.as_ref().unwrap().aabb;
+                local_height_map_buffer.push((entity_store.clone(), handle.clone(), aabb.clone()));
+            }
+        }
         let (height_map_texture, aabb_buffer) = if !flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             let height_map_texture = &fallback_img.texture_view;
             let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -67,14 +125,18 @@ pub(crate) fn prepare_height_map_buffer(
             });
             (height_map_texture, aabb_buffer)
         } else {
-            let height_map_texture = &images
-            .get(&spawner.height_map.as_ref().unwrap().height_map)
-            .unwrap_or(&fallback_img)
-            .texture_view;
+            let handle = spawner.height_map.as_ref().unwrap().height_map.clone();
+            let height_map_texture = if let Some(tex) =  images.get(&handle) {
+                &tex.texture_view
+            } else {
+                &fallback_img.texture_view
+            };
+            
+            println!("loaded: {}", images.get(&spawner.height_map.as_ref().unwrap().height_map).is_some());
             let aabb = &spawner.height_map.as_ref().unwrap().aabb;
             let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
                 label: Some("aabb buffer"),
-                contents: bytemuck::bytes_of(&aabb.half_extents.as_ivec3()),
+                contents: bytemuck::bytes_of(&aabb.half_extents.as_dvec3().as_vec3()),
                 usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST, 
             }); 
             (height_map_texture, aabb_buffer)

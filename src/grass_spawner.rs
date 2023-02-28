@@ -108,7 +108,7 @@ impl GrassSpawner {
     pub fn with_height_map(mut self, height_map: HeightMap) -> GrassSpawner {
         let mut flags = GrassSpawnerFlags::from_bits(self.flags).unwrap();
         if flags.contains(GrassSpawnerFlags::Y_DEFINED) {
-            panic!("Can not insert height map to `GrassSpawner` since the y positions are already defined");
+            // panic!("Can not insert height map to `GrassSpawner` since the y positions are already defined");
         }
 
         flags.insert(GrassSpawnerFlags::Y_DEFINED);

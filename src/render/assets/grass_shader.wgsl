@@ -16,6 +16,12 @@ var<uniform> config: ShaderRegionConfiguration;
 @group(2) @binding(1)
 var noise_texture: texture_2d<f32>;
 
+@group(3) @binding(0)
+var height_map: texture_2d<f32>;
+
+@group(3) @binding(1)
+var<uniform> aabb: vec3<f32>;
+
 #import bevy_pbr::mesh_functions
 
 struct Vertex {
@@ -47,13 +53,21 @@ fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     var texture_pixel = textureLoad(noise_texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0);
     return texture_pixel.xy * config.wind;
 }
+fn height_map_offset(vertex_position: vec2<f32>) -> f32 {
+
+    let dim = textureDimensions(height_map, 0);
+    let texture_position = abs((vertex_position.xy * aabb.xz) % vec2<f32>(dim)) ;
+    var texture_r = textureLoad(height_map, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0).r;
+    return texture_r;
+}
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
     var out: VertexOutput;
     var position = vertex.position.xyz * vec3<f32>(1.,vertex.height, 1.) + vertex.position_field_offset;
-
+    let local_field_position = vec2<f32>(vertex.position_field_offset.x, vertex.position_field_offset.z);
+    position.y -= height_map_offset(vertex.position_field_offset.xz ) * 3.;
     // only applies wind if the vertex is not on the bottom of the grass (or very small)
-    let offset = wind_offset(vec2<f32>(vertex.position_field_offset.x, vertex.position_field_offset.z));
+    let offset = wind_offset(local_field_position);
     let strength = max(0.,log(vertex.position.y + 1.));
     position.x += offset.x * strength;
     position.z += offset.y * strength;
@@ -64,43 +78,6 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     return out;
 }
 
-// @fragment
-// fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
-//     return in.color;
-// }
-// @vertex
-// fn vertex( @builtin(vertex_index) in_vertex_index: u32, @location(0) positions: vec3<f32>) -> VertexOutput {
-//     var out: VertexOutput;
-//     // var position = vertex.position.xyz * vec3<f32>(1.,vertex.height, 1.) + vertex.position_field_offset;
-//     // only applies wind if the vertex is not on the bottom of the grass (or very small)
-//     // let offset = wind_offset(vec2<f32>(vertex.position_field_offset.x, vertex.position_field_offset.z));
-//     // let strength = max(0.,log(vertex.position.y + 1.));
-//     // position.x += offset.x * strength;
-//     // position.z += offset.y * strength;
-//     if in_vertex_index == 0u {
-//         out.clip_position = vec4<f32>(-1., -1., 0., 1.0) * 5.;
-//     }
-//     if in_vertex_index == 3u {
-//         out.clip_position = vec4<f32>(1., -1., 1., 1.0) * 5.;
-//     }
-//     if in_vertex_index == 2u {
-//         out.clip_position = vec4<f32>(1., 1., 1., 1.0) * 5.;
-//     }
-//     if in_vertex_index == 1u {
-//         out.clip_position = vec4<f32>(-1., 1., 0., 1.0) * 5.;
-//     }
-//     let x = f32(1 - i32(in_vertex_index)) * 0.5;
-//     let y = f32(i32(in_vertex_index & 1u) * 2 - 1) * 0.5;
-//     // out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(x,y,0., 1.0));
-//     // let x = (sin(f32(in_vertex_index)) + f32(in_vertex_index)) * 10.;
-//     // let y = (cos(f32(in_vertex_index)) - f32(in_vertex_index)) * 10.;
-//     // out.clip_position = vec4<f32>(x, y, 0., 1.0);
-//     // out.clip_position = vec4<f32>(positions, 1.0);
-//     // let lambda = clamp(vertex.position.y, 0.,1.);
-//     // out.color = mix(config.bottom_color, config.main_color, lambda);
-//     out.color = vec4<f32>(0.1,0.5,0.8,1.);
-//     return out;
-// }
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {

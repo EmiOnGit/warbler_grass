@@ -26,17 +26,15 @@ ron = {version = "0.8", optional = true}
 bevy-inspector-egui = {version = "0.17.0", optional = true}
 
 
-[[example]]
-name = "load_from_plane"
-path = "examples/load_from_plane.rs"
-
-[[example]]
-name = "load_from_file"
-path = "examples/load_from_file.rs"
 
 [[example]]
 name = "load_custom"
 path = "examples/load_custom.rs"
+
+[[example]]
+name = "load_height_map"
+path = "examples/load_height_map.rs"
+
 [[example]]
 name = "load_many_chunks"
 path = "examples/load_many_chunks.rs"

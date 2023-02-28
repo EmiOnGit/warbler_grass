@@ -20,6 +20,7 @@ pub struct GrassPipeline {
     mesh_pipeline: MeshPipeline,
     pub region_layout: BindGroupLayout,
     pub height_map_layout: BindGroupLayout,
+    pub flags: u32,
 }
 
 impl FromWorld for GrassPipeline {
@@ -86,6 +87,7 @@ impl FromWorld for GrassPipeline {
             mesh_pipeline: mesh_pipeline.clone(),
             region_layout,
             height_map_layout,
+            flags: 0,
         }
     }
 }
@@ -102,6 +104,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
         descriptor.vertex.shader = self.shader.clone();
         let layouts = descriptor.layout.get_or_insert(Vec::new());
         layouts.push(self.region_layout.clone());
+        layouts.push(self.height_map_layout.clone());
         descriptor.vertex.buffers.push(VertexBufferLayout {
             array_stride: VertexFormat::Float32x4.size(),
             step_mode: VertexStepMode::Instance,
