@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use warblersneeds::{
+use warbler_grass::{
     grass_spawner::GrassSpawner, height_map::HeightMap, warblers_plugin::WarblersPlugin,
     WarblersBundle,
 };

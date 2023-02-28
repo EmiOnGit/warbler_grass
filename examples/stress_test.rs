@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
     window::PresentMode,
 };
-use warblersneeds::{grass_spawner::GrassSpawner, prelude::*};
+use warbler_grass::{grass_spawner::GrassSpawner, prelude::*};
 mod helper;
 fn main() {
     App::new()
