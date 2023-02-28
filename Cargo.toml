@@ -5,6 +5,7 @@ edition = "2021"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 exclude = ["assets/", "scripts/"]
+include = ["src/render/assets/*"]
 keywords = ["bevy", "gamedev", "graphics", "grass", "rendering"]
 repository = "https://github.com/EmiOnGit/warbler_grass"
 description = "A bevy plugin for creating 3d grass in your game"
