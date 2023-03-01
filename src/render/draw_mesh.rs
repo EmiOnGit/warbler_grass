@@ -30,7 +30,7 @@ impl <P: PhaseItem>RenderCommand<P> for DrawMeshInstanced {
         (meshes, cache): SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        let gpu_mesh = match meshes.get(mesh_handle) {
+        let gpu_mesh = match meshes.into_inner().get(mesh_handle) {
             Some(gpu_mesh) => gpu_mesh,
             None => return RenderCommandResult::Failure,
         };
