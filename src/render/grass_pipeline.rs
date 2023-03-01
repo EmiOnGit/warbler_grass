@@ -107,9 +107,8 @@ impl SpecializedMeshPipeline for GrassPipeline {
         if key.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             vertex.shader_defs.push("HEIGHT_MAP".into());
         }
-        let layouts = descriptor.layout.get_or_insert(Vec::new());
-        layouts.push(self.region_layout.clone());
-        layouts.push(self.height_map_layout.clone());
+        descriptor.layout.push(self.region_layout.clone());
+        descriptor.layout.push(self.height_map_layout.clone());
         descriptor.vertex.buffers.push(VertexBufferLayout {
             array_stride: VertexFormat::Float32x4.size(),
             step_mode: VertexStepMode::Instance,
