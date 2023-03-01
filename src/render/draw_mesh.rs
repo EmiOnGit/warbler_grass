@@ -1,24 +1,21 @@
 use bevy::{
     ecs::system::{
-        lifetimeless::{Read, SQuery, SRes},
+        lifetimeless::{Read, SRes},
         SystemParamItem,
     },
     prelude::*,
     render::{
         mesh::GpuBufferInfo,
         render_asset::RenderAssets,
-        render_phase::{RenderCommandResult, TrackedRenderPass, RenderCommand, PhaseItem},
+        render_phase::{PhaseItem, RenderCommand, RenderCommandResult, TrackedRenderPass},
     },
 };
 
 use super::cache::GrassCache;
 pub(crate) struct DrawMeshInstanced;
 
-impl <P: PhaseItem>RenderCommand<P> for DrawMeshInstanced {
-    type Param = (
-        SRes<RenderAssets<Mesh>>,
-        SRes<GrassCache>,
-    );
+impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
+    type Param = (SRes<RenderAssets<Mesh>>, SRes<GrassCache>);
     type ViewWorldQuery = ();
     type ItemWorldQuery = Read<Handle<Mesh>>;
 
