@@ -1,3 +1,4 @@
+use std::mem;
 use std::num::NonZeroU32;
 use std::ops::Mul;
 
@@ -13,7 +14,7 @@ use bevy::render::render_resource::{
     BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor,
     BufferUsages, Extent3d, ImageCopyTexture, ImageDataLayout, Origin3d, ShaderType, TextureAspect,
     TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureViewDescriptor,
-    TextureViewDimension, TextureViewId,
+    TextureViewDimension, TextureViewId, TextureView,
 };
 use bevy::render::renderer::{RenderDevice, RenderQueue};
 use bevy::render::texture::FallbackImage;
@@ -72,61 +73,8 @@ pub(crate) fn prepare_explicit_y_buffer(
             continue;
         }
         if let Some(chunk) = cache.get_mut(&id) {
-            let mut y_positions = spawner.positions_y.clone();
-
-            let device = render_device.wgpu_device();
-
-            // the dimensions of the texture are choosen to be nxn for the tiniest n which can contain the data
-            let sqrt = (y_positions.len() as f32).sqrt() as u32 + 1;
-
-            let fill_data = vec![0.; (sqrt * sqrt) as usize - y_positions.len()];
-            y_positions.extend(fill_data);
-
-            let size = Extent3d {
-                width: sqrt,
-                height: sqrt,
-                depth_or_array_layers: 1,
-            };
-            // wgpu expects a byte array
-            let data_slice = bytemuck::cast_slice(y_positions.as_slice());
-            let texture = device.create_texture(&TextureDescriptor {
-                size,
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: TextureDimension::D2,
-                format: TextureFormat::R32Float,
-                usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
-                label: Some("y positions texture"),
-                view_formats: &[],
-            });
-            // write data to texture
-            render_queue.write_texture(
-                ImageCopyTexture {
-                    texture: &texture,
-                    mip_level: 0,
-                    origin: Origin3d::ZERO,
-                    aspect: TextureAspect::All,
-                },
-                data_slice,
-                ImageDataLayout {
-                    offset: 0,
-                    // Multiplication with 4 because 1 pixel = 1_f32 = 4_u8
-                    bytes_per_row: NonZeroU32::new(4 * size.width),
-                    rows_per_image: NonZeroU32::new(size.height),
-                },
-                size,
-            );
-
-            let view = texture.create_view(&TextureViewDescriptor {
-                label: "y positions".into(),
-                format: Some(TextureFormat::R32Float),
-                dimension: Some(TextureViewDimension::D2),
-                aspect: TextureAspect::All,
-                base_mip_level: 0,
-                mip_level_count: NonZeroU32::new(1),
-                base_array_layer: 0,
-                array_layer_count: NonZeroU32::new(1),
-            });
+            let data = spawner.positions_y.clone();
+            let view = prepare_texture_from_data(data, &render_device, &render_queue);
             let layout = pipeline.explicit_y_layout.clone();
             let bind_group_descriptor = BindGroupDescriptor {
                 label: Some("grass explicit y positions bind group"),
@@ -145,6 +93,7 @@ pub(crate) fn prepare_explicit_y_buffer(
         }
     }
 }
+
 pub(crate) fn prepare_height_map_buffer(
     mut cache: ResMut<GrassCache>,
     render_device: Res<RenderDevice>,
@@ -326,4 +275,60 @@ impl From<&GrassConfiguration> for ShaderRegionConfiguration {
             _wasm_padding: Vec2::ZERO,
         }
     }
+}
+fn prepare_texture_from_data<T: Default + Clone + bytemuck::Pod>(mut data: Vec<T>, render_device: &RenderDevice, render_queue: &RenderQueue)-> TextureView {
+    let device = render_device.wgpu_device();
+
+    // the dimensions of the texture are choosen to be nxn for the tiniest n which can contain the data
+    let sqrt = (data.len() as f32).sqrt() as u32 + 1;
+    let fill_data = vec![T::default(); (sqrt * sqrt) as usize - data.len()];
+    data.extend(fill_data);
+    let texture_size = Extent3d {
+        width: sqrt,
+        height: sqrt,
+        depth_or_array_layers: 1,
+    };
+    // wgpu expects a byte array
+    let data_slice = bytemuck::cast_slice(data.as_slice());
+    // the texture is empty per default
+    let texture = device.create_texture(&TextureDescriptor {
+        size: texture_size,
+        mip_level_count: 1,
+        sample_count: 1,
+        dimension: TextureDimension::D2,
+        format: TextureFormat::R32Float,
+        usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
+        label: Some("y positions texture"),
+        view_formats: &[],
+    });
+    let t_size = mem::size_of::<T>();
+
+    // write data to texture
+    render_queue.write_texture(
+        ImageCopyTexture {
+            texture: &texture,
+            mip_level: 0,
+            origin: Origin3d::ZERO,
+            aspect: TextureAspect::All,
+        },
+        data_slice,
+        ImageDataLayout {
+            offset: 0,
+            // Multiplication with 4 because 1 pixel = 1_f32 = 4_u8
+            
+            bytes_per_row: NonZeroU32::new(t_size as u32 * texture_size.width),
+            rows_per_image: NonZeroU32::new(texture_size.height),
+        },
+        texture_size,
+    );
+    texture.create_view(&TextureViewDescriptor {
+        label: "y positions".into(),
+        format: Some(TextureFormat::R32Float),
+        dimension: Some(TextureViewDimension::D2),
+        aspect: TextureAspect::All,
+        base_mip_level: 0,
+        mip_level_count: NonZeroU32::new(1),
+        base_array_layer: 0,
+        array_layer_count: NonZeroU32::new(1),
+    }).into()
 }
