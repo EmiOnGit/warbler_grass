@@ -91,7 +91,7 @@ impl FromWorld for GrassPipeline {
                     visibility: ShaderStages::VERTEX,
                     ty: BindingType::Texture { 
                         sample_type: TextureSampleType::Float { filterable: false }, 
-                        view_dimension: TextureViewDimension::D1, 
+                        view_dimension: TextureViewDimension::D2, 
                         multisampled: false },
                     count: None,
                 },

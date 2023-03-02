@@ -26,7 +26,6 @@ pub fn setup_fps(mut diagnostics: ResMut<Diagnostics>) {
 pub fn diagnostic_system(
     mut diagnostics: ResMut<Diagnostics>,
     time: Res<Time>,
-    frame_count: Res<FrameCount>,
 ) {
     let delta_seconds = time.raw_delta_seconds_f64();
     if delta_seconds == 0.0 {

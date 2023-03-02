@@ -88,19 +88,22 @@ pub(crate) fn prepare_explicit_y_buffer(
             //     usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
             // });
             // let a = Image::default();
+            let element_count = y_positions.len();
         let size = Extent3d {
-            width: y_positions.len() as u32,
-            height: 1,
+            width: element_count as u32 % 16384,
+            height: (element_count as u32 / 16384) + 1,
             depth_or_array_layers: 1,
         };
+        println!("size: {:?}", size);
         let device = render_device.wgpu_device();
+        let data_slice = bytemuck::cast_slice(y_positions.as_slice());
         let texture = device.create_texture(&TextureDescriptor { 
             // All textures are stored as 3D, we represent our 2D texture
             // by setting depth to 1.
             size,
             mip_level_count: 1, // We'll talk about this a little later
             sample_count: 1,
-            dimension: TextureDimension::D1,
+            dimension: TextureDimension::D2,
             // Most images are stored using sRGB so we need to reflect that here.
             format: TextureFormat::R32Float,
             // TEXTURE_BINDING tells wgpu that we want to use this texture in shaders
@@ -116,18 +119,18 @@ pub(crate) fn prepare_explicit_y_buffer(
                 origin: Origin3d::ZERO,
                 aspect: TextureAspect::All,
             }, 
-            bytemuck::cast_slice(y_positions.as_slice()), 
+            data_slice, 
             ImageDataLayout {
                 offset: 0,
-                bytes_per_row: None,
-                rows_per_image: NonZeroU32::new(1),
+                bytes_per_row:  NonZeroU32::new(data_slice.len() as u32 / size.height),
+                rows_per_image: NonZeroU32::new(size.width),
             }, 
             size);
             
             let view = texture.create_view(&TextureViewDescriptor {
                 label: "y positions".into(),
                 format: Some(TextureFormat::R32Float),
-                dimension: Some(TextureViewDimension::D1),
+                dimension: Some(TextureViewDimension::D2),
                 aspect: TextureAspect::All,
                 base_mip_level: 0,
                 mip_level_count: NonZeroU32::new(1),
