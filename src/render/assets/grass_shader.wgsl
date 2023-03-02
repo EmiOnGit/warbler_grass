@@ -85,7 +85,7 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
 
     // position of the vertex in the y_texture
     #ifdef HEIGHT_MAP
-        position_field_offset.y = height_map_offset(vertex.xz_offset);
+        position_field_offset.y = height_map_offset(position_field_offset.xz);
     #else
         let dim = vec2<u32>(textureDimensions(y_positions, 0));
         let y_coord = vec2<u32>(instance_index % dim.x, instance_index / dim.x);
