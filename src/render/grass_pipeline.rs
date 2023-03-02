@@ -118,13 +118,16 @@ impl SpecializedMeshPipeline for GrassPipeline {
     ) -> Result<RenderPipelineDescriptor, SpecializedMeshPipelineError> {
         let mut descriptor = self.mesh_pipeline.specialize(key.mesh_key, layout)?;
         descriptor.label = Some("Grass Render Pipeline".into());
+        descriptor.layout.push(self.region_layout.clone());
+        descriptor.layout.push(self.height_map_layout.clone());
         let vertex = &mut descriptor.vertex;
         vertex.shader = self.shader.clone();
         if key.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             vertex.shader_defs.push("HEIGHT_MAP".into());
+        } else {
+            descriptor.layout.push(self.explicit_height_layout.clone());
         }
-        descriptor.layout.push(self.region_layout.clone());
-        descriptor.layout.push(self.height_map_layout.clone());
+        
         descriptor.vertex.buffers.push(VertexBufferLayout {
             array_stride: VertexFormat::Float32x4.size(),
             step_mode: VertexStepMode::Instance,
