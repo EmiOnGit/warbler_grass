@@ -11,7 +11,9 @@ use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::{
     BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor,
-    BufferUsages, ShaderType, TextureViewId, TextureUsages, TextureFormat, TextureDimension, TextureDescriptor, Extent3d, TextureViewDescriptor, TextureViewDimension, TextureAspect, ImageCopyTexture, Origin3d, ImageDataLayout,
+    BufferUsages, Extent3d, ImageCopyTexture, ImageDataLayout, Origin3d, ShaderType, TextureAspect,
+    TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureViewDescriptor,
+    TextureViewDimension, TextureViewId,
 };
 use bevy::render::renderer::{RenderDevice, RenderQueue};
 use bevy::render::texture::FallbackImage;
@@ -33,22 +35,12 @@ pub(crate) fn prepare_instance_buffer(
             HeightRepresentation::Uniform(height) => vec![*height; spawner.positions_xz.len()],
             HeightRepresentation::PerBlade(heights) => heights.clone(),
         };
-        let instance_slice: Vec<Vec3> = if spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
-            spawner
-                .positions_xz
-                .iter()
-                .zip(heights)
-                .map(|(xz, height)| Vec3::new(xz.x, xz.y, height))
-                .collect()
-        } else {
-            spawner
-                .positions_xz
-                .iter()
-                // .zip(spawner.positions_y.iter())
-                .zip(heights)
-                .map(|(xz, height)| Vec3::new(xz.x, xz.y, height))
-                .collect()
-        };
+        let instance_slice: Vec<Vec3> = spawner
+            .positions_xz
+            .iter()
+            .zip(heights)
+            .map(|(xz, height)| Vec3::new(xz.x, xz.y, height))
+            .collect();
         if let Some(chunk) = cache.get_mut(&id) {
             chunk.instances = Some(instance_slice);
             let inst = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -83,11 +75,11 @@ pub(crate) fn prepare_explicit_y_buffer(
             let mut y_positions = spawner.positions_y.clone();
 
             let device = render_device.wgpu_device();
-           
+
             // the dimensions of the texture are choosen to be nxn for the tiniest n which can contain the data
             let sqrt = (y_positions.len() as f32).sqrt() as u32 + 1;
 
-            let fill_data = vec![0.;(sqrt * sqrt) as usize - y_positions.len()];
+            let fill_data = vec![0.; (sqrt * sqrt) as usize - y_positions.len()];
             y_positions.extend(fill_data);
 
             let size = Extent3d {
@@ -97,7 +89,7 @@ pub(crate) fn prepare_explicit_y_buffer(
             };
             // wgpu expects a byte array
             let data_slice = bytemuck::cast_slice(y_positions.as_slice());
-            let texture = device.create_texture(&TextureDescriptor { 
+            let texture = device.create_texture(&TextureDescriptor {
                 size,
                 mip_level_count: 1,
                 sample_count: 1,
@@ -108,21 +100,23 @@ pub(crate) fn prepare_explicit_y_buffer(
                 view_formats: &[],
             });
             // write data to texture
-            render_queue.write_texture(ImageCopyTexture {
-                texture: &texture,
-                mip_level: 0,
-                origin: Origin3d::ZERO,
-                aspect: TextureAspect::All,
-            }, 
-            data_slice, 
-            ImageDataLayout {
-                offset: 0,
-                // Multiplication with 4 because 1 pixel = 1_f32 = 4_u8 
-                bytes_per_row:  NonZeroU32::new(4 * size.width),
-                rows_per_image: NonZeroU32::new(size.height),
-            }, 
-            size);
-            
+            render_queue.write_texture(
+                ImageCopyTexture {
+                    texture: &texture,
+                    mip_level: 0,
+                    origin: Origin3d::ZERO,
+                    aspect: TextureAspect::All,
+                },
+                data_slice,
+                ImageDataLayout {
+                    offset: 0,
+                    // Multiplication with 4 because 1 pixel = 1_f32 = 4_u8
+                    bytes_per_row: NonZeroU32::new(4 * size.width),
+                    rows_per_image: NonZeroU32::new(size.height),
+                },
+                size,
+            );
+
             let view = texture.create_view(&TextureViewDescriptor {
                 label: "y positions".into(),
                 format: Some(TextureFormat::R32Float),
@@ -137,13 +131,10 @@ pub(crate) fn prepare_explicit_y_buffer(
             let bind_group_descriptor = BindGroupDescriptor {
                 label: Some("grass explicit y positions bind group"),
                 layout: &layout,
-                entries: &[
-                    BindGroupEntry {
-                        binding: 0,
-                        resource: BindingResource::TextureView(&view),
-                    },
-                    
-                ],
+                entries: &[BindGroupEntry {
+                    binding: 0,
+                    resource: BindingResource::TextureView(&view),
+                }],
             };
             let bind_group = render_device.create_bind_group(&bind_group_descriptor);
             chunk.explicit_y_buffer = Some(bind_group);
