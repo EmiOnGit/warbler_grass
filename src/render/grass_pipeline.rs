@@ -20,7 +20,7 @@ pub struct GrassPipeline {
     mesh_pipeline: MeshPipeline,
     pub region_layout: BindGroupLayout,
     pub height_map_layout: BindGroupLayout,
-    pub flags: u32,
+    pub explicit_height_layout: BindGroupLayout,
 }
 
 impl FromWorld for GrassPipeline {
@@ -81,14 +81,30 @@ impl FromWorld for GrassPipeline {
                     },
                 ],
             });
+        let explicit_height_layout =
+        render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+            label: Some("warbler_grass explicit height layout"),
+            entries: &[
+                // heights
+                BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Texture { 
+                        sample_type: TextureSampleType::Float { filterable: false }, 
+                        view_dimension: TextureViewDimension::D1, 
+                        multisampled: false },
+                    count: None,
+                },
+            ],
+        });
         let shader = GRASS_SHADER_HANDLE.typed::<Shader>();
         let mesh_pipeline = world.resource::<MeshPipeline>();
         GrassPipeline {
             shader,
             mesh_pipeline: mesh_pipeline.clone(),
             region_layout,
+            explicit_height_layout,
             height_map_layout,
-            flags: 0,
         }
     }
 }
