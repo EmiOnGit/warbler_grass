@@ -44,7 +44,7 @@ fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transform, 
 }
 #[allow(dead_code)]
 pub fn get_grass_grid() -> GrassSpawner {
-    let positions = (0..10000)
+    let positions = (0..10_000)
         .into_iter()
         .map(|i| Vec3::new((i / 100) as f32, 0., (i % 100) as f32) / 2.)
         .collect();
