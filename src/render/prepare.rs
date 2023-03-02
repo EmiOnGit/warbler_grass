@@ -298,7 +298,7 @@ fn prepare_texture_from_data<T: Default + Clone + bytemuck::Pod>(mut data: Vec<T
         dimension: TextureDimension::D2,
         format: TextureFormat::R32Float,
         usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
-        label: Some("y positions texture"),
+        label: None,
         view_formats: &[],
     });
     let t_size = mem::size_of::<T>();
@@ -322,7 +322,7 @@ fn prepare_texture_from_data<T: Default + Clone + bytemuck::Pod>(mut data: Vec<T
         texture_size,
     );
     texture.create_view(&TextureViewDescriptor {
-        label: "y positions".into(),
+        label: None,
         format: Some(TextureFormat::R32Float),
         dimension: Some(TextureViewDimension::D2),
         aspect: TextureAspect::All,
