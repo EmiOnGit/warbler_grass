@@ -79,40 +79,35 @@ pub(crate) fn prepare_explicit_y_buffer(
         if spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             continue;
         }
-        let y_positions = spawner.positions_y.clone();
         if let Some(chunk) = cache.get_mut(&id) {
-            // chunk.instances = Some(instance_slice);
-            // let inst = render_device.create_buffer_with_data(&BufferInitDescriptor {
-            //     label: Some("Instance entity buffer"),
-            //     contents: bytemuck::cast_slice(y_positions.as_slice()),
-            //     usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
-            // });
-            // let a = Image::default();
-            let element_count = y_positions.len();
-        let size = Extent3d {
-            width: element_count as u32 % 16384,
-            height: (element_count as u32 / 16384) + 1,
-            depth_or_array_layers: 1,
-        };
-        println!("size: {:?}", size);
-        let device = render_device.wgpu_device();
-        let data_slice = bytemuck::cast_slice(y_positions.as_slice());
-        let texture = device.create_texture(&TextureDescriptor { 
-            // All textures are stored as 3D, we represent our 2D texture
-            // by setting depth to 1.
-            size,
-            mip_level_count: 1, // We'll talk about this a little later
-            sample_count: 1,
-            dimension: TextureDimension::D2,
-            // Most images are stored using sRGB so we need to reflect that here.
-            format: TextureFormat::R32Float,
-            // TEXTURE_BINDING tells wgpu that we want to use this texture in shaders
-            // COPY_DST means that we want to copy data to this texture
-            usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
-            label: Some("diffuse_texture"),
-        
-            view_formats: &[],
+            let mut y_positions = spawner.positions_y.clone();
+
+            let device = render_device.wgpu_device();
+           
+            // the dimensions of the texture are choosen to be nxn for the tiniest n which can contain the data
+            let sqrt = (y_positions.len() as f32).sqrt() as u32 + 1;
+
+            let fill_data = vec![0.;(sqrt * sqrt) as usize - y_positions.len()];
+            y_positions.extend(fill_data);
+
+            let size = Extent3d {
+                width: sqrt,
+                height: sqrt,
+                depth_or_array_layers: 1,
+            };
+            // wgpu expects a byte array
+            let data_slice = bytemuck::cast_slice(y_positions.as_slice());
+            let texture = device.create_texture(&TextureDescriptor { 
+                size,
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: TextureDimension::D2,
+                format: TextureFormat::R32Float,
+                usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
+                label: Some("y positions texture"),
+                view_formats: &[],
             });
+            // write data to texture
             render_queue.write_texture(ImageCopyTexture {
                 texture: &texture,
                 mip_level: 0,
@@ -122,8 +117,9 @@ pub(crate) fn prepare_explicit_y_buffer(
             data_slice, 
             ImageDataLayout {
                 offset: 0,
-                bytes_per_row:  NonZeroU32::new(data_slice.len() as u32 / size.height),
-                rows_per_image: NonZeroU32::new(size.width),
+                // Multiplication with 4 because 1 pixel = 1_f32 = 4_u8 
+                bytes_per_row:  NonZeroU32::new(4 * size.width),
+                rows_per_image: NonZeroU32::new(size.height),
             }, 
             size);
             
@@ -149,9 +145,7 @@ pub(crate) fn prepare_explicit_y_buffer(
                     
                 ],
             };
-
             let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-            
             chunk.explicit_y_buffer = Some(bind_group);
         } else {
             warn!(
