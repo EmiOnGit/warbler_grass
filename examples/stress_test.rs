@@ -1,6 +1,6 @@
 use bevy::{
-    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
-    prelude::*, window::PresentMode,
+    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin, Diagnostics, Diagnostic},
+    prelude::*, window::PresentMode, core::FrameCount,
 };
 use warbler_grass::{grass_spawner::GrassSpawner, prelude::*};
 mod helper;
@@ -13,10 +13,26 @@ fn main() {
         )
         .add_plugin(WarblersPlugin)
         .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        // .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(helper::SimpleCamera)
         .add_startup_system(setup_grass)
+        .add_startup_system(setup_fps)
+        .add_system(diagnostic_system)
         .run();
+}
+pub fn setup_fps(mut diagnostics: ResMut<Diagnostics>) {
+    diagnostics.add(Diagnostic::new(FrameTimeDiagnosticsPlugin::FPS, "fps", 10000));
+}
+pub fn diagnostic_system(
+    mut diagnostics: ResMut<Diagnostics>,
+    time: Res<Time>,
+    frame_count: Res<FrameCount>,
+) {
+    let delta_seconds = time.raw_delta_seconds_f64();
+    if delta_seconds == 0.0 {
+        return;
+    }
+    diagnostics.add_measurement(FrameTimeDiagnosticsPlugin::FPS, || 1.0 / delta_seconds);
 }
 fn setup_grass(mut commands: Commands) {
     let positions = (0..5_000_000)
