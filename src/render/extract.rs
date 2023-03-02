@@ -30,7 +30,7 @@ pub(crate) fn extract_grass(
         commands
             .spawn(spawner.clone())
             .insert(EntityStore(entity))
-            .insert(aabb.clone());
+            .insert(*aabb);
     }
 }
 #[derive(Clone, Component)]
@@ -44,6 +44,6 @@ pub(crate) fn extract_visibility(
 ) {
     entity_cache.entities = visibility_queue
         .iter()
-        .filter_map(|(e, visibility)| visibility.is_visible().then(|| e))
+        .filter_map(|(e, visibility)| visibility.is_visible().then_some(e))
         .collect();
 }
