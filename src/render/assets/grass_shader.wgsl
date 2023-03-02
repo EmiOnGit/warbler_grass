@@ -27,20 +27,14 @@ var noise_texture: texture_2d<f32>;
     var y_positions: texture_2d<f32>;
     
 #endif
+
 @group(4) @binding(0)
 var xz_positions: texture_2d<f32>;
+
 @group(5) @binding(0)
 var heights: texture_2d<f32>;
-#import bevy_pbr::mesh_functions
 
-struct Vertex {
-    // position of the local vertex in the blade
-    @location(0) position: vec3<f32>,
-    // // xz position of the blade as an instance
-    // @location(1) xz_offset: vec2<f32>,
-    // // height of the blade
-    // @location(2) height: f32,
-};
+#import bevy_pbr::mesh_functions
 
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
@@ -70,38 +64,49 @@ fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
         return texture_r * aabb.y;
     }
 #endif
-fn get_pixel(index: u32, texture: texture_2d<f32>) -> vec4<f32> {
+
+// 2d textures are used to store vertex information.
+// normally this would be done using storage buffers.
+// Storage buffer as of now are not supported by wgsl, therefore this hack is used
+fn storage_pixel_from_texture(index: u32, texture: texture_2d<f32>) -> vec4<f32> {
     let dim = vec2<u32>(textureDimensions(texture, 0));
     let coord = vec2<u32>(index % dim.x, index / dim.x);
     let pixel = textureLoad(texture,coord,0);
     return(pixel);
 }
+
 @vertex
-fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
+fn vertex(@location(0) vertex_position: vec3<f32>, @builtin(instance_index) instance_index: u32) -> VertexOutput {
     var out: VertexOutput;
-    // load xz positions
-    let xz_pixel = get_pixel(instance_index, xz_positions);
+    // load explicit xz positions
+    let xz_pixel = storage_pixel_from_texture(instance_index, xz_positions);
     var position_field_offset = vec3<f32>(xz_pixel.r, 0.,xz_pixel.g);
 
     // position of the vertex in the y_texture
+    // ---Y_POSITIONS---
     #ifdef HEIGHT_MAP
+        // from height map
         position_field_offset.y = height_map_offset(position_field_offset.xz);
     #else
-        let dim = vec2<u32>(textureDimensions(y_positions, 0));
-        let y_coord = vec2<u32>(instance_index % dim.x, instance_index / dim.x);
-        position_field_offset.y = textureLoad(y_positions, y_coord, 0).r;
+        // from explicit y positions
+        position_field_offset.y = storage_pixel_from_texture(instance_index, y_positions).r;
     #endif
-    let height = get_pixel(instance_index, heights).r;
-    var position = vertex.position * vec3<f32>(1.,height, 1.) + position_field_offset;
+    // ---HEIGHT---
+    let height = storage_pixel_from_texture(instance_index, heights).r;
+    var position = vertex_position * vec3<f32>(1.,height, 1.) + position_field_offset;
 
+    // ---WIND---
     // only applies wind if the vertex is not on the bottom of the grass (or very small)
     let offset = wind_offset(position_field_offset.xz);
-    let strength = max(0.,log(vertex.position.y + 1.));
+    let strength = max(0.,log(vertex_position.y + 1.));
     position.x += offset.x * strength;
     position.z += offset.y * strength;
+
+    // ---CLIP_POSITION---
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
 
-    let lambda = clamp(vertex.position.y, 0.,1.);
+    // ---COLOR---
+    let lambda = clamp(vertex_position.y, 0.,1.);
     out.color = mix(config.bottom_color, config.main_color, lambda);
     return out;
 }
