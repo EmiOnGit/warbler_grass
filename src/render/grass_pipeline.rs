@@ -20,7 +20,7 @@ pub struct GrassPipeline {
     mesh_pipeline: MeshPipeline,
     pub region_layout: BindGroupLayout,
     pub height_map_layout: BindGroupLayout,
-    pub explicit_height_layout: BindGroupLayout,
+    pub explicit_y_layout: BindGroupLayout,
 }
 
 impl FromWorld for GrassPipeline {
@@ -81,7 +81,7 @@ impl FromWorld for GrassPipeline {
                     },
                 ],
             });
-        let explicit_height_layout =
+        let explicit_y_layout =
         render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
             label: Some("warbler_grass explicit height layout"),
             entries: &[
@@ -103,7 +103,7 @@ impl FromWorld for GrassPipeline {
             shader,
             mesh_pipeline: mesh_pipeline.clone(),
             region_layout,
-            explicit_height_layout,
+            explicit_y_layout,
             height_map_layout,
         }
     }
@@ -125,23 +125,23 @@ impl SpecializedMeshPipeline for GrassPipeline {
         if key.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             vertex.shader_defs.push("HEIGHT_MAP".into());
         } else {
-            descriptor.layout.push(self.explicit_height_layout.clone());
+            descriptor.layout.push(self.explicit_y_layout.clone());
         }
         
         descriptor.vertex.buffers.push(VertexBufferLayout {
-            array_stride: VertexFormat::Float32x4.size(),
+            array_stride: VertexFormat::Float32x3.size(),
             step_mode: VertexStepMode::Instance,
             attributes: vec![
                 // position of the mesh as instance
                 VertexAttribute {
-                    format: VertexFormat::Float32x3,
+                    format: VertexFormat::Float32x2,
                     offset: 0,
                     shader_location: 1,
                 },
                 // height scale
                 VertexAttribute {
                     format: VertexFormat::Float32,
-                    offset: VertexFormat::Float32x3.size(),
+                    offset: VertexFormat::Float32x2.size(),
                     shader_location: 2,
                 },
             ],

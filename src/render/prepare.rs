@@ -1,3 +1,4 @@
+use std::num::NonZeroU32;
 use std::ops::Mul;
 
 use super::extract::EntityStore;
@@ -10,9 +11,9 @@ use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::{
     BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor,
-    BufferUsages, ShaderType, TextureViewId,
+    BufferUsages, ShaderType, TextureViewId, TextureUsages, TextureFormat, TextureDimension, TextureDescriptor, Extent3d, TextureViewDescriptor, TextureViewDimension, TextureAspect, ImageCopyTexture, Origin3d, ImageDataLayout,
 };
-use bevy::render::renderer::RenderDevice;
+use bevy::render::renderer::{RenderDevice, RenderQueue};
 use bevy::render::texture::FallbackImage;
 use bytemuck::{Pod, Zeroable};
 
@@ -32,20 +33,20 @@ pub(crate) fn prepare_instance_buffer(
             HeightRepresentation::Uniform(height) => vec![*height; spawner.positions_xz.len()],
             HeightRepresentation::PerBlade(heights) => heights.clone(),
         };
-        let instance_slice: Vec<Vec4> = if spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+        let instance_slice: Vec<Vec3> = if spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             spawner
                 .positions_xz
                 .iter()
                 .zip(heights)
-                .map(|(xz, height)| Vec4::new(xz.x, 0.0, xz.y, height))
+                .map(|(xz, height)| Vec3::new(xz.x, xz.y, height))
                 .collect()
         } else {
             spawner
                 .positions_xz
                 .iter()
-                .zip(spawner.positions_y.iter())
+                // .zip(spawner.positions_y.iter())
                 .zip(heights)
-                .map(|((xz, y), height)| Vec4::new(xz.x, *y, xz.y, height))
+                .map(|(xz, height)| Vec3::new(xz.x, xz.y, height))
                 .collect()
         };
         if let Some(chunk) = cache.get_mut(&id) {
@@ -57,6 +58,98 @@ pub(crate) fn prepare_instance_buffer(
             });
             chunk.instance_buffer = Some(inst);
             chunk.flags = spawner.flags;
+        } else {
+            warn!(
+                "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"
+            );
+        }
+    }
+}
+pub(crate) fn prepare_explicit_y_buffer(
+    mut cache: ResMut<GrassCache>,
+    render_device: Res<RenderDevice>,
+    render_queue: Res<RenderQueue>,
+    pipeline: Res<GrassPipeline>,
+    inserted_grass: Query<(&GrassSpawner, &EntityStore)>,
+) {
+    for (spawner, EntityStore(id)) in inserted_grass.iter() {
+        if !spawner.flags.contains(GrassSpawnerFlags::Y_DEFINED) {
+            panic!("Cannot spawn grass without the y-positions defined");
+        }
+        if spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+            continue;
+        }
+        let y_positions = spawner.positions_y.clone();
+        if let Some(chunk) = cache.get_mut(&id) {
+            // chunk.instances = Some(instance_slice);
+            // let inst = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            //     label: Some("Instance entity buffer"),
+            //     contents: bytemuck::cast_slice(y_positions.as_slice()),
+            //     usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
+            // });
+            // let a = Image::default();
+        let size = Extent3d {
+            width: y_positions.len() as u32,
+            height: 1,
+            depth_or_array_layers: 1,
+        };
+        let device = render_device.wgpu_device();
+        let texture = device.create_texture(&TextureDescriptor { 
+            // All textures are stored as 3D, we represent our 2D texture
+            // by setting depth to 1.
+            size,
+            mip_level_count: 1, // We'll talk about this a little later
+            sample_count: 1,
+            dimension: TextureDimension::D1,
+            // Most images are stored using sRGB so we need to reflect that here.
+            format: TextureFormat::R32Float,
+            // TEXTURE_BINDING tells wgpu that we want to use this texture in shaders
+            // COPY_DST means that we want to copy data to this texture
+            usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
+            label: Some("diffuse_texture"),
+        
+            view_formats: &[],
+            });
+            render_queue.write_texture(ImageCopyTexture {
+                texture: &texture,
+                mip_level: 0,
+                origin: Origin3d::ZERO,
+                aspect: TextureAspect::All,
+            }, 
+            bytemuck::cast_slice(y_positions.as_slice()), 
+            ImageDataLayout {
+                offset: 0,
+                bytes_per_row: None,
+                rows_per_image: NonZeroU32::new(1),
+            }, 
+            size);
+            
+            let view = texture.create_view(&TextureViewDescriptor {
+                label: "y positions".into(),
+                format: Some(TextureFormat::R32Float),
+                dimension: Some(TextureViewDimension::D1),
+                aspect: TextureAspect::All,
+                base_mip_level: 0,
+                mip_level_count: NonZeroU32::new(1),
+                base_array_layer: 0,
+                array_layer_count: NonZeroU32::new(1),
+            });
+            let layout = pipeline.explicit_y_layout.clone();
+            let bind_group_descriptor = BindGroupDescriptor {
+                label: Some("grass explicit y positions bind group"),
+                layout: &layout,
+                entries: &[
+                    BindGroupEntry {
+                        binding: 0,
+                        resource: BindingResource::TextureView(&view),
+                    },
+                    
+                ],
+            };
+
+            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+            
+            chunk.explicit_y_buffer = Some(bind_group);
         } else {
             warn!(
                 "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"

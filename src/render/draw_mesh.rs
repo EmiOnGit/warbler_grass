@@ -39,6 +39,7 @@ impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
         // set uniforms
         pass.set_bind_group(2, chunk.uniform_bindgroup.as_ref().unwrap(), &[]);
         pass.set_bind_group(3, chunk.height_map.as_ref().unwrap(), &[]);
+        pass.set_bind_group(4, chunk.explicit_y_buffer.as_ref().unwrap(), &[]);
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
         pass.set_vertex_buffer(1, chunk.instance_buffer.as_ref().unwrap().slice(..));
         let grass_blade_count = chunk.instances.as_ref().unwrap().len() as u32;

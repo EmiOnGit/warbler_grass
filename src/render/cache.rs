@@ -14,9 +14,10 @@ pub struct GrassCache {
 #[derive(Debug, Default)]
 pub struct CachedGrassChunk {
     pub uniform_bindgroup: Option<BindGroup>,
-    pub instances: Option<Vec<Vec4>>,
+    pub instances: Option<Vec<Vec3>>,
     pub instance_buffer: Option<Buffer>,
     pub height_map: Option<BindGroup>,
+    pub explicit_y_buffer: Option<BindGroup>,
     pub transform: GlobalTransform,
     pub flags: GrassSpawnerFlags,
 }
