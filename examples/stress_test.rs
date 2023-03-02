@@ -1,12 +1,16 @@
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
-    prelude::*,
+    prelude::*, window::PresentMode,
 };
 use warbler_grass::{grass_spawner::GrassSpawner, prelude::*};
 mod helper;
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {present_mode: PresentMode::Immediate, ..default()}), 
+            ..default()
+        })
+        )
         .add_plugin(WarblersPlugin)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
