@@ -38,8 +38,8 @@ struct VertexOutput {
     @location(0) color: vec4<f32>,
 };
 
-let NOISE_TEXTURE_SPEED: f32 = 30.;
-let NOISE_TEXTURE_ZOOM: f32 = 5.;
+const NOISE_TEXTURE_SPEED: f32 = 30.;
+const NOISE_TEXTURE_ZOOM: f32 = 5.;
 
 fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     var texture_offset = config.wind.xy * globals.time * NOISE_TEXTURE_SPEED;
