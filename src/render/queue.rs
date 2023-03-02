@@ -29,7 +29,7 @@ pub fn queue_grass_buffers(
 
     let msaa_key = MeshPipelineKey::from_msaa_samples(msaa.samples());
 
-    for (view, mut transparent_phase) in &mut views {
+    for (view, mut opaque_phase) in &mut views {
         let view_key = msaa_key | MeshPipelineKey::from_hdr(view.hdr);
         let rangefinder = view.rangefinder3d();
         for (entity, mesh_uniform, mesh_handle) in material_meshes
@@ -49,7 +49,7 @@ pub fn queue_grass_buffers(
                         &mesh.layout,
                     )
                     .unwrap();
-                transparent_phase.add(Opaque3d {
+                opaque_phase.add(Opaque3d {
                     entity,
                     pipeline,
                     draw_function: draw_custom,
