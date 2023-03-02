@@ -6,8 +6,7 @@ use bevy::{
         render_resource::{
             BindGroupLayout, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType,
             BufferBindingType, RenderPipelineDescriptor, ShaderStages, SpecializedMeshPipeline,
-            SpecializedMeshPipelineError, TextureSampleType, TextureViewDimension, VertexAttribute,
-            VertexBufferLayout, VertexFormat, VertexStepMode,
+            SpecializedMeshPipelineError, TextureSampleType, TextureViewDimension,
         },
         renderer::RenderDevice,
     },
@@ -21,6 +20,8 @@ pub struct GrassPipeline {
     pub region_layout: BindGroupLayout,
     pub height_map_layout: BindGroupLayout,
     pub explicit_y_layout: BindGroupLayout,
+    pub height_layout: BindGroupLayout,
+    pub explicit_xz_layout: BindGroupLayout,
 }
 
 impl FromWorld for GrassPipeline {
@@ -83,9 +84,8 @@ impl FromWorld for GrassPipeline {
             });
         let explicit_y_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warbler_grass explicit height layout"),
+                label: Some("warbler_grass explicit y layout"),
                 entries: &[
-                    // heights
                     BindGroupLayoutEntry {
                         binding: 0,
                         visibility: ShaderStages::VERTEX,
@@ -98,12 +98,47 @@ impl FromWorld for GrassPipeline {
                     },
                 ],
             });
+            let height_layout =
+            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+                label: Some("warbler_grass explicit y layout"),
+                entries: &[
+                    BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: ShaderStages::VERTEX,
+                        ty: BindingType::Texture {
+                            sample_type: TextureSampleType::Float { filterable: false },
+                            view_dimension: TextureViewDimension::D2,
+                            multisampled: false,
+                        },
+                        count: None,
+                    },
+                ],
+            });
+        let explicit_xz_layout =
+        render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+            label: Some("warbler_grass explicit height layout"),
+            entries: &[
+                // heights
+                BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Texture {
+                        sample_type: TextureSampleType::Float { filterable: false },
+                        view_dimension: TextureViewDimension::D2,
+                        multisampled: false,
+                    },
+                    count: None,
+                },
+            ],
+        });
         let shader = GRASS_SHADER_HANDLE.typed::<Shader>();
         let mesh_pipeline = world.resource::<MeshPipeline>();
         GrassPipeline {
             shader,
             mesh_pipeline: mesh_pipeline.clone(),
             region_layout,
+            height_layout,
+            explicit_xz_layout,
             explicit_y_layout,
             height_map_layout,
         }
@@ -128,25 +163,11 @@ impl SpecializedMeshPipeline for GrassPipeline {
         } else {
             descriptor.layout.push(self.explicit_y_layout.clone());
         }
-
-        descriptor.vertex.buffers.push(VertexBufferLayout {
-            array_stride: VertexFormat::Float32x3.size(),
-            step_mode: VertexStepMode::Instance,
-            attributes: vec![
-                // position of the mesh as instance
-                VertexAttribute {
-                    format: VertexFormat::Float32x2,
-                    offset: 0,
-                    shader_location: 1,
-                },
-                // height scale
-                VertexAttribute {
-                    format: VertexFormat::Float32,
-                    offset: VertexFormat::Float32x2.size(),
-                    shader_location: 2,
-                },
-            ],
-        });
+        if !key.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
+            descriptor.layout.push(self.explicit_xz_layout.clone());
+            descriptor.layout.push(self.height_layout.clone());
+        }
+        
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone();
         Ok(descriptor)
     }

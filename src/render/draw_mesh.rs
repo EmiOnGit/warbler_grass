@@ -45,9 +45,12 @@ impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
         } else {
             pass.set_bind_group(3, chunk.explicit_y_buffer.as_ref().unwrap(), &[]);
         }
+        if !chunk.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
+            pass.set_bind_group(4, chunk.explicit_xz_buffer.as_ref().unwrap(), &[]);
+            pass.set_bind_group(5, chunk.height_buffer.as_ref().unwrap(), &[]);
+        }
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
-        pass.set_vertex_buffer(1, chunk.instance_buffer.as_ref().unwrap().slice(..));
-        let grass_blade_count = chunk.instances.as_ref().unwrap().len() as u32;
+        let grass_blade_count = chunk.instance_count as u32;
         match &gpu_mesh.buffer_info {
             GpuBufferInfo::Indexed {
                 buffer,

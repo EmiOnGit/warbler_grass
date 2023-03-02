@@ -25,16 +25,21 @@ var noise_texture: texture_2d<f32>;
 #else
     @group(3) @binding(0)
     var y_positions: texture_2d<f32>;
+    
 #endif
+@group(4) @binding(0)
+var xz_positions: texture_2d<f32>;
+@group(5) @binding(0)
+var heights: texture_2d<f32>;
 #import bevy_pbr::mesh_functions
 
 struct Vertex {
     // position of the local vertex in the blade
     @location(0) position: vec3<f32>,
-    // xz position of the blade as an instance
-    @location(1) xz_offset: vec2<f32>,
-    // height of the blade
-    @location(2) height: f32,
+    // // xz position of the blade as an instance
+    // @location(1) xz_offset: vec2<f32>,
+    // // height of the blade
+    // @location(2) height: f32,
 };
 
 struct VertexOutput {
@@ -65,13 +70,20 @@ fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
         return texture_r * aabb.y;
     }
 #endif
-
+fn get_pixel(index: u32, texture: texture_2d<f32>) -> vec4<f32> {
+    let dim = vec2<u32>(textureDimensions(texture, 0));
+    let coord = vec2<u32>(index % dim.x, index / dim.x);
+    let pixel = textureLoad(texture,coord,0);
+    return(pixel);
+}
 @vertex
 fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
     var out: VertexOutput;
+    // load xz positions
+    let xz_pixel = get_pixel(instance_index, xz_positions);
+    var position_field_offset = vec3<f32>(xz_pixel.r, 0.,xz_pixel.g);
 
     // position of the vertex in the y_texture
-    var position_field_offset = vec3<f32>(vertex.xz_offset.x, 0., vertex.xz_offset.y);
     #ifdef HEIGHT_MAP
         position_field_offset.y = height_map_offset(vertex.xz_offset);
     #else
@@ -79,7 +91,8 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
         let y_coord = vec2<u32>(instance_index % dim.x, instance_index / dim.x);
         position_field_offset.y = textureLoad(y_positions, y_coord, 0).r;
     #endif
-    var position = vertex.position * vec3<f32>(1.,vertex.height, 1.) + position_field_offset;
+    let height = get_pixel(instance_index, heights).r;
+    var position = vertex.position * vec3<f32>(1.,height, 1.) + position_field_offset;
 
     // only applies wind if the vertex is not on the bottom of the grass (or very small)
     let offset = wind_offset(position_field_offset.xz);
