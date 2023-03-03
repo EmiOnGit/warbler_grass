@@ -6,7 +6,10 @@ use bevy_mod_raycast::{
 
 use crate::grass_spawner::GrassSpawner;
 
-use super::draw_event::{draw_map, ActiveBrush, DrawEvent, Stencil};
+use super::{
+    brush::{ActiveBrush, Stencil},
+    draw_event::{draw_map, DrawEvent},
+};
 pub struct RayCastPlugin;
 
 impl Plugin for RayCastPlugin {
