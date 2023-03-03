@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::render_resource::{BindGroup, Buffer},
+    render::render_resource::BindGroup,
     utils::{HashMap, HashSet},
 };
 
@@ -14,10 +14,13 @@ pub struct GrassCache {
 #[derive(Debug, Default)]
 pub struct CachedGrassChunk {
     pub uniform_bindgroup: Option<BindGroup>,
-    pub instances: Option<Vec<Vec4>>,
-    pub instance_buffer: Option<Buffer>,
+    pub explicit_xz_buffer: Option<BindGroup>,
     pub height_map: Option<BindGroup>,
+    pub explicit_y_buffer: Option<BindGroup>,
+    pub height_buffer: Option<BindGroup>,
     pub transform: GlobalTransform,
+    pub instance_count: usize,
+
     pub flags: GrassSpawnerFlags,
 }
 #[derive(Resource, DerefMut, Deref, Debug, Default)]
