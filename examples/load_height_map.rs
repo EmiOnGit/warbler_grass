@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use warbler_grass::{
-    grass_spawner::GrassSpawner, height_map::HeightMap, warblers_plugin::WarblersPlugin,
-    WarblersBundle, editor::ray_cast,
+    editor::ray_cast, grass_spawner::GrassSpawner, height_map::HeightMap,
+    warblers_plugin::WarblersPlugin, WarblersBundle,
 };
 mod helper;
 
@@ -12,7 +12,6 @@ fn main() {
             ..Default::default()
         }))
         .add_plugin(WarblersPlugin)
-
         .add_plugin(helper::SimpleCamera)
         .add_plugin(ray_cast::RayCastPlugin)
         .add_startup_system(setup_grass)
