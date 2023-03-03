@@ -18,7 +18,19 @@ impl GrassSpawner {
     pub fn new() -> GrassSpawner {
         Self::default()
     }
+    /// Defines the positions of all grass blades.
+    pub fn from_positions(positions: Vec<Vec3>) -> GrassSpawner {
+        let mut spawner = Self::default();
+        let (positions_xz, positions_y) = positions
+            .into_iter()
+            .map(|position| (position.xz(), position.y))
+            .unzip();
+        spawner = spawner.with_positions_xz(positions_xz);
+        spawner = spawner.with_positions_y(positions_y);
 
+        spawner.validate();
+        spawner
+    }
     /// Defines the positions of all grass blades.
     pub fn with_positions(mut self, positions: Vec<Vec3>) -> GrassSpawner {
         assert!(!positions.is_empty());
