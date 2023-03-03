@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-use bevy_mod_raycast::RaycastSource;
-use warbler_grass::{editor::ray_cast::MyRaycastSet, grass_spawner::GrassSpawner};
+use warbler_grass::{editor::ray_cast::RayCamera, grass_spawner::GrassSpawner};
 
 pub struct SimpleCamera;
 impl Plugin for SimpleCamera {
@@ -16,7 +15,7 @@ fn setup_camera(mut commands: Commands) {
                 .looking_at(Vec3::new(0., 15., 0.), Vec3::Y),
             ..default()
         },
-        RaycastSource::<MyRaycastSet>::new_transform_empty(),
+        RayCamera::default(),
     ));
 }
 fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transform, With<Camera>>) {
