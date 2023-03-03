@@ -49,7 +49,6 @@ fn on_load(
                 transform: Transform::from_xyz(200., 0., 0.),
                 ..default()
             });
-            println!("spawned sprite");
         } else {
             info!("returned none");
         }
