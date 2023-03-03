@@ -3,19 +3,13 @@ use bevy::{math::{Vec3Swizzles, Vec3A}, render::primitives::Aabb};
 
 use crate::grass_spawner::GrassSpawner;
 
-use super::{
-    brush::{ActiveBrush, Stencil},
-    draw_event::{draw_map, DrawEvent},
-};
-pub struct RayCastPlugin;
+use super::draw_event::DrawEvent;
+pub(super) struct RayCastPlugin;
 
 impl Plugin for RayCastPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system(check_collision_on_click)
-            .insert_resource(ActiveBrush::new(Stencil::default()))
-            .add_event::<DrawEvent>()
-            .add_system(draw_map)
             .add_system(update_camera_ray);
     }
 }
