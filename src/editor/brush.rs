@@ -18,7 +18,7 @@ pub struct Stencil {
 impl Default for Stencil {
     fn default() -> Self {
         Self {
-            size: 40,
+            size: 60,
             strength: 3.,
         }
     }
@@ -31,7 +31,7 @@ pub trait Brush: Sync + Send {
         let position = (image_dimensions * position).as_ivec2();
         let range = self.size() as i32 / 2;
         (-range..range)
-            .flat_map(|i| (-range..-range).map(move |j| (i, j)))
+            .flat_map(|i| (-range..range).map(move |j| (i, j)))
             .filter(|(x, y)| {
                 position.y.checked_add(*y).is_some() && position.x.checked_add(*x).is_some()
             })
@@ -39,8 +39,8 @@ pub trait Brush: Sync + Send {
             .filter(|(x, y)| {
                 *x >= 0
                     && *y >= 0
-                    && *x >= image_dimensions.x as i32
-                    && *y >= image_dimensions.y as i32
+                    && *x < image_dimensions.x as i32
+                    && *y < image_dimensions.y as i32
             })
             .map(|(x, y)| (x as u32, y as u32))
             .collect()
@@ -55,7 +55,6 @@ impl Brush for Stencil {
         let mut buffer = dynamic_image.into_rgba8();
 
         for (x, y) in self.pixel_positions(image.size(), position).into_iter() {
-            println!("{x} {y}");
             let pixel = &mut buffer.get_pixel_mut(x as u32, y as u32).0;
             paint_gray(pixel, self.strength);
         }
