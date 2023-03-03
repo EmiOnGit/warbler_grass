@@ -1,5 +1,6 @@
 use bevy::prelude::*;
-use warbler_grass::grass_spawner::GrassSpawner;
+use bevy_mod_raycast::RaycastSource;
+use warbler_grass::{grass_spawner::GrassSpawner, ray_cast::MyRaycastSet};
 
 pub struct SimpleCamera;
 impl Plugin for SimpleCamera {
@@ -9,10 +10,10 @@ impl Plugin for SimpleCamera {
     }
 }
 fn setup_camera(mut commands: Commands) {
-    commands.spawn(Camera3dBundle {
+    commands.spawn((Camera3dBundle {
         transform: Transform::from_xyz(-5.0, 8., -5.0).looking_at(Vec3::new(0., 5., 0.), Vec3::Y),
         ..default()
-    });
+    }, RaycastSource::<MyRaycastSet>::new_transform_empty()));
 }
 fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transform, With<Camera>>) {
     for mut transform in &mut query {
