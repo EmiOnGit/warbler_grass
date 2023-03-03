@@ -16,6 +16,7 @@ pub struct CachedGrassChunk {
     pub uniform_bindgroup: Option<BindGroup>,
     pub explicit_xz_buffer: Option<BindGroup>,
     pub height_map: Option<BindGroup>,
+    pub density_map: Option<BindGroup>,
     pub explicit_y_buffer: Option<BindGroup>,
     pub height_buffer: Option<BindGroup>,
     pub transform: GlobalTransform,

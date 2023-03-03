@@ -124,7 +124,9 @@ impl GrassSpawner {
 
         self.flags.insert(GrassSpawnerFlags::XZ_DEFINED);
         self.flags.insert(GrassSpawnerFlags::DENSITY_MAP);
-
+        if density_map.noise {
+            self.flags.insert(GrassSpawnerFlags::DENSITY_MAP_NOISE);
+        }
         self.density_map = Some(density_map);
         self
     }
@@ -203,6 +205,7 @@ bitflags::bitflags! {
         const HEIGHT_DEFINED = (1 << 2);
         const HEIGHT_MAP     = (1 << 3);
         const DENSITY_MAP    = (1 << 4);
+        const DENSITY_MAP_NOISE= (1 << 5);
         const NONE           = 0;
         const UNINITIALIZED  = 0xFFFF;
     }

@@ -29,12 +29,12 @@ pub(crate) fn extract_grass(
         cache_value.transform = *global_transform;
         commands
             .spawn(spawner.clone())
-            .insert(EntityStore(entity))
+            .insert(EntityStorage(entity))
             .insert(*aabb);
     }
 }
 #[derive(Clone, Component)]
-pub(crate) struct EntityStore(pub Entity);
+pub(crate) struct EntityStorage(pub Entity);
 /// Extracts all visible grass entities into the render world.
 pub(crate) fn extract_visibility(
     visibility_queue: Extract<

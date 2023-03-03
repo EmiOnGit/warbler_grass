@@ -2,7 +2,7 @@ use std::mem;
 use std::num::NonZeroU32;
 use std::ops::Mul;
 
-use super::extract::EntityStore;
+use super::extract::EntityStorage;
 use super::grass_pipeline::GrassPipeline;
 use crate::grass_spawner::{GrassSpawner, GrassSpawnerFlags, HeightRepresentation};
 use crate::render::cache::GrassCache;
@@ -25,9 +25,9 @@ pub(crate) fn prepare_explicit_xz_buffer(
     pipeline: Res<GrassPipeline>,
     render_device: Res<RenderDevice>,
     render_queue: Res<RenderQueue>,
-    mut inserted_grass: Query<(&mut GrassSpawner, &EntityStore)>,
+    mut inserted_grass: Query<(&mut GrassSpawner, &EntityStorage)>,
 ) {
-    for (mut spawner, EntityStore(id)) in inserted_grass.iter_mut() {
+    for (mut spawner, EntityStorage(id)) in inserted_grass.iter_mut() {
         if !spawner.flags.contains(GrassSpawnerFlags::XZ_DEFINED) {
             panic!("Cannot spawn grass without the xz-positions defined");
         }
@@ -66,9 +66,9 @@ pub(crate) fn prepare_height_buffer(
     pipeline: Res<GrassPipeline>,
     render_device: Res<RenderDevice>,
     render_queue: Res<RenderQueue>,
-    mut inserted_grass: Query<(&mut GrassSpawner, &EntityStore)>,
+    mut inserted_grass: Query<(&mut GrassSpawner, &EntityStorage)>,
 ) {
-    for (mut spawner, EntityStore(id)) in inserted_grass.iter_mut() {
+    for (mut spawner, EntityStorage(id)) in inserted_grass.iter_mut() {
         if let Some(chunk) = cache.get_mut(id) {
             let view = match &mut spawner.heights {
                 HeightRepresentation::Uniform(height) => {
@@ -112,9 +112,9 @@ pub(crate) fn prepare_explicit_y_buffer(
     render_device: Res<RenderDevice>,
     render_queue: Res<RenderQueue>,
     pipeline: Res<GrassPipeline>,
-    mut inserted_grass: Query<(&mut GrassSpawner, &EntityStore)>,
+    mut inserted_grass: Query<(&mut GrassSpawner, &EntityStorage)>,
 ) {
-    for (mut spawner, EntityStore(id)) in inserted_grass.iter_mut() {
+    for (mut spawner, EntityStorage(id)) in inserted_grass.iter_mut() {
         if !spawner.flags.contains(GrassSpawnerFlags::Y_DEFINED) {
             panic!("Cannot spawn grass without the y-positions defined");
         }
@@ -153,21 +153,21 @@ pub(crate) fn prepare_height_map_buffer(
     pipeline: Res<GrassPipeline>,
     fallback_img: Res<FallbackImage>,
     images: Res<RenderAssets<Image>>,
-    inserted_grass: Query<(&GrassSpawner, &EntityStore, &Aabb)>,
-    mut local_height_map_buffer: Local<Vec<(EntityStore, Handle<Image>, Aabb)>>,
+    inserted_grass: Query<(&GrassSpawner, &EntityStorage, &Aabb)>,
+    mut local_height_map_storage: Local<Vec<(EntityStorage, Handle<Image>, Aabb)>>,
 ) {
-    let mut to_remove = Vec::new();
+    let mut has_loaded = Vec::new();
+    let layout = pipeline.height_map_layout.clone();
 
-    for (EntityStore(e), handle, aabb) in local_height_map_buffer.iter() {
+    for (EntityStorage(e), handle, aabb) in local_height_map_storage.iter() {
         if let Some(tex) = images.get(handle) {
-            to_remove.push(*e);
+            has_loaded.push(*e);
             let height_map_texture = &tex.texture_view;
             let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
                 label: Some("aabb buffer"),
-                contents: bytemuck::bytes_of(&aabb.half_extents.mul(2.).as_dvec3().as_vec3()),
+                contents: bytemuck::bytes_of(&Vec3::from(aabb.half_extents.mul(2.))),
                 usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
             });
-            let layout = pipeline.height_map_layout.clone();
             let bind_group_descriptor = BindGroupDescriptor {
                 label: Some("grass height map bind group"),
                 layout: &layout,
@@ -195,40 +195,27 @@ pub(crate) fn prepare_height_map_buffer(
             }
         }
     }
-    local_height_map_buffer.retain(|map| !to_remove.contains(&map.0 .0));
-    for (spawner, entity_store, aabb) in inserted_grass.iter() {
-        let id = entity_store.0;
-        if spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
-            let handle = &spawner.height_map.as_ref().unwrap().height_map;
-            if images.get(handle).is_none() {
-                local_height_map_buffer.push((entity_store.clone(), handle.clone(), *aabb));
-            }
-        }
-        let (height_map_texture, aabb_buffer) =
-            if !spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
-                let height_map_texture = &fallback_img.texture_view;
-                let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                    label: Some("aabb buffer"),
-                    contents: &[0],
-                    usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-                });
-                (height_map_texture, aabb_buffer)
-            } else {
-                let handle = spawner.height_map.as_ref().unwrap().height_map.clone();
-                let height_map_texture = if let Some(tex) = images.get(&handle) {
-                    &tex.texture_view
-                } else {
-                    &fallback_img.texture_view
-                };
+    local_height_map_storage.retain(|map| !has_loaded.contains(&map.0 .0));
 
-                let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                    label: Some("aabb buffer"),
-                    contents: bytemuck::bytes_of(&aabb.half_extents.mul(2.).as_dvec3().as_vec3()),
-                    usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-                });
-                (height_map_texture, aabb_buffer)
-            };
-        let layout = pipeline.height_map_layout.clone();
+    for (spawner, entity_store, aabb) in inserted_grass.iter() {
+        if !spawner.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+            continue;
+        }
+        let id = entity_store.0;
+        let handle = spawner.height_map.as_ref().unwrap().height_map.clone();
+        let height_map_texture = if let Some(tex) = images.get(&handle) {
+            &tex.texture_view
+        } else {
+            // if the texture is not loaded, we will push it locally and try next frame again
+            local_height_map_storage.push((entity_store.clone(), handle.clone(), *aabb));
+            &fallback_img.texture_view
+        };
+
+        let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            label: Some("aabb buffer"),
+            contents: bytemuck::bytes_of(&Vec3::from(aabb.half_extents.mul(2.))),
+            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+        });
 
         let bind_group_descriptor = BindGroupDescriptor {
             label: Some("grass height map bind group"),
@@ -242,6 +229,135 @@ pub(crate) fn prepare_height_map_buffer(
                     binding: 1,
                     resource: BindingResource::Buffer(BufferBinding {
                         buffer: &aabb_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+            ],
+        };
+
+        let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+        if let Some(chunk) = cache.get_mut(&id) {
+            chunk.height_map = Some(bind_group);
+        } else {
+            warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
+        }
+    }
+}
+
+pub(crate) fn prepare_density_map_buffer(
+    mut cache: ResMut<GrassCache>,
+    render_device: Res<RenderDevice>,
+    pipeline: Res<GrassPipeline>,
+    fallback_img: Res<FallbackImage>,
+    images: Res<RenderAssets<Image>>,
+    inserted_grass: Query<(&GrassSpawner, &EntityStorage, &Aabb)>,
+    mut local_density_map_storage: Local<Vec<(EntityStorage, Handle<Image>, Aabb, f32)>>,
+) {
+    let mut has_loaded = Vec::new();
+    let layout = pipeline.density_map_layout.clone();
+
+    for (EntityStorage(e), handle, aabb, footprint) in local_density_map_storage.iter() {
+        if let Some(tex) = images.get(handle) {
+            has_loaded.push(*e);
+            let density_map_texture = &tex.texture_view;
+            let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                label: Some("aabb buffer"),
+                contents: bytemuck::bytes_of(&Vec3::from(aabb.half_extents.mul(2.))),
+                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            });
+            let footprint_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                label: Some("footprint buffer"),
+                contents: bytemuck::bytes_of(footprint),
+                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            });
+            let bind_group_descriptor = BindGroupDescriptor {
+                label: Some("grass density map bind group"),
+                layout: &layout,
+                entries: &[
+                    BindGroupEntry {
+                        binding: 0,
+                        resource: BindingResource::TextureView(density_map_texture),
+                    },
+                    BindGroupEntry {
+                        binding: 1,
+                        resource: BindingResource::Buffer(BufferBinding {
+                            buffer: &aabb_buffer,
+                            offset: 0,
+                            size: None,
+                        }),
+                    },
+                    BindGroupEntry {
+                        binding: 2,
+                        resource: BindingResource::Buffer(BufferBinding {
+                            buffer: &footprint_buffer,
+                            offset: 0,
+                            size: None,
+                        }),
+                    },
+                ],
+            };
+
+            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+            if let Some(chunk) = cache.get_mut(e) {
+                chunk.density_map = Some(bind_group);
+            } else {
+                warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
+            }
+        }
+    }
+    local_density_map_storage.retain(|map| !has_loaded.contains(&map.0 .0));
+
+    for (spawner, entity_store, aabb) in inserted_grass.iter() {
+        if !spawner.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
+            continue;
+        }
+        let id = entity_store.0;
+        let handle = spawner.density_map.as_ref().unwrap().density_map.clone();
+        let footprint = spawner.density_map.as_ref().unwrap().footprint;
+        let height_map_texture = if let Some(tex) = images.get(&handle) {
+            &tex.texture_view
+        } else {
+            // if the texture is not loaded, we will push it locally and try next frame again
+            local_density_map_storage.push((
+                entity_store.clone(),
+                handle.clone(),
+                *aabb,
+                footprint,
+            ));
+            &fallback_img.texture_view
+        };
+
+        let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            label: Some("aabb buffer"),
+            contents: bytemuck::bytes_of(&Vec3::from(aabb.half_extents.mul(2.))),
+            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+        });
+        let footprint_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            label: Some("footprint buffer"),
+            contents: bytemuck::bytes_of(&footprint),
+            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+        });
+        let bind_group_descriptor = BindGroupDescriptor {
+            label: Some("grass height map bind group"),
+            layout: &layout,
+            entries: &[
+                BindGroupEntry {
+                    binding: 0,
+                    resource: BindingResource::TextureView(height_map_texture),
+                },
+                BindGroupEntry {
+                    binding: 1,
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &aabb_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 2,
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &footprint_buffer,
                         offset: 0,
                         size: None,
                     }),
