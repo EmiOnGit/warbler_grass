@@ -38,12 +38,12 @@ pub trait Brush: Sync + Send {
 }
 
 pub struct Stencil {
-    size: i32,
+    size: u32,
     strength: f32,
 }
 impl Default for Stencil {
     fn default() -> Self {
-        Self { size: 30, strength: 1. }
+        Self { size: 40, strength: 3. }
     }
 }
 impl Brush for Stencil {
@@ -51,24 +51,27 @@ impl Brush for Stencil {
         let Ok(dynamic_image)  = image.clone().try_into_dynamic() else {
             return Err(DrawError::ImageConversionFailure);
         };
-        
+        // dynamic_image.to_luma32f();
         let dimensions = image.size();
-        let positions = (dimensions * position).as_uvec2();
+        let position = (dimensions * position).as_ivec2();
         let mut buffer = dynamic_image.into_rgba8();
-        for x in 0..self.size {
-            for y in 0..self.size {
-                let x = x - self.size / 2;
-                let y = y - self.size / 2;
-                let x = (positions.x as i32 - x).max(0) as u32;
-                let y = (positions.y as i32 - y).max(0) as u32;
-                let pixel = &mut buffer.get_pixel_mut(x,y).0;
-                let s = (self.strength * 5.) as u8;
-                *pixel = [pixel[0].saturating_sub(s) ,pixel[1].saturating_sub(s),pixel[2].saturating_sub(s),255];
+        let range = self.size as i32 / 2;
+        for x in -range..range {
+            for y in -range..range {
+                if position.x.checked_add(x).is_none() || position.y.checked_add(y).is_none() {
+                    continue;
+                }
+
+                let x = position.x + x;
+                let y = position.y + y;
+                if x < 0 || y < 0 {continue;}
+                let pixel = &mut buffer.get_pixel_mut(x as u32,y as u32).0;
+
+                let strength = self.strength as u8;
+                *pixel = [pixel[0].saturating_add(strength), pixel[1].saturating_add(strength), pixel[2].saturating_add(strength), 255];
             }
         }
-        
-        let dy: DynamicImage = buffer.into();
-        *image = Image::from_dynamic(dy, true).convert(TextureFormat::Rgba8UnormSrgb).unwrap();
+        *image = Image::from_dynamic(buffer.into(), true).convert(TextureFormat::Rgba8UnormSrgb).unwrap();
         Ok(())
 
     }
