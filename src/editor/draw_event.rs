@@ -37,7 +37,7 @@ pub enum DrawEvent {
 
 pub trait Brush: Sync + Send {
     /// position should be between 0 and 1
-    fn draw(&mut self, image: &mut Image, position: Vec2) -> Result<(), DrawError>;
+    fn draw(&mut self, image: &mut Image, position: Vec2);
 }
 
 pub struct Stencil {
@@ -53,9 +53,9 @@ impl Default for Stencil {
     }
 }
 impl Brush for Stencil {
-    fn draw(&mut self, image: &mut Image, position: Vec2) -> Result<(), DrawError> {
+    fn draw(&mut self, image: &mut Image, position: Vec2) {
         let Ok(dynamic_image)  = image.clone().try_into_dynamic() else {
-            return Err(DrawError::ImageConversionFailure);
+            return;
         };
 
         let dimensions = image.size();
@@ -68,9 +68,19 @@ impl Brush for Stencil {
                     continue;
                 }
 
-                let x = position.x + x;
-                let y = position.y + y;
+                let Some(x) = position.x.checked_add(x) else {
+                    continue;
+                };
+                let Some(y) = position.y.checked_add(y) else {
+                    continue;
+                };
                 if x < 0 || y < 0 {
+                    continue;
+                }
+                if x >= dimensions.x as i32 {
+                    continue;
+                }
+                if y >= dimensions.y as i32 {
                     continue;
                 }
                 let pixel = &mut buffer.get_pixel_mut(x as u32, y as u32).0;
@@ -87,9 +97,5 @@ impl Brush for Stencil {
         *image = Image::from_dynamic(buffer.into(), true)
             .convert(TextureFormat::Rgba8UnormSrgb)
             .unwrap();
-        Ok(())
     }
-}
-pub enum DrawError {
-    ImageConversionFailure,
 }
