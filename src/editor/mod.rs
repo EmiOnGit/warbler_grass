@@ -1,13 +1,17 @@
 use bevy::prelude::Plugin;
 
-use self::{ray_cast::RayCastPlugin, brush::{ActiveBrush, Stencil}, draw_event::{DrawEvent, draw_map}};
+use self::{
+    brush::{ActiveBrush, Stencil},
+    draw_event::{draw_map, DrawEvent},
+    ray_cast::RayCastPlugin,
+};
 
 pub mod brush;
 pub mod draw_event;
 /// # CREDIT
-/// A big part of the raycasting logic was stolen 
+/// A big part of the raycasting logic was stolen
 /// from the [bevy_mod_raycast](https://github.com/aevyrie/bevy_mod_raycast) crate.
-/// 
+///
 /// Since I only use a tiny part, which isn't the focus of the crate, I ported it into this file.
 pub mod ray_cast;
 

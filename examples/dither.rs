@@ -2,20 +2,17 @@ use bevy::prelude::*;
 use warbler_grass::dithering;
 pub fn main() {
     App::new()
-    .add_plugins(DefaultPlugins)
-    .add_startup_system(spawn)
-    .add_system(on_load)
-    .run();
+        .add_plugins(DefaultPlugins)
+        .add_startup_system(spawn)
+        .add_system(on_load)
+        .run();
 }
 #[derive(Resource)]
 struct ImageHolder {
     pub image: Handle<Image>,
-    pub dithered: bool
+    pub dithered: bool,
 }
-fn spawn(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
     let handle = asset_server.load("grass_height_map.png");
     commands.spawn(SpriteBundle {
@@ -26,17 +23,17 @@ fn spawn(
     });
     commands.insert_resource(ImageHolder {
         image: handle,
-        dithered: false
+        dithered: false,
     });
 }
 
 fn on_load(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
-    mut holder: ResMut<ImageHolder> 
+    mut holder: ResMut<ImageHolder>,
 ) {
     if holder.dithered {
-        return
+        return;
     }
     if let Some(image) = images.get(&holder.image) {
         info!("try to dither image");

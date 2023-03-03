@@ -1,14 +1,16 @@
 use bevy::{math::Vec3Swizzles, prelude::*, render::primitives::Aabb};
 
+use crate::density_map::DensityMap;
 use crate::grass::GrassBlade;
 use crate::height_map::HeightMap;
+
 #[derive(Default, Component, Clone)]
 pub struct GrassSpawner {
     pub(crate) positions_xz: Vec<Vec2>,
     pub(crate) positions_y: Vec<f32>,
     pub(crate) heights: HeightRepresentation,
     pub(crate) height_map: Option<HeightMap>,
-    _density_map: Option<Handle<Image>>,
+    pub(crate) density_map: Option<DensityMap>,
     pub(crate) flags: GrassSpawnerFlags,
 }
 
@@ -88,9 +90,9 @@ impl GrassSpawner {
         self.heights = HeightRepresentation::Uniform(uniform_height);
         self
     }
-    /// Defines you height map for loading the y positions of your grass
+    /// Defines a height map for loading the y positions of your grass
     ///
-    /// Note that the heightmap texture gets stretched over the minimal [Aabb] containing all defined grass blades.
+    /// Note that the height map texture gets stretched over the minimal [Aabb] containing all defined grass blades.
     pub fn with_height_map(mut self, height_map: HeightMap) -> GrassSpawner {
         if self.flags.contains(GrassSpawnerFlags::Y_DEFINED) {
             panic!("Can not insert height map to `GrassSpawner` since the y positions are already defined");
@@ -102,6 +104,19 @@ impl GrassSpawner {
         self.height_map = Some(height_map);
         self
     }
+    /// Defines a density map for loading the xz positions of your grass
+    pub fn with_density_map(mut self, density_map: DensityMap) -> GrassSpawner {
+        if self.flags.contains(GrassSpawnerFlags::XZ_DEFINED) {
+            panic!("Can not insert density map to `GrassSpawner` since the xz positions are already defined");
+        }
+
+        self.flags.insert(GrassSpawnerFlags::XZ_DEFINED);
+        self.flags.insert(GrassSpawnerFlags::DENSITY_MAP);
+
+        self.density_map = Some(density_map);
+        self
+    }
+
     /// Defines the [`GrassSpawner`] from [`GrassBlade`]s
     pub fn from_grass_blades(mut self, grass_blades: Vec<GrassBlade>) -> GrassSpawner {
         assert!(!grass_blades.is_empty());
@@ -133,21 +148,37 @@ impl GrassSpawner {
         let mut inner = Vec3::new(f32::MAX, f32::MAX, f32::MAX);
         if self.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             let height = self.height_map.as_ref().unwrap().height;
-            self.positions_xz.iter().for_each(|xz| {
-                let blade_pos = Vec3::new(xz.x, 0., xz.y);
-                inner = inner.min(blade_pos);
-                outer = outer.max(blade_pos + Vec3::Y * height);
-            });
-        } else {
-            self.positions_xz
-                .iter()
-                .zip(self.positions_y.iter())
-                .for_each(|(xz, y)| {
-                    let blade_pos = Vec3::new(xz.x, *y, xz.y);
-                    let height = 1.;
+            if self.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
+                inner = Vec3::ZERO;
+                let span = self.density_map.as_ref().unwrap().span_xz;
+                outer = Vec3::new(span.x, height, span.y);
+            } else {
+                self.positions_xz.iter().for_each(|xz| {
+                    let blade_pos = Vec3::new(xz.x, 0., xz.y);
                     inner = inner.min(blade_pos);
                     outer = outer.max(blade_pos + Vec3::Y * height);
                 });
+            }
+        } else {
+            if self.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
+                self.positions_y.iter().for_each(|y| {
+                    inner.y = inner.y.min(*y);
+                    outer.y = outer.y.max(*y);
+                });
+                let span = self.density_map.as_ref().unwrap().span_xz;
+                outer.x = span.x;
+                outer.z = span.y;
+            } else {
+                self.positions_xz
+                    .iter()
+                    .zip(self.positions_y.iter())
+                    .for_each(|(xz, y)| {
+                        let blade_pos = Vec3::new(xz.x, *y, xz.y);
+                        let height = 1.;
+                        inner = inner.min(blade_pos);
+                        outer = outer.max(blade_pos + Vec3::Y * height);
+                    });
+            }
         }
         Aabb::from_min_max(inner, outer)
     }

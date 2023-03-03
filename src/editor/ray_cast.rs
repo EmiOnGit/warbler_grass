@@ -1,5 +1,8 @@
 pub use bevy::prelude::*;
-use bevy::{math::{Vec3Swizzles, Vec3A}, render::primitives::Aabb};
+use bevy::{
+    math::{Vec3A, Vec3Swizzles},
+    render::primitives::Aabb,
+};
 
 use crate::grass_spawner::GrassSpawner;
 
@@ -8,17 +11,13 @@ pub(super) struct RayCastPlugin;
 
 impl Plugin for RayCastPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_system(check_collision_on_click)
+        app.add_system(check_collision_on_click)
             .add_system(update_camera_ray);
     }
 }
 
 fn check_collision_on_click(
-    mut grass_chunk: Query<
-        (&mut Transform, &Aabb, &GrassSpawner),
-        Without<RayCamera>,
-    >,
+    mut grass_chunk: Query<(&mut Transform, &Aabb, &GrassSpawner), Without<RayCamera>>,
     camera_source: Query<(&Transform, &RayCamera)>,
     mouse_presses: Res<Input<MouseButton>>,
     mut draw_events: EventWriter<DrawEvent>,
@@ -54,13 +53,12 @@ fn check_collision_on_click(
     }
 }
 
-
 #[derive(Component, Default)]
 pub struct RayCamera {
-    pub ray: Option<Ray>
+    pub ray: Option<Ray>,
 }
 fn update_camera_ray(
-    mut ray_cam: Query<(&mut RayCamera, &Camera, &GlobalTransform)> ,
+    mut ray_cam: Query<(&mut RayCamera, &Camera, &GlobalTransform)>,
     mut cursor: EventReader<CursorMoved>,
 ) {
     let Some(cursor_position) = cursor.iter().last() else {
@@ -104,8 +102,8 @@ fn ray_from_screenspace(
     let ray_direction = far - near;
     Some(Ray {
         origin: near.into(),
-        direction: ray_direction.normalize().into()
-})
+        direction: ray_direction.normalize().into(),
+    })
 }
 
 pub fn intersects_primitive(ray: &Ray, shape: Primitive3d) -> Option<Vec3> {
@@ -119,10 +117,9 @@ pub fn intersects_primitive(ray: &Ray, shape: Primitive3d) -> Option<Vec3> {
             if denominator.abs() > f32::EPSILON {
                 let point_to_point = plane_origin - Vec3::from(ray.origin);
                 let intersect_dist = plane_normal.dot(point_to_point) / denominator;
-                let intersect_position = Vec3::from(ray.direction) * intersect_dist + Vec3::from(ray.origin);
-                Some(
-                    intersect_position,
-                )
+                let intersect_position =
+                    Vec3::from(ray.direction) * intersect_dist + Vec3::from(ray.origin);
+                Some(intersect_position)
             } else {
                 None
             }

@@ -6,13 +6,14 @@ use bevy::{
     },
 };
 
+pub mod density_map;
+pub mod dithering;
 pub mod editor;
 pub mod grass;
 pub mod grass_spawner;
 pub mod height_map;
 pub mod hot_reloading;
 mod render;
-pub mod dithering;
 // use bevy_inspector_egui::prelude::*;
 use grass_spawner::GrassSpawner;
 use warblers_plugin::GRASS_MESH_HANDLE;
