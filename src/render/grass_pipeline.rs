@@ -137,7 +137,7 @@ impl FromWorld for GrassPipeline {
                 }],
             });
         let height_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("warbler_grass explicit y layout"),
+            label: Some("warbler_grass explicit height layout"),
             entries: &[BindGroupLayoutEntry {
                 binding: 0,
                 visibility: ShaderStages::VERTEX,

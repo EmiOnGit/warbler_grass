@@ -31,9 +31,11 @@ pub(crate) fn prepare_explicit_xz_buffer(
         if !spawner.flags.contains(GrassSpawnerFlags::XZ_DEFINED) {
             panic!("Cannot spawn grass without the xz-positions defined");
         }
-
+        if spawner.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
+            continue;
+        }
         if let Some(chunk) = cache.get_mut(id) {
-            chunk.instance_count = spawner.positions_xz.len();
+            chunk.instance_count = spawner.blade_count();
             let view = prepare_texture_from_data(
                 &mut spawner.positions_xz,
                 &render_device,
@@ -69,10 +71,12 @@ pub(crate) fn prepare_height_buffer(
     mut inserted_grass: Query<(&mut GrassSpawner, &EntityStorage)>,
 ) {
     for (mut spawner, EntityStorage(id)) in inserted_grass.iter_mut() {
+        let count = spawner.blade_count();
         if let Some(chunk) = cache.get_mut(id) {
             let view = match &mut spawner.heights {
                 HeightRepresentation::Uniform(height) => {
-                    let mut heights = vec![*height; spawner.positions_xz.len()];
+                    let mut heights = vec![*height; count];
+                    println!("count is {} heights count is {}",count, heights.len());
                     prepare_texture_from_data(
                         &mut heights,
                         &render_device,
@@ -87,7 +91,7 @@ pub(crate) fn prepare_height_buffer(
                     TextureFormat::R32Float,
                 ),
             };
-            let layout = pipeline.explicit_xz_layout.clone();
+            let layout = pipeline.height_layout.clone();
             let bind_group_descriptor = BindGroupDescriptor {
                 label: Some("grass height bind group"),
                 layout: &layout,
@@ -261,11 +265,7 @@ pub(crate) fn prepare_density_map_buffer(
         if let Some(tex) = images.get(handle) {
             has_loaded.push(*e);
             let density_map_texture = &tex.texture_view;
-            // let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-            //     label: Some("aabb buffer"),
-            //     contents: bytemuck::bytes_of(&Vec3::from(aabb.half_extents.mul(2.))),
-            //     usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-            // });
+
             let footprint_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
                 label: Some("footprint buffer"),
                 contents: bytemuck::bytes_of(footprint),
@@ -279,14 +279,7 @@ pub(crate) fn prepare_density_map_buffer(
                         binding: 0,
                         resource: BindingResource::TextureView(density_map_texture),
                     },
-                    // BindGroupEntry {
-                    //     binding: 1,
-                    //     resource: BindingResource::Buffer(BufferBinding {
-                    //         buffer: &aabb_buffer,
-                    //         offset: 0,
-                    //         size: None,
-                    //     }),
-                    // },
+                   
                     BindGroupEntry {
                         binding: 1,
                         resource: BindingResource::Buffer(BufferBinding {
@@ -301,8 +294,6 @@ pub(crate) fn prepare_density_map_buffer(
             let bind_group = render_device.create_bind_group(&bind_group_descriptor);
             if let Some(chunk) = cache.get_mut(e) {
                 chunk.density_map = Some(bind_group);
-                chunk.instance_count =  (Vec3::from(aabb.half_extents) * *footprint).length() as usize;
-
             } else {
                 warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
             }
@@ -317,7 +308,7 @@ pub(crate) fn prepare_density_map_buffer(
         let id = entity_store.0;
         let handle = spawner.density_map.as_ref().unwrap().density_map.clone();
         let footprint = spawner.density_map.as_ref().unwrap().footprint;
-        let height_map_texture = if let Some(tex) = images.get(&handle) {
+        let density_map_texture = if let Some(tex) = images.get(&handle) {
             &tex.texture_view
         } else {
             // if the texture is not loaded, we will push it locally and try next frame again
@@ -329,12 +320,6 @@ pub(crate) fn prepare_density_map_buffer(
             ));
             &fallback_img.texture_view
         };
-
-        // let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-        //     label: Some("aabb buffer"),
-        //     contents: bytemuck::bytes_of(&Vec3::from(aabb.half_extents.mul(2.))),
-        //     usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-        // });
         let footprint_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("footprint buffer"),
             contents: bytemuck::bytes_of(&footprint),
@@ -346,16 +331,9 @@ pub(crate) fn prepare_density_map_buffer(
             entries: &[
                 BindGroupEntry {
                     binding: 0,
-                    resource: BindingResource::TextureView(height_map_texture),
+                    resource: BindingResource::TextureView(density_map_texture),
                 },
-                // BindGroupEntry {
-                //     binding: 1,
-                //     resource: BindingResource::Buffer(BufferBinding {
-                //         buffer: &aabb_buffer,
-                //         offset: 0,
-                //         size: None,
-                //     }),
-                // },
+              
                 BindGroupEntry {
                     binding: 1,
                     resource: BindingResource::Buffer(BufferBinding {
@@ -370,8 +348,8 @@ pub(crate) fn prepare_density_map_buffer(
         let bind_group = render_device.create_bind_group(&bind_group_descriptor);
         if let Some(chunk) = cache.get_mut(&id) {
             chunk.density_map = Some(bind_group);
-            chunk.instance_count =  (Vec3::from(aabb.half_extents) * footprint).length() as usize;
-
+            let count = spawner.blade_count();
+            chunk.instance_count = count;
         } else {
             warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
         }

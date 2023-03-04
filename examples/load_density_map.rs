@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PresentMode};
 use warbler_grass::{
     editor, grass_spawner::GrassSpawner, height_map::HeightMap, warblers_plugin::WarblersPlugin,
     WarblersBundle, density_map::DensityMap,
@@ -8,10 +8,17 @@ mod helper;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(AssetPlugin {
-            watch_for_changes: true,
+            // watch_for_changes: true,
             ..Default::default()
+        }).set(WindowPlugin {
+            primary_window: Some(Window {
+                present_mode: PresentMode::AutoNoVsync,
+                ..default()
+            }),
+            ..default()
         }))
         .add_plugin(WarblersPlugin)
+        .add_plugin(helper::FpsPlugin)
         .add_plugin(helper::SimpleCamera)
         .add_plugin(editor::EditorPlugin)
         .add_startup_system(setup_grass)
@@ -28,8 +35,8 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
     let density_map = DensityMap {
         density_map,
-        span_xz: Vec2::ONE * 5.,
-        footprint: 500.,
+        span_xz: Vec2::ONE * 128.,
+        footprint: 2.,
         noise: true
     };
     let grass_spawner = GrassSpawner::new()

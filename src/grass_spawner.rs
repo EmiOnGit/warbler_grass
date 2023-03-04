@@ -196,6 +196,30 @@ impl GrassSpawner {
         }
         Aabb::from_min_max(inner, outer)
     }
+    pub(crate) fn blade_count(&self) -> usize {
+        println!("calc blade count");
+
+        if !self.positions_xz.is_empty() {
+            println!("xz {:?}", self.positions_xz);
+
+            return self.positions_xz.len();
+        }
+        if !self.positions_y.is_empty() {
+        println!("y");
+
+            return self.positions_y.len();
+        }
+        if let HeightRepresentation::PerBlade(heights) = &self.heights {
+        println!("h");
+
+            return heights.len();
+        }
+        if let Some(density) = self.density_map.as_ref() {
+            println!("count from span {:?}", density.span_xz);
+            return (density.span_xz.x * density.span_xz.y) as usize;
+        }
+        0
+    }
 }
 bitflags::bitflags! {
     #[repr(transparent)]

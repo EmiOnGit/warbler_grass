@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin, Diagnostic, LogDiagnosticsPlugin}};
 use warbler_grass::{editor::ray_cast::RayCamera, grass_spawner::GrassSpawner};
 
 pub struct SimpleCamera;
@@ -53,6 +53,26 @@ pub fn get_grass_grid() -> GrassSpawner {
         .map(|i| Vec3::new((i / 100) as f32, 0., (i % 100) as f32) / 2.)
         .collect();
     GrassSpawner::new().with_positions(positions)
+}
+
+
+pub struct FpsPlugin;
+impl Plugin for FpsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_startup_system(setup_fps)
+            .add_plugin(LogDiagnosticsPlugin::default())
+            .add_system(diagnostic_system);
+    }
+}
+pub fn setup_fps(mut diagnostics: ResMut<Diagnostics>) {
+    diagnostics.add(Diagnostic::new(FrameTimeDiagnosticsPlugin::FPS, "fps", 200));
+}
+pub fn diagnostic_system(mut diagnostics: ResMut<Diagnostics>, time: Res<Time>) {
+    let delta_seconds = time.raw_delta_seconds_f64();
+    if delta_seconds == 0.0 {
+        return;
+    }
+    diagnostics.add_measurement(FrameTimeDiagnosticsPlugin::FPS, || 1.0 / delta_seconds);
 }
 
 // needed for rust-analyzer to be happy

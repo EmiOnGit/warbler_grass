@@ -90,14 +90,14 @@ fn vertex(@location(0) vertex_position: vec3<f32>, @builtin(instance_index) inst
     // load explicit xz positions
     var position_field_offset = vec3<f32>(0.,0.,0.);
     #ifdef DENSITY_MAP
-        let dim = vec2<u32>(textureDimensions(density_map, 0));
-        let coord = vec2<u32>(instance_index % dim.x, instance_index / dim.x);
+        let dim = vec2<u32>(textureDimensions(density_map, 0)) ;
+        let coord = vec2<u32>((instance_index)% dim.x, instance_index / dim.x);
         let density_value = textureLoad(density_map,coord,0).r;
-        // if density_value > 1. {
-            // discard;
-        // }
-        position_field_offset.x = f32(coord.x) * aabb.x / footprint;
-        position_field_offset.z = f32(coord.y) * aabb.z / footprint;
+        if density_value < 0.5 {
+            // return;
+        }
+        position_field_offset.x = f32(coord.x) / footprint;
+        position_field_offset.z = f32(coord.y) / footprint;
     #else
         let xz_pixel = storage_pixel_from_texture(instance_index, xz_positions);
         position_field_offset = vec3<f32>(xz_pixel.r, 0.,xz_pixel.g);
@@ -113,7 +113,7 @@ fn vertex(@location(0) vertex_position: vec3<f32>, @builtin(instance_index) inst
         position_field_offset.y = storage_pixel_from_texture(instance_index, y_positions).r;
     #endif
     // ---HEIGHT---
-    let height = storage_pixel_from_texture(instance_index, heights).r;
+    let height = storage_pixel_from_texture(0u, heights).r;
     var position = vertex_position * vec3<f32>(1.,height, 1.) + position_field_offset;
 
     // ---WIND---
@@ -122,7 +122,7 @@ fn vertex(@location(0) vertex_position: vec3<f32>, @builtin(instance_index) inst
     let strength = max(0.,log(vertex_position.y + 1.));
     position.x += offset.x * strength;
     position.z += offset.y * strength;
-
+    
     // ---CLIP_POSITION---
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
 
