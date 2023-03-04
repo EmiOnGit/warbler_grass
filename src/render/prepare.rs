@@ -4,6 +4,7 @@ use std::ops::Mul;
 
 use super::extract::EntityStorage;
 use super::grass_pipeline::GrassPipeline;
+use crate::dithering::DitheredBuffer;
 use crate::grass_spawner::{GrassSpawner, GrassSpawnerFlags, HeightRepresentation};
 use crate::render::cache::GrassCache;
 use crate::GrassConfiguration;
@@ -34,24 +35,25 @@ pub(crate) fn prepare_explicit_xz_buffer(
         if spawner.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
             continue;
         }
+        let view = prepare_texture_from_data(
+            &mut spawner.positions_xz,
+            &render_device,
+            &render_queue,
+            TextureFormat::Rg32Float,
+        );
+        let layout = pipeline.explicit_xz_layout.clone();
+        let bind_group_descriptor = BindGroupDescriptor {
+            label: Some("grass explicit y positions bind group"),
+            layout: &layout,
+            entries: &[BindGroupEntry {
+                binding: 0,
+                resource: BindingResource::TextureView(&view),
+            }],
+        };
+        let bind_group = render_device.create_bind_group(&bind_group_descriptor);
         if let Some(chunk) = cache.get_mut(id) {
             chunk.instance_count = spawner.blade_count();
-            let view = prepare_texture_from_data(
-                &mut spawner.positions_xz,
-                &render_device,
-                &render_queue,
-                TextureFormat::Rg32Float,
-            );
-            let layout = pipeline.explicit_xz_layout.clone();
-            let bind_group_descriptor = BindGroupDescriptor {
-                label: Some("grass explicit y positions bind group"),
-                layout: &layout,
-                entries: &[BindGroupEntry {
-                    binding: 0,
-                    resource: BindingResource::TextureView(&view),
-                }],
-            };
-            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+
             chunk.explicit_xz_buffer = Some(bind_group);
 
             chunk.flags = spawner.flags;
@@ -76,7 +78,7 @@ pub(crate) fn prepare_height_buffer(
             let view = match &mut spawner.heights {
                 HeightRepresentation::Uniform(height) => {
                     let mut heights = vec![*height; count];
-                    println!("count is {} heights count is {}",count, heights.len());
+                    println!("count is {} heights count is {}", count, heights.len());
                     prepare_texture_from_data(
                         &mut heights,
                         &render_device,
@@ -251,107 +253,32 @@ pub(crate) fn prepare_height_map_buffer(
 
 pub(crate) fn prepare_density_map_buffer(
     mut cache: ResMut<GrassCache>,
+    render_queue: Res<RenderQueue>,
     render_device: Res<RenderDevice>,
     pipeline: Res<GrassPipeline>,
-    fallback_img: Res<FallbackImage>,
-    images: Res<RenderAssets<Image>>,
-    inserted_grass: Query<(&GrassSpawner, &EntityStorage, &Aabb)>,
-    mut local_density_map_storage: Local<Vec<(EntityStorage, Handle<Image>, Aabb, f32)>>,
+    mut inserted_grass: Query<(&mut DitheredBuffer, &EntityStorage)>,
 ) {
-    let mut has_loaded = Vec::new();
-    let layout = pipeline.density_map_layout.clone();
-
-    for (EntityStorage(e), handle, aabb, footprint) in local_density_map_storage.iter() {
-        if let Some(tex) = images.get(handle) {
-            has_loaded.push(*e);
-            let density_map_texture = &tex.texture_view;
-
-            let footprint_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                label: Some("footprint buffer"),
-                contents: bytemuck::bytes_of(footprint),
-                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-            });
-            let bind_group_descriptor = BindGroupDescriptor {
-                label: Some("grass density map bind group"),
-                layout: &layout,
-                entries: &[
-                    BindGroupEntry {
-                        binding: 0,
-                        resource: BindingResource::TextureView(density_map_texture),
-                    },
-                   
-                    BindGroupEntry {
-                        binding: 1,
-                        resource: BindingResource::Buffer(BufferBinding {
-                            buffer: &footprint_buffer,
-                            offset: 0,
-                            size: None,
-                        }),
-                    },
-                ],
-            };
-
-            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-            if let Some(chunk) = cache.get_mut(e) {
-                chunk.density_map = Some(bind_group);
-            } else {
-                warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
-            }
-        }
-    }
-    local_density_map_storage.retain(|map| !has_loaded.contains(&map.0 .0));
-
-    for (spawner, entity_store, aabb) in inserted_grass.iter() {
-        if !spawner.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
-            continue;
-        }
+    for (mut dither, entity_store) in inserted_grass.iter_mut() {
         let id = entity_store.0;
-        let handle = spawner.density_map.as_ref().unwrap().density_map.clone();
-        let footprint = spawner.density_map.as_ref().unwrap().footprint;
-        let density_map_texture = if let Some(tex) = images.get(&handle) {
-            &tex.texture_view
-        } else {
-            // if the texture is not loaded, we will push it locally and try next frame again
-            local_density_map_storage.push((
-                entity_store.clone(),
-                handle.clone(),
-                *aabb,
-                footprint,
-            ));
-            &fallback_img.texture_view
-        };
-        let footprint_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-            label: Some("footprint buffer"),
-            contents: bytemuck::bytes_of(&footprint),
-            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-        });
+        let view = prepare_texture_from_data(
+            &mut dither.positions,
+            &render_device,
+            &render_queue,
+            TextureFormat::Rg32Float,
+        );
+        let layout = pipeline.density_map_layout.clone();
         let bind_group_descriptor = BindGroupDescriptor {
-            label: Some("grass density map bind group"),
+            label: Some("grass explicit dither positions bind group"),
             layout: &layout,
-            entries: &[
-                BindGroupEntry {
-                    binding: 0,
-                    resource: BindingResource::TextureView(density_map_texture),
-                },
-              
-                BindGroupEntry {
-                    binding: 1,
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &footprint_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-            ],
+            entries: &[BindGroupEntry {
+                binding: 0,
+                resource: BindingResource::TextureView(&view),
+            }],
         };
-
         let bind_group = render_device.create_bind_group(&bind_group_descriptor);
         if let Some(chunk) = cache.get_mut(&id) {
+            chunk.instance_count = dither.positions.len();
             chunk.density_map = Some(bind_group);
-            let count = spawner.blade_count();
-            chunk.instance_count = count;
-        } else {
-            warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
         }
     }
 }

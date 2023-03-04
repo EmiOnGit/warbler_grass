@@ -1,7 +1,4 @@
-use bevy::{
-    prelude::*,
-    window::PresentMode,
-};
+use bevy::{prelude::*, window::PresentMode};
 use warbler_grass::{grass_spawner::GrassSpawner, prelude::*};
 mod helper;
 fn main() {

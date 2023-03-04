@@ -1,4 +1,7 @@
-use bevy::{prelude::*, diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin, Diagnostic, LogDiagnosticsPlugin}};
+use bevy::{
+    diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    prelude::*,
+};
 use warbler_grass::{editor::ray_cast::RayCamera, grass_spawner::GrassSpawner};
 
 pub struct SimpleCamera;
@@ -54,7 +57,6 @@ pub fn get_grass_grid() -> GrassSpawner {
         .collect();
     GrassSpawner::new().with_positions(positions)
 }
-
 
 pub struct FpsPlugin;
 impl Plugin for FpsPlugin {

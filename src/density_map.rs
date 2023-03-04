@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+
 #[derive(Reflect, Clone)]
 pub struct DensityMap {
     /// The density map of the grass chunk
@@ -6,7 +7,7 @@ pub struct DensityMap {
     /// Should be a Gray scale image
     pub density_map: Handle<Image>,
     /// The footprint describes how far apart the grass should be.
-    pub footprint: f32,
+    pub density: f32,
     /// Describes how far the density map should reach
     pub span_xz: Vec2,
     /// If the positions should be influenced by noise.

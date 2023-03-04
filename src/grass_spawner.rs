@@ -1,6 +1,7 @@
 use bevy::{math::Vec3Swizzles, prelude::*, render::primitives::Aabb};
 
 use crate::density_map::DensityMap;
+use crate::dithering::{dither_density_map, DitheredBuffer};
 use crate::grass::GrassBlade;
 use crate::height_map::HeightMap;
 
@@ -205,12 +206,12 @@ impl GrassSpawner {
             return self.positions_xz.len();
         }
         if !self.positions_y.is_empty() {
-        println!("y");
+            println!("y");
 
             return self.positions_y.len();
         }
         if let HeightRepresentation::PerBlade(heights) = &self.heights {
-        println!("h");
+            println!("h");
 
             return heights.len();
         }
@@ -256,5 +257,24 @@ pub(crate) fn add_aabb_box_to_grass(
     for (e, spawner) in grasses.iter() {
         let aabb = spawner.calculate_aabb();
         commands.entity(e).insert(aabb);
+    }
+}
+pub(crate) fn add_dither_to_density(
+    mut commands: Commands,
+    grasses: Query<(Entity, &GrassSpawner), Without<DitheredBuffer>>,
+    images: Res<Assets<Image>>,
+) {
+    for (e, spawner) in grasses.iter() {
+        if !spawner.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
+            continue;
+        }
+        let density_map = spawner.density_map.as_ref().unwrap();
+        if let Some(image) = images.get(&density_map.density_map) {
+            let Some(buffer) = dither_density_map(image, density_map.density) else {
+                warn!("couldn't dither density map");
+                continue
+            };
+            commands.entity(e).insert(buffer);
+        }
     }
 }

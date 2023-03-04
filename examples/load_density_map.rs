@@ -1,22 +1,26 @@
 use bevy::{prelude::*, window::PresentMode};
 use warbler_grass::{
-    editor, grass_spawner::GrassSpawner, height_map::HeightMap, warblers_plugin::WarblersPlugin,
-    WarblersBundle, density_map::DensityMap,
+    density_map::DensityMap, editor, grass_spawner::GrassSpawner, height_map::HeightMap,
+    warblers_plugin::WarblersPlugin, WarblersBundle,
 };
 mod helper;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(AssetPlugin {
-            // watch_for_changes: true,
-            ..Default::default()
-        }).set(WindowPlugin {
-            primary_window: Some(Window {
-                present_mode: PresentMode::AutoNoVsync,
-                ..default()
-            }),
-            ..default()
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set(AssetPlugin {
+                    // watch_for_changes: true,
+                    ..Default::default()
+                })
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        present_mode: PresentMode::AutoNoVsync,
+                        ..default()
+                    }),
+                    ..default()
+                }),
+        )
         .add_plugin(WarblersPlugin)
         .add_plugin(helper::FpsPlugin)
         .add_plugin(helper::SimpleCamera)
@@ -28,7 +32,6 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     let height_map = asset_server.load("grass_height_map.png");
     let density_map = asset_server.load("grass_density_map.png");
 
-    
     let height_map = HeightMap {
         height_map,
         height: 5.,
@@ -36,8 +39,8 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     let density_map = DensityMap {
         density_map,
         span_xz: Vec2::ONE * 128.,
-        footprint: 2.,
-        noise: true
+        density: 2.,
+        noise: true,
     };
     let grass_spawner = GrassSpawner::new()
         .with_density_map(density_map)
