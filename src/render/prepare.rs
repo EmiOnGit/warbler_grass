@@ -261,11 +261,11 @@ pub(crate) fn prepare_density_map_buffer(
         if let Some(tex) = images.get(handle) {
             has_loaded.push(*e);
             let density_map_texture = &tex.texture_view;
-            let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                label: Some("aabb buffer"),
-                contents: bytemuck::bytes_of(&Vec3::from(aabb.half_extents.mul(2.))),
-                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-            });
+            // let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            //     label: Some("aabb buffer"),
+            //     contents: bytemuck::bytes_of(&Vec3::from(aabb.half_extents.mul(2.))),
+            //     usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            // });
             let footprint_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
                 label: Some("footprint buffer"),
                 contents: bytemuck::bytes_of(footprint),
@@ -279,16 +279,16 @@ pub(crate) fn prepare_density_map_buffer(
                         binding: 0,
                         resource: BindingResource::TextureView(density_map_texture),
                     },
+                    // BindGroupEntry {
+                    //     binding: 1,
+                    //     resource: BindingResource::Buffer(BufferBinding {
+                    //         buffer: &aabb_buffer,
+                    //         offset: 0,
+                    //         size: None,
+                    //     }),
+                    // },
                     BindGroupEntry {
                         binding: 1,
-                        resource: BindingResource::Buffer(BufferBinding {
-                            buffer: &aabb_buffer,
-                            offset: 0,
-                            size: None,
-                        }),
-                    },
-                    BindGroupEntry {
-                        binding: 2,
                         resource: BindingResource::Buffer(BufferBinding {
                             buffer: &footprint_buffer,
                             offset: 0,
@@ -301,6 +301,8 @@ pub(crate) fn prepare_density_map_buffer(
             let bind_group = render_device.create_bind_group(&bind_group_descriptor);
             if let Some(chunk) = cache.get_mut(e) {
                 chunk.density_map = Some(bind_group);
+                chunk.instance_count =  (Vec3::from(aabb.half_extents) * *footprint).length() as usize;
+
             } else {
                 warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
             }
@@ -328,34 +330,34 @@ pub(crate) fn prepare_density_map_buffer(
             &fallback_img.texture_view
         };
 
-        let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-            label: Some("aabb buffer"),
-            contents: bytemuck::bytes_of(&Vec3::from(aabb.half_extents.mul(2.))),
-            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-        });
+        // let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+        //     label: Some("aabb buffer"),
+        //     contents: bytemuck::bytes_of(&Vec3::from(aabb.half_extents.mul(2.))),
+        //     usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+        // });
         let footprint_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("footprint buffer"),
             contents: bytemuck::bytes_of(&footprint),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
         let bind_group_descriptor = BindGroupDescriptor {
-            label: Some("grass height map bind group"),
+            label: Some("grass density map bind group"),
             layout: &layout,
             entries: &[
                 BindGroupEntry {
                     binding: 0,
                     resource: BindingResource::TextureView(height_map_texture),
                 },
+                // BindGroupEntry {
+                //     binding: 1,
+                //     resource: BindingResource::Buffer(BufferBinding {
+                //         buffer: &aabb_buffer,
+                //         offset: 0,
+                //         size: None,
+                //     }),
+                // },
                 BindGroupEntry {
                     binding: 1,
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &aabb_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 2,
                     resource: BindingResource::Buffer(BufferBinding {
                         buffer: &footprint_buffer,
                         offset: 0,
@@ -367,7 +369,9 @@ pub(crate) fn prepare_density_map_buffer(
 
         let bind_group = render_device.create_bind_group(&bind_group_descriptor);
         if let Some(chunk) = cache.get_mut(&id) {
-            chunk.height_map = Some(bind_group);
+            chunk.density_map = Some(bind_group);
+            chunk.instance_count =  (Vec3::from(aabb.half_extents) * footprint).length() as usize;
+
         } else {
             warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
         }

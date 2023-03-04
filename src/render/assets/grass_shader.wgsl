@@ -28,8 +28,17 @@ var noise_texture: texture_2d<f32>;
     
 #endif
 
-@group(4) @binding(0)
-var xz_positions: texture_2d<f32>;
+#ifdef DENSITY_MAP
+    @group(4) @binding(0)
+    var density_map: texture_2d<f32>;
+    // @group(4) @binding(1)
+    // var<uniform> aabb_dens: vec3<f32>;
+    @group(4) @binding(1)
+    var<uniform> footprint: f32;
+#else
+    @group(4) @binding(0)
+    var xz_positions: texture_2d<f32>;
+#endif
 
 @group(5) @binding(0)
 var heights: texture_2d<f32>;
@@ -79,8 +88,20 @@ fn storage_pixel_from_texture(index: u32, texture: texture_2d<f32>) -> vec4<f32>
 fn vertex(@location(0) vertex_position: vec3<f32>, @builtin(instance_index) instance_index: u32) -> VertexOutput {
     var out: VertexOutput;
     // load explicit xz positions
-    let xz_pixel = storage_pixel_from_texture(instance_index, xz_positions);
-    var position_field_offset = vec3<f32>(xz_pixel.r, 0.,xz_pixel.g);
+    var position_field_offset = vec3<f32>(0.,0.,0.);
+    #ifdef DENSITY_MAP
+        let dim = vec2<u32>(textureDimensions(density_map, 0));
+        let coord = vec2<u32>(instance_index % dim.x, instance_index / dim.x);
+        let density_value = textureLoad(density_map,coord,0).r;
+        // if density_value > 1. {
+            // discard;
+        // }
+        position_field_offset.x = f32(coord.x) * aabb.x / footprint;
+        position_field_offset.z = f32(coord.y) * aabb.z / footprint;
+    #else
+        let xz_pixel = storage_pixel_from_texture(instance_index, xz_positions);
+        position_field_offset = vec3<f32>(xz_pixel.r, 0.,xz_pixel.g);
+    #endif
 
     // position of the vertex in the y_texture
     // ---Y_POSITIONS---
