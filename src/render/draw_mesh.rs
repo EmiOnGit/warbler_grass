@@ -54,7 +54,6 @@ impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
 
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
         let grass_blade_count = chunk.instance_count as u32;
-        println!("draw {} blades", grass_blade_count);
         match &gpu_mesh.buffer_info {
             GpuBufferInfo::Indexed {
                 buffer,

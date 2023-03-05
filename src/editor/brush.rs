@@ -18,7 +18,7 @@ pub struct Stencil {
 impl Default for Stencil {
     fn default() -> Self {
         Self {
-            size: 60,
+            size: 30,
             strength: 3.,
         }
     }
@@ -49,7 +49,9 @@ pub trait Brush: Sync + Send {
 }
 impl Brush for Stencil {
     fn draw(&mut self, image: &mut Image, position: Vec2) {
+
         let Ok(dynamic_image)  = image.clone().try_into_dynamic() else {
+            warn!("couldn't convert image");
             return;
         };
         let mut buffer = dynamic_image.into_rgba8();

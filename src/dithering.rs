@@ -19,8 +19,8 @@ pub fn dither_density_map(image: &Image, density: f32) -> Option<DitheredBuffer>
         for y in 0..height {
             let threshold = BAYER_DITHER[(x % 4) as usize][(y % 4) as usize];
             let pixel = buffer.get_pixel_mut(x, y);
-            if pixel.0[0] < threshold * 10 {
-                dither_buffer.push(Vec2::new(x as f32, y as f32) * density);
+            if pixel.0[0] > threshold * 10  {
+                dither_buffer.push(Vec2::new(x as f32, y as f32) / density);
                 pixel.0 = [0];
             } else {
                 pixel.0 = [254];

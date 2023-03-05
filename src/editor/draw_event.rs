@@ -10,7 +10,7 @@ pub fn draw_map(
     for event in draw_events.iter() {
         if let DrawEvent::Draw { positions, image } = event {
             if let Some(image) = images.get_mut(image) {
-                _ = active_brush.brush.draw(image, positions.clone());
+                active_brush.brush.draw(image, positions.clone());
             }
         }
     }
