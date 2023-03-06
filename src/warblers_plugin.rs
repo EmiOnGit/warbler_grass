@@ -9,7 +9,7 @@ use bevy::{
         render_phase::AddRenderCommand,
         render_resource::{PrimitiveTopology, SpecializedMeshPipelines},
         texture::FallbackImage,
-        RenderApp, RenderStage,
+        RenderApp, RenderSet,
     },
 };
 
@@ -19,7 +19,9 @@ use crate::{
     render::{
         self,
         cache::{EntityCache, GrassCache},
+        extract,
         grass_pipeline::GrassPipeline,
+        prepare, queue,
     },
     GrassConfiguration,
 };
@@ -66,21 +68,15 @@ impl Plugin for WarblersPlugin {
             .init_resource::<GrassCache>()
             .init_resource::<EntityCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
-            .add_system_to_stage(RenderStage::Extract, render::extract::extract_grass)
-            .add_system_to_stage(RenderStage::Extract, render::extract::extract_visibility)
-            .add_system_to_stage(
-                RenderStage::Prepare,
-                render::prepare::prepare_uniform_buffers,
+            .add_systems(
+                (extract::extract_grass, extract::extract_visibility).in_schedule(ExtractSchedule),
             )
-            .add_system_to_stage(
-                RenderStage::Prepare,
-                render::prepare::prepare_instance_buffer,
-            )
-            .add_system_to_stage(
-                RenderStage::Prepare,
-                render::prepare::prepare_height_map_buffer,
-            )
-            .add_system_to_stage(RenderStage::Queue, render::queue::queue_grass_buffers);
+            .add_system(prepare::prepare_uniform_buffers.in_set(RenderSet::Prepare))
+            .add_system(prepare::prepare_explicit_xz_buffer.in_set(RenderSet::Prepare))
+            .add_system(prepare::prepare_explicit_y_buffer.in_set(RenderSet::Prepare))
+            .add_system(prepare::prepare_height_buffer.in_set(RenderSet::Prepare))
+            .add_system(prepare::prepare_height_map_buffer.in_set(RenderSet::Prepare))
+            .add_system(queue::queue_grass_buffers.in_set(RenderSet::Queue));
     }
 }
 
