@@ -16,7 +16,7 @@ pub fn queue_grass_buffers(
     grass_pipeline: Res<GrassPipeline>,
     msaa: Res<Msaa>,
     mut pipelines: ResMut<SpecializedMeshPipelines<GrassPipeline>>,
-    mut pipeline_cache: ResMut<PipelineCache>,
+    pipeline_cache: Res<PipelineCache>,
     grass_cacher: Res<GrassCache>,
     meshes: Res<RenderAssets<Mesh>>,
     material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>)>,
@@ -34,7 +34,7 @@ pub fn queue_grass_buffers(
         let rangefinder = view.rangefinder3d();
         for (entity, mesh_uniform, mesh_handle) in material_meshes
             .iter()
-            .filter(|(e, _, _)| grass_cacher.contains_key(&e))
+            .filter(|(e, _, _)| grass_cacher.contains_key(e))
         {
             if let Some(mesh) = meshes.get(mesh_handle) {
                 let mesh_key =
@@ -42,12 +42,7 @@ pub fn queue_grass_buffers(
                 let grass_key = GrassRenderKey::from(mesh_key)
                     .with_flags(grass_cacher.get(&entity).unwrap().flags);
                 let pipeline = pipelines
-                    .specialize(
-                        &mut pipeline_cache,
-                        &grass_pipeline,
-                        grass_key,
-                        &mesh.layout,
-                    )
+                    .specialize(&pipeline_cache, &grass_pipeline, grass_key, &mesh.layout)
                     .unwrap();
                 opaque_phase.add(Opaque3d {
                     entity,

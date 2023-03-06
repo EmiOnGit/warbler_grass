@@ -68,13 +68,13 @@ impl Plugin for WarblersPlugin {
             .init_resource::<GrassCache>()
             .init_resource::<EntityCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
-            .add_systems((
-                    extract::extract_grass,
-                    extract::extract_visibility,
-                ).in_schedule(ExtractSchedule),
+            .add_systems(
+                (extract::extract_grass, extract::extract_visibility).in_schedule(ExtractSchedule),
             )
             .add_system(prepare::prepare_uniform_buffers.in_set(RenderSet::Prepare))
-            .add_system(prepare::prepare_instance_buffer.in_set(RenderSet::Prepare))
+            .add_system(prepare::prepare_explicit_xz_buffer.in_set(RenderSet::Prepare))
+            .add_system(prepare::prepare_explicit_y_buffer.in_set(RenderSet::Prepare))
+            .add_system(prepare::prepare_height_buffer.in_set(RenderSet::Prepare))
             .add_system(prepare::prepare_height_map_buffer.in_set(RenderSet::Prepare))
             .add_system(queue::queue_grass_buffers.in_set(RenderSet::Queue));
     }
