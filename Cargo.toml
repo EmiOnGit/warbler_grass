@@ -19,7 +19,7 @@ serialize = ["dep:serde", "dep:ron"]
 [dependencies]
 bytemuck = "1.13.0"
 rand = {version = "0.8.5", features = ["small_rng"]}
-bevy = {git = "https://github.com/bevyengine/bevy", branch = "main"}
+bevy = {version = "0.10.0"}
 bitflags = "1.3.2"
 # needed for serialize feature
 serde = {version = "1.0.152", optional = true}
