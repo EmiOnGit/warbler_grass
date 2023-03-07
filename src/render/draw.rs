@@ -124,4 +124,3 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
         RenderCommandResult::Success
     }
 }
-

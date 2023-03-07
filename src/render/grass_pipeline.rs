@@ -6,7 +6,8 @@ use bevy::{
         render_resource::{
             BindGroupLayout, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType,
             BufferBindingType, RenderPipelineDescriptor, ShaderStages, SpecializedMeshPipeline,
-            SpecializedMeshPipelineError, TextureSampleType, TextureViewDimension, VertexBufferLayout, VertexStepMode, VertexAttribute, VertexFormat,
+            SpecializedMeshPipelineError, TextureSampleType, TextureViewDimension, VertexAttribute,
+            VertexBufferLayout, VertexFormat, VertexStepMode,
         },
         renderer::RenderDevice,
     },
@@ -153,14 +154,11 @@ impl SpecializedMeshPipeline for GrassPipeline {
         descriptor.vertex.buffers.push(VertexBufferLayout {
             array_stride: std::mem::size_of::<Vec2>() as u64,
             step_mode: VertexStepMode::Instance,
-            attributes: vec![
-                VertexAttribute {
-                    format: VertexFormat::Float32x2,
-                    offset: 0,
-                    shader_location: 3, // shader locations 0-2 may be taken up by Position, Normal and UV attributes
-                },
-                
-            ],
+            attributes: vec![VertexAttribute {
+                format: VertexFormat::Float32x2,
+                offset: 0,
+                shader_location: 3, // shader locations 0-2 may be taken up by Position, Normal and UV attributes
+            }],
         });
         let vertex = &mut descriptor.vertex;
 

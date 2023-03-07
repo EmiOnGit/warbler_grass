@@ -3,7 +3,7 @@ use bevy::{
     render::render_phase::SetItemPipeline,
 };
 
-use self::draw::{SetYBindGroup, SetUniformBindGroup, SetHeightBindGroup};
+use self::draw::{SetHeightBindGroup, SetUniformBindGroup, SetYBindGroup};
 
 pub(crate) mod cache;
 mod draw;
