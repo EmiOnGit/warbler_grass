@@ -102,16 +102,11 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
             Some(gpu_mesh) => gpu_mesh,
             None => return RenderCommandResult::Failure,
         };
-        let entity = item.entity();
-        if !cache.contains_key(&entity) {
+        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
             return RenderCommandResult::Failure;
-        }
-        let chunk = &cache.into_inner()[&entity];
-        
-        if !chunk.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
-            pass.set_bind_group(4, chunk.explicit_xz_buffer.as_ref().unwrap(), &[]);
-        }
+        };
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
+        pass.set_vertex_buffer(1, chunk.explicit_xz_buffer.as_ref().unwrap().slice(..));
         let grass_blade_count = chunk.instance_count as u32;
         match &gpu_mesh.buffer_info {
             GpuBufferInfo::Indexed {

@@ -7,6 +7,10 @@ struct ShaderRegionConfiguration {
     wind: vec2<f32>,
     _wasm_padding: vec2<f32>,
 };
+struct Vertex {
+    @location(0) vertex_position: vec3<f32>,
+    @location(3) xz_position: vec2<f32>,
+}
 @group(1) @binding(0)
 var<uniform> mesh: Mesh;
 
@@ -25,11 +29,10 @@ var noise_texture: texture_2d<f32>;
 #else
     @group(3) @binding(0)
     var y_positions: texture_2d<f32>;
-    
 #endif
 
-@group(4) @binding(0)
-var xz_positions: texture_2d<f32>;
+// @group(4) @binding(0)
+// var xz_positions: texture_2d<f32>;
 
 @group(4) @binding(0)
 var heights: texture_2d<f32>;
@@ -76,11 +79,13 @@ fn storage_pixel_from_texture(index: u32, texture: texture_2d<f32>) -> vec4<f32>
 }
 
 @vertex
-fn vertex(@location(0) vertex_position: vec3<f32>, @builtin(instance_index) instance_index: u32) -> VertexOutput {
+fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
     var out: VertexOutput;
+    
     // load explicit xz positions
-    let xz_pixel = storage_pixel_from_texture(instance_index, xz_positions);
-    var position_field_offset = vec3<f32>(xz_pixel.r, 0.,xz_pixel.g);
+    // let xz_pixel = storage_pixel_from_texture(instance_index, xz_positions);
+    // var position_field_offset = vec3<f32>(xz_pixel.r, 0.,xz_pixel.g);
+    var position_field_offset = vec3<f32>(vertex.xz_position.x, 0.,vertex.xz_position.y);
 
     // position of the vertex in the y_texture
     // ---Y_POSITIONS---
@@ -93,12 +98,12 @@ fn vertex(@location(0) vertex_position: vec3<f32>, @builtin(instance_index) inst
     #endif
     // ---HEIGHT---
     let height = storage_pixel_from_texture(instance_index, heights).r;
-    var position = vertex_position * vec3<f32>(1.,height, 1.) + position_field_offset;
+    var position = vertex.vertex_position * vec3<f32>(1.,height, 1.) + position_field_offset;
 
     // ---WIND---
     // only applies wind if the vertex is not on the bottom of the grass (or very small)
     let offset = wind_offset(position_field_offset.xz);
-    let strength = max(0.,log(vertex_position.y + 1.));
+    let strength = max(0.,log(vertex.vertex_position.y + 1.));
     position.x += offset.x * strength;
     position.z += offset.y * strength;
 
@@ -106,7 +111,7 @@ fn vertex(@location(0) vertex_position: vec3<f32>, @builtin(instance_index) inst
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
 
     // ---COLOR---
-    let lambda = clamp(vertex_position.y, 0.,1.);
+    let lambda = clamp(vertex.vertex_position.y, 0.,1.);
     out.color = mix(config.bottom_color, config.main_color, lambda);
     return out;
 }
