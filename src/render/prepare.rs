@@ -12,7 +12,7 @@ use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::{
     BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor,
-    BufferUsages, Extent3d, ImageCopyTexture, ImageDataLayout, Origin3d, ShaderType, TextureAspect,
+    BufferUsages, Extent3d, ImageCopyTexture, ImageDataLayout, Origin3d, TextureAspect,
     TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureView,
     TextureViewDescriptor, TextureViewDimension, TextureViewId,
 };
@@ -22,35 +22,23 @@ use bytemuck::{Pod, Zeroable};
 
 pub(crate) fn prepare_explicit_xz_buffer(
     mut cache: ResMut<GrassCache>,
-    pipeline: Res<GrassPipeline>,
     render_device: Res<RenderDevice>,
-    render_queue: Res<RenderQueue>,
     mut inserted_grass: Query<(&mut GrassSpawner, &EntityStore)>,
 ) {
-    for (mut spawner, EntityStore(id)) in inserted_grass.iter_mut() {
+    for (spawner, EntityStore(id)) in inserted_grass.iter_mut() {
         if !spawner.flags.contains(GrassSpawnerFlags::XZ_DEFINED) {
             panic!("Cannot spawn grass without the xz-positions defined");
         }
 
         if let Some(chunk) = cache.get_mut(id) {
             chunk.instance_count = spawner.positions_xz.len();
-            let view = prepare_texture_from_data(
-                &mut spawner.positions_xz,
-                &render_device,
-                &render_queue,
-                TextureFormat::Rg32Float,
-            );
-            let layout = pipeline.explicit_xz_layout.clone();
-            let bind_group_descriptor = BindGroupDescriptor {
-                label: Some("grass explicit y positions bind group"),
-                layout: &layout,
-                entries: &[BindGroupEntry {
-                    binding: 0,
-                    resource: BindingResource::TextureView(&view),
-                }],
-            };
-            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-            chunk.explicit_xz_buffer = Some(bind_group);
+          
+            let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor { 
+                label: "xz vertex buffer".into(), 
+                contents: bytemuck::cast_slice(spawner.positions_xz.as_slice()),
+                usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
+            });
+            chunk.explicit_xz_buffer = Some(buffer);
 
             chunk.flags = spawner.flags;
         } else {
@@ -309,7 +297,7 @@ pub(crate) fn prepare_uniform_buffers(
     }
 }
 
-#[derive(Debug, Clone, Copy, Pod, Zeroable, ShaderType)]
+#[derive(Debug, Clone, Copy, Pod, Zeroable)]
 #[repr(C)]
 struct ShaderRegionConfiguration {
     main_color: Vec4,

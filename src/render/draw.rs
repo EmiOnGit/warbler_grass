@@ -14,9 +14,78 @@ use bevy::{
 use crate::grass_spawner::GrassSpawnerFlags;
 
 use super::cache::GrassCache;
-pub(crate) struct DrawMeshInstanced;
+pub struct SetUniformBindGroup<const I: usize>;
 
-impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
+impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
+    type Param = SRes<GrassCache>;
+    type ViewWorldQuery = ();
+    type ItemWorldQuery = ();
+
+    fn render<'w>(
+        item: &P,
+        _view: (),
+        _entity: (),
+        cache: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
+            return RenderCommandResult::Failure;
+        };
+        pass.set_bind_group(I, chunk.uniform_bindgroup.as_ref().unwrap(), &[]);
+
+        RenderCommandResult::Success
+    }
+}
+pub struct SetYBindGroup<const I: usize>;
+
+impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
+    type Param = SRes<GrassCache>;
+    type ViewWorldQuery = ();
+    type ItemWorldQuery = ();
+
+    fn render<'w>(
+        item: &P,
+        _view: (),
+        _entity: (),
+        cache: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
+            return RenderCommandResult::Failure;
+        };
+        if chunk.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+            pass.set_bind_group(I, chunk.height_map.as_ref().unwrap(), &[]);
+        } else {
+            pass.set_bind_group(I, chunk.explicit_y_buffer.as_ref().unwrap(), &[]);
+        }
+        RenderCommandResult::Success
+    }
+}
+pub struct SetHeightBindGroup<const I: usize>;
+
+impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
+    type Param = SRes<GrassCache>;
+    type ViewWorldQuery = ();
+    type ItemWorldQuery = ();
+
+    fn render<'w>(
+        item: &P,
+        _view: (),
+        _entity: (),
+        cache: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
+            return RenderCommandResult::Failure;
+        };
+        pass.set_bind_group(I, chunk.height_buffer.as_ref().unwrap(), &[]);
+
+        RenderCommandResult::Success
+    }
+}
+pub(crate) struct SetVertexBuffer;
+
+impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
     type Param = (SRes<RenderAssets<Mesh>>, SRes<GrassCache>);
     type ViewWorldQuery = ();
     type ItemWorldQuery = Read<Handle<Mesh>>;
@@ -33,23 +102,11 @@ impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
             Some(gpu_mesh) => gpu_mesh,
             None => return RenderCommandResult::Failure,
         };
-        let entity = item.entity();
-        if !cache.contains_key(&entity) {
+        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
             return RenderCommandResult::Failure;
-        }
-        let chunk = &cache.into_inner()[&entity];
-        // set uniforms
-        pass.set_bind_group(2, chunk.uniform_bindgroup.as_ref().unwrap(), &[]);
-        if chunk.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
-            pass.set_bind_group(3, chunk.height_map.as_ref().unwrap(), &[]);
-        } else {
-            pass.set_bind_group(3, chunk.explicit_y_buffer.as_ref().unwrap(), &[]);
-        }
-        if !chunk.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
-            pass.set_bind_group(4, chunk.explicit_xz_buffer.as_ref().unwrap(), &[]);
-            pass.set_bind_group(5, chunk.height_buffer.as_ref().unwrap(), &[]);
-        }
+        };
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
+        pass.set_vertex_buffer(1, chunk.explicit_xz_buffer.as_ref().unwrap().slice(..));
         let grass_blade_count = chunk.instance_count as u32;
         match &gpu_mesh.buffer_info {
             GpuBufferInfo::Indexed {
@@ -67,3 +124,4 @@ impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
         RenderCommandResult::Success
     }
 }
+
