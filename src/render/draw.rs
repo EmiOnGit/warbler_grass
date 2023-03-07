@@ -61,10 +61,31 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
         RenderCommandResult::Success
     }
 }
+pub struct SetHeightBindGroup<const I: usize>;
 
-pub(crate) struct DrawMeshInstanced;
+impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
+    type Param = SRes<GrassCache>;
+    type ViewWorldQuery = ();
+    type ItemWorldQuery = ();
 
-impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
+    fn render<'w>(
+        item: &P,
+        _view: (),
+        _entity: (),
+        cache: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
+            return RenderCommandResult::Failure;
+        };
+        pass.set_bind_group(I, chunk.height_buffer.as_ref().unwrap(), &[]);
+
+        RenderCommandResult::Success
+    }
+}
+pub(crate) struct SetVertexBuffer;
+
+impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
     type Param = (SRes<RenderAssets<Mesh>>, SRes<GrassCache>);
     type ViewWorldQuery = ();
     type ItemWorldQuery = Read<Handle<Mesh>>;
@@ -89,7 +110,6 @@ impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
         
         if !chunk.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
             pass.set_bind_group(4, chunk.explicit_xz_buffer.as_ref().unwrap(), &[]);
-            pass.set_bind_group(5, chunk.height_buffer.as_ref().unwrap(), &[]);
         }
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
         let grass_blade_count = chunk.instance_count as u32;

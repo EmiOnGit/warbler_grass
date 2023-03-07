@@ -31,7 +31,7 @@ var noise_texture: texture_2d<f32>;
 @group(4) @binding(0)
 var xz_positions: texture_2d<f32>;
 
-@group(5) @binding(0)
+@group(4) @binding(0)
 var heights: texture_2d<f32>;
 
 #import bevy_pbr::mesh_functions
