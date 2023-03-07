@@ -4,16 +4,16 @@ use bevy::{
 };
 
 pub(crate) mod cache;
-mod draw_mesh;
+mod draw;
 pub(crate) mod extract;
 pub(crate) mod grass_pipeline;
 pub(crate) mod prepare;
 pub(crate) mod queue;
 
 pub(crate) type GrassDrawCall = (
-    // caches pipeline instead of reinit every call
+    // Caches the pipeline for next call
     SetItemPipeline,
     SetMeshViewBindGroup<0>,
     SetMeshBindGroup<1>,
-    draw_mesh::DrawMeshInstanced,
+    draw::DrawMeshInstanced,
 );
