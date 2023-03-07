@@ -3,6 +3,8 @@ use bevy::{
     render::render_phase::SetItemPipeline,
 };
 
+use self::draw::SetYBindGroup;
+
 pub(crate) mod cache;
 mod draw;
 pub(crate) mod extract;
@@ -15,5 +17,6 @@ pub(crate) type GrassDrawCall = (
     SetItemPipeline,
     SetMeshViewBindGroup<0>,
     SetMeshBindGroup<1>,
+    SetYBindGroup<3>,
     draw::DrawMeshInstanced,
 );
