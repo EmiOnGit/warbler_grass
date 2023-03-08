@@ -47,8 +47,8 @@ fn check_collision_on_click(
                 intersection_point.y / aabb_extends.y,
             ) + Vec2::ONE)
                 / 2.;
-            // let image = grass.height_map.as_ref().unwrap().height_map.clone();
-            let image = grass.density_map.as_ref().unwrap().density_map.clone();
+            let image = grass.height_map.as_ref().unwrap().height_map.clone();
+            // let image = grass.density_map.as_ref().unwrap().density_map.clone();
             // need to mut deref grass at some point
             let mut _d = &mut grass.density_map;
             draw_events.send(DrawEvent::Draw { positions, image });

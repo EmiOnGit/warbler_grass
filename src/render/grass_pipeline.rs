@@ -189,10 +189,6 @@ impl SpecializedMeshPipeline for GrassPipeline {
         } else {
             descriptor.layout.push(self.explicit_y_layout.clone());
         }
-        if !key.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
-            // descriptor.layout.push(self.explicit_xz_layout.clone());
-            descriptor.layout.push(self.height_layout.clone());
-        }
 
         descriptor.layout.push(self.height_layout.clone());
 

@@ -99,8 +99,6 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
     // var position_field_offset = vec3<f32>(xz_pixel.r, 0.,xz_pixel.g);
     var position_field_offset = vec3<f32>(vertex.xz_position.x, 0.,vertex.xz_position.y);
 
-        position_field_offset = vec3<f32>(xz_pixel.r, 0.,xz_pixel.g);
-    #endif
     let density_offset = density_map_offset(position_field_offset.xz) / 1.;
     position_field_offset += vec3<f32>(density_offset.x, 0.,density_offset.y);
     // position of the vertex in the y_texture
