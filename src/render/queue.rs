@@ -39,8 +39,8 @@ pub fn queue_grass_buffers(
             if let Some(mesh) = meshes.get(mesh_handle) {
                 let mesh_key =
                     view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);
-                let grass_key = GrassRenderKey::from(mesh_key)
-                    .with_flags(grass_cacher.get(&entity).unwrap().flags);
+                let mut grass_key = GrassRenderKey::from(mesh_key);
+                grass_key.is_explicit = grass_cacher[&entity].explicit_xz_buffer.is_some();
                 let pipeline = pipelines
                     .specialize(&pipeline_cache, &grass_pipeline, grass_key, &mesh.layout)
                     .unwrap();

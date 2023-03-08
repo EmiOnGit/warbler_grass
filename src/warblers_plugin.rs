@@ -6,6 +6,7 @@ use bevy::{
     render::{
         extract_resource::ExtractResourcePlugin,
         mesh::Indices,
+        render_asset::RenderAssetPlugin,
         render_phase::AddRenderCommand,
         render_resource::{PrimitiveTopology, SpecializedMeshPipelines},
         texture::FallbackImage,
@@ -14,8 +15,7 @@ use bevy::{
 };
 
 use crate::{
-    grass_spawner::add_aabb_box_to_grass,
-    hot_reloading,
+    dithering::{add_dither_to_density, DitheredBuffer},
     render::{
         self,
         cache::{EntityCache, GrassCache},
@@ -53,8 +53,11 @@ impl Plugin for WarblersPlugin {
         let mut meshes = app.world.resource_mut::<Assets<Mesh>>();
         meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
         // Add systems
-        app.add_system(add_aabb_box_to_grass);
-        app.add_system(hot_reloading::hot_reload_height_map);
+        // app.add_system(add_aabb_box_to_grass)
+        // .add_system(add_dither_to_density);
+        app.add_system(add_dither_to_density);
+        app.add_asset::<DitheredBuffer>();
+        app.add_plugin(RenderAssetPlugin::<DitheredBuffer>::default());
         // Init resources
         app.init_resource::<GrassConfiguration>()
             .register_type::<GrassConfiguration>();
@@ -69,12 +72,19 @@ impl Plugin for WarblersPlugin {
             .init_resource::<EntityCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_systems(
-                (extract::extract_grass, extract::extract_visibility).in_schedule(ExtractSchedule),
+                (
+                    extract::extract_grass,
+                    extract::extract_visibility,
+                    extract::extract_grass_positions,
+                )
+                    .in_schedule(ExtractSchedule),
             )
             .add_system(prepare::prepare_uniform_buffers.in_set(RenderSet::Prepare))
-            .add_system(prepare::prepare_explicit_xz_buffer.in_set(RenderSet::Prepare))
-            .add_system(prepare::prepare_explicit_y_buffer.in_set(RenderSet::Prepare))
+            .add_system(prepare::prepare_explicit_positions_buffer.in_set(RenderSet::Prepare))
+            // .add_system(prepare::prepare_density_buffer.in_set(RenderSet::Prepare))
+            // .add_system(prepare::prepare_explicit_y_buffer.in_set(RenderSet::Prepare))
             .add_system(prepare::prepare_height_buffer.in_set(RenderSet::Prepare))
+            // .add_system(prepare::prepare_density_map_buffer.in_set(RenderSet::Prepare))
             .add_system(prepare::prepare_height_map_buffer.in_set(RenderSet::Prepare))
             .add_system(queue::queue_grass_buffers.in_set(RenderSet::Queue));
     }

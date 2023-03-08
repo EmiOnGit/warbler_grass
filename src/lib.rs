@@ -6,49 +6,27 @@ use bevy::{
     },
 };
 
+pub mod bundle;
+pub mod density_map;
+pub mod dithering;
+#[cfg(feature = "editor")]
+pub mod editor;
 pub mod grass;
-pub mod grass_spawner;
 pub mod height_map;
-pub mod hot_reloading;
 mod render;
-use grass_spawner::GrassSpawner;
-use warblers_plugin::GRASS_MESH_HANDLE;
 pub mod warblers_plugin;
 pub mod prelude {
+    pub use crate::bundle::*;
     pub use crate::warblers_plugin::WarblersPlugin;
     pub use crate::GrassConfiguration;
-    pub use crate::WarblersBundle;
+    pub use crate::height_map::HeightMap;
+    pub use crate::density_map::DensityMap;
+
 }
 
-/// A component bundle for a chunk of grass.
-///
-/// Note that each position of a [`GrassBlade`](crate::grass::GrassBlade) is also relative to the [`Transform`] component of the entity
-#[derive(Bundle)]
-pub struct WarblersBundle {
-    pub grass_spawner: GrassSpawner,
-    /// The [`Mesh`] used to render each grassblade.
-    ///
-    /// The mesh can be changed to however needed,
-    /// however note that the lowest vertex of the mesh should be around y=0
-    /// in most cases.
-    pub grass_mesh: Handle<Mesh>,
-    #[bundle]
-    pub spatial: SpatialBundle,
-}
-
-impl Default for WarblersBundle {
-    fn default() -> Self {
-        Self {
-            grass_spawner: Default::default(),
-            grass_mesh: GRASS_MESH_HANDLE.typed(),
-            spatial: Default::default(),
-        }
-    }
-}
 /// A [resource](bevy::prelude::Resource) used to globally define parameters about the grass.
 ///
 /// A default [`GrassConfiguration`] is inserted by the [`WarblersPlugin`](crate::warblers_plugin::WarblersPlugin).
-#[cfg_attr(feature = "debug", derive(InspectorOptions))]
 #[derive(Resource, Clone, Reflect, ExtractResource)]
 #[reflect(Resource)]
 pub struct GrassConfiguration {

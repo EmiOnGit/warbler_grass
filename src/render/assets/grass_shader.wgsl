@@ -20,23 +20,24 @@ var<uniform> config: ShaderRegionConfiguration;
 @group(2) @binding(1)
 var noise_texture: texture_2d<f32>;
 
-#ifdef HEIGHT_MAP
+#ifdef EXPLICIT
+    @group(3) @binding(0)
+    var y_positions: texture_2d<f32>;
+#else
+
     @group(3) @binding(0)
     var height_map: texture_2d<f32>;
 
     @group(3) @binding(1)
     var<uniform> aabb: vec3<f32>;
-#else
-    @group(3) @binding(0)
-    var y_positions: texture_2d<f32>;
 #endif
-
-// @group(4) @binding(0)
-// var xz_positions: texture_2d<f32>;
-
-@group(4) @binding(0)
-var heights: texture_2d<f32>;
-
+#ifdef UNIFORM_HEIGHT
+    @group(4) @binding(0)
+    var<uniform> height_uniform: f32;
+#else
+    @group(4) @binding(0)
+    var heights: texture_2d<f32>;
+#endif
 #import bevy_pbr::mesh_functions
 
 struct VertexOutput {
@@ -44,9 +45,8 @@ struct VertexOutput {
     @location(0) color: vec4<f32>,
 };
 
-const NOISE_TEXTURE_SPEED: f32 = 30.;
-const NOISE_TEXTURE_ZOOM: f32 = 5.;
-
+const NOISE_TEXTURE_SPEED: f32 = 50.;
+const NOISE_TEXTURE_ZOOM: f32 = 35.;
 fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     var texture_offset = config.wind.xy * globals.time * NOISE_TEXTURE_SPEED;
     var texture_position = vec2<f32>(vertex_position.x ,vertex_position.y) * NOISE_TEXTURE_ZOOM + texture_offset;
@@ -59,7 +59,21 @@ fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     var texture_pixel = textureLoad(noise_texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0);
     return texture_pixel.xy * config.wind;
 }
-#ifdef HEIGHT_MAP
+const BIG_PRIME: f32 = 7759.;
+
+fn density_map_offset(vertex_position: vec2<f32>) -> vec2<f32> {
+    var texture_position = vec2<f32>(vertex_position.x ,vertex_position.y) * BIG_PRIME ;
+    
+    // dimensions of noise texture in vec2<u32>
+    let dim = textureDimensions(noise_texture, 0);
+
+    // read just position in case of a over/under flow of tex. coords
+    texture_position = abs(texture_position % vec2<f32>(dim));
+    var texture_pixel = textureLoad(noise_texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0);
+    return texture_pixel.xz - vec2<f32>(0.5,0.5) ;
+}
+#ifdef EXPLICIT
+#else
     fn height_map_offset(vertex_position: vec2<f32>) -> f32 {
         let dim = textureDimensions(height_map, 0);
         let texture_position = abs((vertex_position.xy / aabb.xz ) * vec2<f32>(dim)) ;
@@ -82,22 +96,25 @@ fn storage_pixel_from_texture(index: u32, texture: texture_2d<f32>) -> vec4<f32>
 fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
     var out: VertexOutput;
     
-    // load explicit xz positions
-    // let xz_pixel = storage_pixel_from_texture(instance_index, xz_positions);
-    // var position_field_offset = vec3<f32>(xz_pixel.r, 0.,xz_pixel.g);
     var position_field_offset = vec3<f32>(vertex.xz_position.x, 0.,vertex.xz_position.y);
 
-    // position of the vertex in the y_texture
+    let density_offset = density_map_offset(position_field_offset.xz) / 1.;
+    position_field_offset += vec3<f32>(density_offset.x, 0.,density_offset.y);
     // ---Y_POSITIONS---
-    #ifdef HEIGHT_MAP
-        // from height map
-        position_field_offset.y = height_map_offset(position_field_offset.xz);
-    #else
+    #ifdef EXPLICIT
         // from explicit y positions
         position_field_offset.y = storage_pixel_from_texture(instance_index, y_positions).r;
+    #else
+       // from height map
+        position_field_offset.y = height_map_offset(position_field_offset.xz);
     #endif
     // ---HEIGHT---
-    let height = storage_pixel_from_texture(instance_index, heights).r;
+    var height = 0.;
+    #ifdef UNIFORM_HEIGHT
+        height = height_uniform;
+    #else
+        height = storage_pixel_from_texture(instance_index, heights).r;
+    #endif
     var position = vertex.vertex_position * vec3<f32>(1.,height, 1.) + position_field_offset;
 
     // ---WIND---
@@ -106,7 +123,7 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
     let strength = max(0.,log(vertex.vertex_position.y + 1.));
     position.x += offset.x * strength;
     position.z += offset.y * strength;
-
+    
     // ---CLIP_POSITION---
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
 
