@@ -1,5 +1,5 @@
-use bevy::prelude::*;
-use warbler_grass::{warblers_plugin::WarblersPlugin, GrassConfiguration, WarblersBundle};
+use bevy::{prelude::*, render::primitives::Aabb};
+use warbler_grass::{warblers_plugin::WarblersPlugin, GrassConfiguration, height_map::HeightMap, density_map::DensityMap, bundle::WarblersBundle};
 mod helper;
 fn main() {
     App::new()
@@ -10,9 +10,20 @@ fn main() {
         .add_system(change_colors)
         .run();
 }
-fn setup_grass(mut commands: Commands) {
+fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let height_map = asset_server.load("grass_height_map.png");
+
+    let height_map = HeightMap { height_map };
+    let density_map = asset_server.load("grass_density_map.png");
+
+    let density_map = DensityMap {
+        density_map,
+        density: 2.,
+    };
     commands.spawn((WarblersBundle {
-        grass_spawner: helper::get_grass_grid(),
+        density_map,
+        height_map,
+        aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 10., 100.)),        
         ..default()
     },));
 }

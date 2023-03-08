@@ -1,5 +1,8 @@
-use bevy::prelude::*;
-use warbler_grass::{grass_spawner::GrassSpawner, prelude::*, warblers_plugin::GRASS_MESH_HANDLE};
+//! Shows how to swap the default grass mesh.
+//! You can use the TAB key to swap between the new mesh and the standard mesh
+
+use bevy::{prelude::*, render::primitives::Aabb};
+use warbler_grass::{prelude::*, warblers_plugin::GRASS_MESH_HANDLE, height_map::HeightMap, density_map::DensityMap, bundle::WarblersBundle};
 mod helper;
 
 fn main() {
@@ -12,12 +15,11 @@ fn main() {
         .run();
 }
 
-// In this example 2 planes are used for generating grass blades
-fn setup_grass(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
+fn setup_grass(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>,  asset_server: Res<AssetServer>) {
     // The interesting part in this example
     // (The capsules would looks cool in the water!) :)
-    // Normally the grass mesh should start at y>=0.
-    // Fixing this would make the grass look even nicer!
+    // Normally, the grass mesh should start at y >= 0.
+    // The cupsule is centered however, for your own mesh you might want to make sure it's y>=0
     let grass_mesh: Handle<Mesh> = meshes.add(
         shape::Capsule {
             radius: 0.1,
@@ -26,28 +28,44 @@ fn setup_grass(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         }
         .into(),
     );
-
+    // we use a resource to keep track of the handles
     let store = GrassMeshStore {
         custom_handle: grass_mesh.clone(),
         default_handle: GRASS_MESH_HANDLE.typed(),
     };
     commands.insert_resource(store);
-    // simple add the grass mesh in the warblersbundle, instead of using the default
-    commands.spawn((WarblersBundle {
-        grass_spawner: helper::get_grass_grid(),
+
+    let height_map = asset_server.load("grass_height_map.png");
+
+    let height_map = HeightMap { height_map };
+    let density_map = asset_server.load("grass_density_map.png");
+
+    let density_map = DensityMap {
+        density_map,
+        density: 3.,
+    };
+    // simple add the grass mesh in the bundle, instead of using the default
+    commands.spawn(WarblersBundle {
         grass_mesh,
+        density_map,
+        height_map,
+        aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 10., 100.)),
         ..default()
-    },));
+    });
+    
 }
+
+/// Used to keep track of the standard mesh and the custom mesh for the grass
 #[derive(Resource)]
 struct GrassMeshStore {
     pub custom_handle: Handle<Mesh>,
     pub default_handle: Handle<Mesh>,
 }
-// press tab to swap meshes
+
+// Swapps the mesh type if TAB is pressed
 fn swap_grass_mesh(
     mut commands: Commands,
-    mut queue: Query<(Entity, &mut Handle<Mesh>), With<GrassSpawner>>,
+    mut queue: Query<(Entity, &mut Handle<Mesh>)>,
     input: Res<Input<KeyCode>>,
     store: Res<GrassMeshStore>,
 ) {

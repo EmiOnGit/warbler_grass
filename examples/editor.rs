@@ -4,15 +4,14 @@ use warbler_grass::{
     warblers_plugin::WarblersPlugin,
 };
 mod helper;
-
+/// #NOTE
+/// The editor is still worked on and can't be used currently
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(AssetPlugin {
-            watch_for_changes: true,
-            ..Default::default()
-        }))
+        .add_plugins(DefaultPlugins)
         .add_plugin(WarblersPlugin)
         .add_plugin(helper::SimpleCamera)
+        // enable the editor by adding the plugin
         .add_plugin(editor::EditorPlugin)
         .add_startup_system(setup_grass)
         .run();
@@ -32,7 +31,7 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
         height_map,
         aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 10., 100.)),
         spatial: SpatialBundle {
-            transform: Transform::from_xyz(0., 1., 0.),
+            transform: Transform::from_xyz(0., -1., 0.),
             ..default()
         },
         ..default()

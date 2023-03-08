@@ -20,16 +20,16 @@ bitflags = "1.3.2"
 serde = "1.0.153"
 
 [[example]]
-name = "load_custom"
-path = "examples/load_custom.rs"
+name = "load_explicit"
+path = "examples/load_explicit.rs"
 
 [[example]]
-name = "load_height_map"
-path = "examples/load_height_map.rs"
+name = "load_grass"
+path = "examples/load_grass.rs"
 
 [[example]]
-name = "load_many_chunks"
-path = "examples/load_many_chunks.rs"
+name = "many_chunks"
+path = "examples/many_chunks.rs"
 
 [[example]]
 name = "grass_colors"
@@ -40,5 +40,5 @@ name = "stress_test"
 path = "examples/stress_test.rs"
 
 [[example]]
-name = "swap_grass_mesh"
-path = "examples/swap_grass_mesh.rs"
+name = "grass_mesh"
+path = "examples/grass_mesh.rs"
