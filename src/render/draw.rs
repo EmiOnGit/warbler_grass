@@ -61,7 +61,7 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
             pass.set_bind_group(I, y_buffer, &[]);
             return RenderCommandResult::Success;
         }
-        return RenderCommandResult::Failure;
+        RenderCommandResult::Failure
     }
 }
 pub struct SetHeightBindGroup<const I: usize>;

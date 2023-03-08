@@ -72,6 +72,7 @@ pub(crate) fn extract_grass_positions(
 pub(crate) struct EntityStorage(pub Entity);
 
 /// Extracts all visible grass entities into the render world.
+#[allow(clippy::type_complexity)]
 pub(crate) fn extract_visibility(
     visibility_queue: Extract<
         Query<

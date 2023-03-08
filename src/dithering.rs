@@ -1,11 +1,11 @@
 use bevy::{
-    ecs::system::lifetimeless::SRes,
+    ecs::system::{lifetimeless::SRes, SystemParamItem},
     math::Vec3Swizzles,
     prelude::*,
     reflect::TypeUuid,
     render::{
         primitives::Aabb,
-        render_asset::RenderAsset,
+        render_asset::{RenderAsset, PrepareAssetError},
         render_resource::{Buffer, BufferInitDescriptor, BufferUsages},
         renderer::RenderDevice,
     },
@@ -47,9 +47,9 @@ pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Opti
             }
         }
     }
-    return Some(DitheredBuffer {
+    Some(DitheredBuffer {
         positions: dither_buffer,
-    });
+    })
 }
 
 #[derive(Reflect, Clone, Component, Debug, Deserialize, TypeUuid)]
@@ -74,10 +74,10 @@ impl RenderAsset for DitheredBuffer {
 
     fn prepare_asset(
         extracted_asset: Self::ExtractedAsset,
-        param: &mut bevy::ecs::system::SystemParamItem<Self::Param>,
+        param: &mut SystemParamItem<Self::Param>,
     ) -> Result<
         Self::PreparedAsset,
-        bevy::render::render_asset::PrepareAssetError<Self::ExtractedAsset>,
+        PrepareAssetError<Self::ExtractedAsset>,
     > {
         let render_device = param;
         let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -91,7 +91,7 @@ impl RenderAsset for DitheredBuffer {
         })
     }
 }
-
+#[allow(clippy::type_complexity)]
 pub(crate) fn add_dither_to_density(
     mut commands: Commands,
     grasses: Query<(Entity, &DensityMap, &Aabb), Or<(Changed<DensityMap>, Changed<Aabb>)>>,
