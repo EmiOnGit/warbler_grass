@@ -6,7 +6,8 @@ use bevy::{
         render_resource::{
             BindGroupLayout, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType,
             BufferBindingType, RenderPipelineDescriptor, ShaderStages, SpecializedMeshPipeline,
-            SpecializedMeshPipelineError, TextureSampleType, TextureViewDimension,
+            SpecializedMeshPipelineError, TextureSampleType, TextureViewDimension, VertexAttribute,
+            VertexBufferLayout, VertexFormat, VertexStepMode,
         },
         renderer::RenderDevice,
     },
@@ -170,7 +171,17 @@ impl SpecializedMeshPipeline for GrassPipeline {
         let mut descriptor = self.mesh_pipeline.specialize(key.mesh_key, layout)?;
         descriptor.label = Some("Grass Render Pipeline".into());
         descriptor.layout.push(self.region_layout.clone());
+        descriptor.vertex.buffers.push(VertexBufferLayout {
+            array_stride: std::mem::size_of::<Vec2>() as u64,
+            step_mode: VertexStepMode::Instance,
+            attributes: vec![VertexAttribute {
+                format: VertexFormat::Float32x2,
+                offset: 0,
+                shader_location: 3, // shader locations 0-2 may be taken up by Position, Normal and UV attributes
+            }],
+        });
         let vertex = &mut descriptor.vertex;
+
         vertex.shader = self.shader.clone();
         if key.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             vertex.shader_defs.push("HEIGHT_MAP".into());
@@ -178,14 +189,9 @@ impl SpecializedMeshPipeline for GrassPipeline {
         } else {
             descriptor.layout.push(self.explicit_y_layout.clone());
         }
-        if key.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
-            if key.flags.contains(GrassSpawnerFlags::DENSITY_MAP_NOISE) {
-                vertex.shader_defs.push("DENSITY_MAP_NOISE".into());
-            }
-            vertex.shader_defs.push("DENSITY_MAP".into());
-            descriptor.layout.push(self.density_map_layout.clone());
-        } else {
-            descriptor.layout.push(self.explicit_xz_layout.clone());
+        if !key.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
+            // descriptor.layout.push(self.explicit_xz_layout.clone());
+            descriptor.layout.push(self.height_layout.clone());
         }
 
         descriptor.layout.push(self.height_layout.clone());
