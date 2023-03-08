@@ -2,7 +2,6 @@ use bevy::{
     diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
 };
-use warbler_grass::editor::ray_cast::RayCamera;
 
 pub struct SimpleCamera;
 impl Plugin for SimpleCamera {
@@ -18,10 +17,9 @@ fn setup_camera(mut commands: Commands) {
                 .looking_at(Vec3::new(0., 10., 0.), Vec3::Y),
             ..default()
         },
-        RayCamera::default(),
     ));
 }
-fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transform, With<Camera>>) {
+pub fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transform, With<Camera>>) {
     for mut transform in &mut query {
         let move_speed = 0.2;
         let rotate_speed = 0.02;

@@ -19,10 +19,17 @@ bevy = {version = "0.10.0"}
 bitflags = "1.3.2"
 serde = "1.0.153"
 
+[features]
+editor = []
+
 [[example]]
 name = "load_explicit"
 path = "examples/load_explicit.rs"
 
+[[example]]
+name = "editor"
+path = "examples/editor.rs"
+required-features = ["editor"]
 [[example]]
 name = "load_grass"
 path = "examples/load_grass.rs"

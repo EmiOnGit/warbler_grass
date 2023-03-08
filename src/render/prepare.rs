@@ -122,8 +122,8 @@ pub(crate) fn prepare_height_buffer(
                     let bind_group = render_device.create_bind_group(&bind_group_descriptor);
                     chunk.height_buffer = Some(bind_group);
                 }
-                WarblerHeight::Texture(heights_texture) => {
-                    todo!();
+                WarblerHeight::Texture(_heights_texture) => {
+                    todo!("Not yet supported");
                 }
             };
         } else {

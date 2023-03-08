@@ -113,7 +113,7 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
             return RenderCommandResult::Failure;
         };
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
-        let mut blade_count = 0;
+        let blade_count;
 
         if let Some(dither_handle) = chunk.dither_handle.as_ref() {
             if let Some(gpu_dither) = dither.into_inner().get(dither_handle) {

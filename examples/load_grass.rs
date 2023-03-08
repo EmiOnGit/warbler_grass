@@ -33,7 +33,7 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
         height_map,
         density_map,
         // The height of the blades
-        height: WarblerHeight::Uniform(5.),
+        height: WarblerHeight::Uniform(2.),
         aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 10., 100.)),
         ..default()
     });

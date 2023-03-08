@@ -9,6 +9,8 @@ use bevy::{
 pub mod bundle;
 pub mod density_map;
 pub mod dithering;
+#[cfg(feature = "editor")]
+
 pub mod editor;
 pub mod grass;
 pub mod height_map;
