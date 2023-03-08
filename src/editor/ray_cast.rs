@@ -17,7 +17,7 @@ impl Plugin for RayCastPlugin {
 }
 
 fn check_collision_on_click(
-    mut grass_chunk: Query<(&Transform, &Aabb, &mut DensityMap), Without<RayCamera>>,
+    grass_chunk: Query<(&Transform, &Aabb, &DensityMap), Without<RayCamera>>,
     camera_source: Query<(&Transform, &RayCamera)>,
     mouse_presses: Res<Input<MouseButton>>,
     mut draw_events: EventWriter<DrawEvent>,
@@ -27,7 +27,7 @@ fn check_collision_on_click(
     }
     let (_camera_transform, raycast_camera) = camera_source.single();
     let click_ray = raycast_camera.ray.as_ref().unwrap();
-    for (chunk_transform, aabb, mut density_map) in grass_chunk.iter_mut() {
+    for (chunk_transform, aabb, density_map) in &grass_chunk {
         let aabb_center = aabb.center.as_dvec3().as_vec3() + chunk_transform.translation;
 
         let grass_plane = Primitive3d::Plane {
@@ -49,8 +49,6 @@ fn check_collision_on_click(
                 / 2.;
             // let image = grass.height_map.as_ref().unwrap().height_map.clone();
             let image = density_map.density_map.clone();
-            // need to mut deref grass at some point
-            // let mut _d = &mut density_map.density_map;
             draw_events.send(DrawEvent::Draw { positions, image });
         }
     }

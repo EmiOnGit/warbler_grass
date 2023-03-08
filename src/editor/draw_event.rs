@@ -1,9 +1,9 @@
 use bevy::prelude::{
-    AssetEvent, Assets, Entity, EventReader, Handle, Image, Or, Query, ResMut, Vec2, With,
+    Assets, EventReader, Handle, Image, Or, Query, ResMut, Vec2, With,
 };
 
 use crate::{
-    density_map::{self, DensityMap},
+    density_map::DensityMap,
     height_map::HeightMap,
 };
 
