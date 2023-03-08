@@ -30,13 +30,11 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
         cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        println!("set uniform");
 
         let Some(chunk) = cache.into_inner().get(&item.entity()) else {
             return RenderCommandResult::Failure;
         };
         pass.set_bind_group(I, chunk.uniform_bindgroup.as_ref().unwrap(), &[]);
-        println!("f uniform");
 
         RenderCommandResult::Success
     }
@@ -55,7 +53,6 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
         cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        println!("set y");
 
         let Some(chunk) = cache.into_inner().get(&item.entity()) else {
             return RenderCommandResult::Failure;
@@ -65,7 +62,6 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
         // } else {
         // pass.set_bind_group(I, chunk.explicit_y_buffer.as_ref().unwrap(), &[]);
         // }
-        println!("f y");
 
         RenderCommandResult::Success
     }
@@ -84,12 +80,10 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
         cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        println!("set height");
         let Some(chunk) = cache.into_inner().get(&item.entity()) else {
             return RenderCommandResult::Failure;
         };
         pass.set_bind_group(I, chunk.height_buffer.as_ref().unwrap(), &[]);
-        println!("finished height");
 
         RenderCommandResult::Success
     }

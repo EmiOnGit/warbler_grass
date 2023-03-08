@@ -60,13 +60,3 @@ pub(crate) fn extract_visibility(
         .filter_map(|(e, visibility)| visibility.is_visible().then_some(e))
         .collect();
 }
-pub(crate) fn extract_dither_map(
-    spawner: Extract<Query<(Entity, &DitheredBuffer), Changed<DitheredBuffer>>>,
-    mut commands: Commands,
-) {
-    spawner.iter().for_each(|(e, dither_buffer)| {
-        commands
-            .spawn(EntityStorage(e))
-            .insert(dither_buffer.clone());
-    });
-}

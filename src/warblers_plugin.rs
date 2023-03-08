@@ -77,7 +77,6 @@ impl Plugin for WarblersPlugin {
                 (
                     extract::extract_grass,
                     extract::extract_visibility,
-                    extract::extract_dither_map,
                 )
                     .in_schedule(ExtractSchedule),
             )
