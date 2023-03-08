@@ -16,7 +16,6 @@ use bevy::{
 
 use crate::{
     dithering::{add_dither_to_density, DitheredBuffer},
-    hot_reloading,
     render::{
         self,
         cache::{EntityCache, GrassCache},
@@ -59,7 +58,6 @@ impl Plugin for WarblersPlugin {
         app.add_system(add_dither_to_density);
         app.add_asset::<DitheredBuffer>();
         app.add_plugin(RenderAssetPlugin::<DitheredBuffer>::default());
-        app.add_system(hot_reloading::hot_reload_height_map);
         // Init resources
         app.init_resource::<GrassConfiguration>()
             .register_type::<GrassConfiguration>();
@@ -74,7 +72,12 @@ impl Plugin for WarblersPlugin {
             .init_resource::<EntityCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_systems(
-                (extract::extract_grass, extract::extract_visibility, extract::extract_grass_positions).in_schedule(ExtractSchedule),
+                (
+                    extract::extract_grass,
+                    extract::extract_visibility,
+                    extract::extract_grass_positions,
+                )
+                    .in_schedule(ExtractSchedule),
             )
             .add_system(prepare::prepare_uniform_buffers.in_set(RenderSet::Prepare))
             // .add_system(prepare::prepare_explicit_xz_buffer.in_set(RenderSet::Prepare))

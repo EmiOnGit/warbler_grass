@@ -4,7 +4,7 @@ use bevy::prelude::*;
 pub struct DensityMap {
     /// The density map of the grass chunk
     ///
-    /// Should be a Gray scale image
+    /// Should be a gray scale image
     pub density_map: Handle<Image>,
     /// The density of the grass.
     ///

@@ -1,6 +1,8 @@
 use super::cache::{EntityCache, GrassCache};
 use crate::{
-    bundle::{WarblerHeight, Grass}, density_map::DensityMap, dithering::DitheredBuffer,
+    bundle::{Grass, WarblerHeight},
+    density_map::DensityMap,
+    dithering::DitheredBuffer,
     height_map::HeightMap,
 };
 use bevy::{
@@ -51,17 +53,7 @@ pub(crate) fn extract_grass(
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass_positions(
     mut commands: Commands,
-    grass_spawner: Extract<
-        Query<
-            (
-                Entity,
-                &Grass,
-                &GlobalTransform,
-                &Aabb,
-            ),
-            Changed<Grass>,
-        >,
-    >,
+    grass_spawner: Extract<Query<(Entity, &Grass, &GlobalTransform, &Aabb), Changed<Grass>>>,
     mut grass_cache: ResMut<GrassCache>,
 ) {
     for (entity, grass, global_transform, aabb) in grass_spawner.iter() {
@@ -82,7 +74,10 @@ pub(crate) struct EntityStorage(pub Entity);
 /// Extracts all visible grass entities into the render world.
 pub(crate) fn extract_visibility(
     visibility_queue: Extract<
-        Query<(Entity, &ComputedVisibility), (Or<(With<DitheredBuffer>,With<Grass>)>, With<Transform>)>,
+        Query<
+            (Entity, &ComputedVisibility),
+            (Or<(With<DitheredBuffer>, With<Grass>)>, With<Transform>),
+        >,
     >,
     mut entity_cache: ResMut<EntityCache>,
 ) {

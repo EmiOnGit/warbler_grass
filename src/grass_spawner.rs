@@ -1,19 +1,18 @@
-use bevy::{math::Vec3Swizzles, prelude::*, render::primitives::Aabb};
+use bevy::prelude::*;
 
 use crate::density_map::DensityMap;
-use crate::dithering::{dither_density_map, DitheredBuffer};
-use crate::grass::GrassBlade;
+
 use crate::height_map::HeightMap;
 
-#[derive(Default, Component, Clone)]
-pub struct GrassSpawner {
-    pub(crate) positions_xz: Vec<Vec2>,
-    pub(crate) positions_y: Vec<f32>,
-    // pub(crate) heights: HeightRepresentation,
-    pub(crate) height_map: Option<HeightMap>,
-    pub(crate) density_map: Option<DensityMap>,
-    // pub(crate) flags: GrassSpawnerFlags,
-}
+// #[derive(Default, Component, Clone)]
+// pub struct GrassSpawner {
+//     pub(crate) positions_xz: Vec<Vec2>,
+//     pub(crate) positions_y: Vec<f32>,
+//     // pub(crate) heights: HeightRepresentation,
+//     pub(crate) height_map: Option<HeightMap>,
+//     pub(crate) density_map: Option<DensityMap>,
+//     // pub(crate) flags: GrassSpawnerFlags,
+// }
 
 // impl GrassSpawner {
 //     pub fn new() -> GrassSpawner {

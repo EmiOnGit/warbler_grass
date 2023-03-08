@@ -36,23 +36,26 @@ pub enum WarblerHeight {
 #[derive(Component, Clone)]
 pub struct Grass {
     pub positions: Vec<Vec3>,
-    pub height: f32
+    pub height: f32,
 }
 impl Default for Grass {
     fn default() -> Self {
-        Self { positions: Default::default(), height: 1. }
+        Self {
+            positions: Default::default(),
+            height: 1.,
+        }
     }
 }
 impl Grass {
     pub fn new(positions: Vec<Vec3>, height: f32) -> Self {
-        Grass {positions, height}
+        Grass { positions, height }
     }
 }
 impl From<&[Vec3]> for Grass {
     fn from(value: &[Vec3]) -> Self {
         Self {
             positions: value.into(),
-            height: Default::default()
+            height: Default::default(),
         }
     }
 }

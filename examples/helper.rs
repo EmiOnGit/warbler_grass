@@ -2,7 +2,7 @@ use bevy::{
     diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
 };
-use warbler_grass::{editor::ray_cast::RayCamera, grass_spawner::GrassSpawner};
+use warbler_grass::editor::ray_cast::RayCamera;
 
 pub struct SimpleCamera;
 impl Plugin for SimpleCamera {

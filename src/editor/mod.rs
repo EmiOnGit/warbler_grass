@@ -2,12 +2,14 @@ use bevy::prelude::Plugin;
 
 use self::{
     brush::{ActiveBrush, Stencil},
-    draw_event::{draw_map, notify_image_change, DrawEvent},
+    draw_event::{draw_map, DrawEvent},
+    hot_reloading::notify_image_change,
     ray_cast::RayCastPlugin,
 };
 
 pub mod brush;
 pub mod draw_event;
+mod hot_reloading;
 /// # CREDIT
 /// A big part of the raycasting logic was stolen
 /// from the [bevy_mod_raycast](https://github.com/aevyrie/bevy_mod_raycast) crate.

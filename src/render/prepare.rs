@@ -5,8 +5,6 @@ use std::ops::Mul;
 use super::extract::EntityStorage;
 use super::grass_pipeline::GrassPipeline;
 use crate::bundle::WarblerHeight;
-use crate::dithering::DitheredBuffer;
-use crate::grass_spawner::GrassSpawner;
 use crate::height_map::HeightMap;
 use crate::render::cache::GrassCache;
 use crate::GrassConfiguration;
