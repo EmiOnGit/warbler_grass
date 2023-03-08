@@ -60,7 +60,7 @@ impl From<&[Vec3]> for Grass {
     }
 }
 #[derive(Bundle)]
-pub struct WarblersPositionBundle {
+pub struct WarblersExplicitBundle {
     pub grass_mesh: Handle<Mesh>,
     pub grass_positions: Grass,
     #[bundle]

@@ -200,7 +200,10 @@ impl SpecializedMeshPipeline for GrassPipeline {
 
         vertex.shader = self.shader.clone();
         // if key.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
-        vertex.shader_defs.push("HEIGHT_MAP".into());
+        // vertex.shader_defs.push("HEIGHT_MAP".into());
+        if key.is_explicit {
+            vertex.shader_defs.push("EXPLICIT".into());
+        }
         descriptor.layout.push(self.height_map_layout.clone());
         // } else {
         // descriptor.layout.push(self.explicit_y_layout.clone());
@@ -220,14 +223,14 @@ impl SpecializedMeshPipeline for GrassPipeline {
 #[derive(Eq, PartialEq, Hash, Clone)]
 pub struct GrassRenderKey {
     pub mesh_key: MeshPipelineKey,
-    // flags: GrassSpawnerFlags,
+    pub is_explicit: bool,
 }
 
 impl From<MeshPipelineKey> for GrassRenderKey {
     fn from(mesh_key: MeshPipelineKey) -> Self {
         Self {
             mesh_key,
-            // flags: GrassSpawnerFlags::NONE,
+            is_explicit: false,
         }
     }
 }

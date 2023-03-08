@@ -59,6 +59,27 @@ pub(crate) fn prepare_explicit_positions_buffer(
             };
             let bind_group = render_device.create_bind_group(&bind_group_descriptor);
             chunk.explicit_y_buffer = Some(bind_group);
+            let layout = pipeline.uniform_height_layout.clone();
+
+            let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                label: "height buffer".into(),
+                contents: &grass.height.to_ne_bytes(),
+                usage: BufferUsages::VERTEX | BufferUsages::COPY_DST | BufferUsages::UNIFORM,
+            });
+            let bind_group_descriptor = BindGroupDescriptor {
+                label: Some("grass height bind group"),
+                layout: &layout,
+                entries: &[BindGroupEntry {
+                    binding: 0,
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &buffer,
+                        offset: 0,
+                        size: NonZeroU64::new(4),
+                    }),
+                }],
+            };
+            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+            chunk.height_buffer = Some(bind_group);
         } else {
             warn!(
                 "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"

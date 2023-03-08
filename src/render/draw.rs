@@ -53,13 +53,15 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
         let Some(chunk) = cache.into_inner().get(&item.entity()) else {
             return RenderCommandResult::Failure;
         };
-        // if chunk.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
-        pass.set_bind_group(I, chunk.height_map.as_ref().unwrap(), &[]);
-        // } else {
-        // pass.set_bind_group(I, chunk.explicit_y_buffer.as_ref().unwrap(), &[]);
-        // }
-
-        RenderCommandResult::Success
+        if let Some(height_map) = chunk.height_map.as_ref() {
+            pass.set_bind_group(I, height_map, &[]);
+            return RenderCommandResult::Success;
+        }
+        if let Some(y_buffer) = chunk.explicit_y_buffer.as_ref() {
+            pass.set_bind_group(I, y_buffer, &[]);
+            return RenderCommandResult::Success;
+        }
+        return RenderCommandResult::Failure;
     }
 }
 pub struct SetHeightBindGroup<const I: usize>;
@@ -110,18 +112,26 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
         let Some(chunk) = cache.into_inner().get(&item.entity()) else {
             return RenderCommandResult::Failure;
         };
-        let dither_handle = chunk.dither_handle.as_ref().unwrap();
-        let gpu_dither = match dither.into_inner().get(dither_handle) {
-            Some(gpu_dither) => gpu_dither,
-            None => return RenderCommandResult::Failure,
-        };
-        let grass_blade_count = gpu_dither.instances as u32;
-
-        if grass_blade_count == 0 {
-            return RenderCommandResult::Failure;
-        }
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
-        pass.set_vertex_buffer(1, gpu_dither.buffer.slice(..));
+
+        let dither_handle = chunk.dither_handle.as_ref().unwrap();
+        let mut blade_count = 0;
+        if let Some(gpu_dither) = dither.into_inner().get(dither_handle) {
+            blade_count = gpu_dither.instances as u32;
+            if blade_count == 0 {
+                return RenderCommandResult::Failure;
+            }
+            pass.set_vertex_buffer(1, gpu_dither.buffer.slice(..));
+
+        } else {
+            blade_count = chunk.explicit_count;
+            let Some(xz_buffer) = chunk.explicit_xz_buffer.as_ref() else {
+                return RenderCommandResult::Failure;
+            };
+            pass.set_vertex_buffer(1, xz_buffer.slice(..));
+        }
+
+        
         match &gpu_mesh.buffer_info {
             GpuBufferInfo::Indexed {
                 buffer,
@@ -129,10 +139,10 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
                 count,
             } => {
                 pass.set_index_buffer(buffer.slice(..), 0, *index_format);
-                pass.draw_indexed(0..*count, 0, 0..grass_blade_count);
+                pass.draw_indexed(0..*count, 0, 0..blade_count);
             }
             GpuBufferInfo::NonIndexed { vertex_count } => {
-                pass.draw(0..*vertex_count, 0..grass_blade_count);
+                pass.draw(0..*vertex_count, 0..blade_count);
             }
         }
         RenderCommandResult::Success
