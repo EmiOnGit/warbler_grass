@@ -1,6 +1,6 @@
-use bevy::prelude::{Assets, EventReader, Handle, Image, Or, Query, ResMut, Vec2, With};
+use bevy::prelude::{Assets, EventReader, Handle, Image, ResMut, Vec2};
 
-use crate::{density_map::DensityMap, height_map::HeightMap};
+
 
 use super::brush::ActiveBrush;
 

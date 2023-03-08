@@ -92,9 +92,9 @@ pub(crate) fn prepare_height_buffer(
     mut cache: ResMut<GrassCache>,
     pipeline: Res<GrassPipeline>,
     render_device: Res<RenderDevice>,
-    mut inserted_grass: Query<(&mut WarblerHeight, &EntityStorage)>,
+    inserted_grass: Query<(&WarblerHeight, &EntityStorage)>,
 ) {
-    for (mut height, EntityStorage(id)) in inserted_grass.iter_mut() {
+    for (height, EntityStorage(id)) in inserted_grass.iter() {
         if let Some(chunk) = cache.get_mut(id) {
             match height.clone() {
                 WarblerHeight::Uniform(height) => {
@@ -232,37 +232,6 @@ pub(crate) fn prepare_height_map_buffer(
     }
 }
 
-// pub(crate) fn prepare_density_map_buffer(
-//     mut cache: ResMut<GrassCache>,
-//     render_queue: Res<RenderQueue>,
-//     render_device: Res<RenderDevice>,
-//     pipeline: Res<GrassPipeline>,
-//     mut inserted_grass: Query<(&mut DitheredBuffer, &EntityStorage)>,
-// ) {
-//     for (mut dither, entity_store) in inserted_grass.iter_mut() {
-//         let id = entity_store.0;
-//         let view = prepare_texture_from_data(
-//             &mut dither.positions,
-//             &render_device,
-//             &render_queue,
-//             TextureFormat::Rg32Float,
-//         );
-//         let layout = pipeline.density_map_layout.clone();
-//         let bind_group_descriptor = BindGroupDescriptor {
-//             label: Some("grass explicit dither positions bind group"),
-//             layout: &layout,
-//             entries: &[BindGroupEntry {
-//                 binding: 0,
-//                 resource: BindingResource::TextureView(&view),
-//             }],
-//         };
-//         let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-//         if let Some(chunk) = cache.get_mut(&id) {
-//             chunk.instance_count = dither.positions.len();
-//             chunk.density_map = Some(bind_group);
-//         }
-//     }
-// }
 pub(crate) fn prepare_uniform_buffers(
     pipeline: Res<GrassPipeline>,
     mut cache: ResMut<GrassCache>,
