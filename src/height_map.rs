@@ -1,7 +1,11 @@
 use bevy::prelude::*;
 
-#[derive(Reflect, Clone)]
+#[derive(Reflect, Clone, Component)]
 pub struct HeightMap {
     pub height_map: Handle<Image>,
-    pub height: f32,
+}
+impl From<Handle<Image>> for HeightMap {
+    fn from(value: Handle<Image>) -> Self {
+        HeightMap { height_map: value }
+    }
 }

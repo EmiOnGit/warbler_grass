@@ -1,5 +1,5 @@
 use super::cache::{EntityCache, GrassCache};
-use crate::{dithering::DitheredBuffer, grass_spawner::GrassSpawner};
+use crate::{dithering::DitheredBuffer, grass_spawner::GrassSpawner, height_map::HeightMap, density_map::DensityMap, bundle::WarblerHeight};
 use bevy::{
     prelude::*,
     render::{primitives::Aabb, Extract},
@@ -18,19 +18,25 @@ pub(crate) fn extract_grass(
     mut commands: Commands,
     grass_spawner: Extract<
         Query<
-            (Entity, &GrassSpawner, &GlobalTransform, &Aabb),
-            Or<(Changed<GrassSpawner>, Changed<Aabb>)>,
+            (Entity, &HeightMap, &Handle<DitheredBuffer>, &WarblerHeight, &GlobalTransform, &Aabb),
+            Or<(Changed<HeightMap>, Changed<DitheredBuffer>)>,
         >,
     >,
     mut grass_cache: ResMut<GrassCache>,
 ) {
-    for (entity, spawner, global_transform, aabb) in grass_spawner.iter() {
+    for (entity, height_map, dithered, height, global_transform, aabb) in grass_spawner.iter() {
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.transform = *global_transform;
-        commands
-            .spawn(spawner.clone())
-            .insert(EntityStorage(entity))
-            .insert(*aabb);
+        cache_value.dither_handle = Some(dithered.clone());
+
+        commands.spawn((
+                EntityStorage(entity),
+                height_map.clone(),
+                dithered.clone(),
+                height.clone(),
+                *aabb,
+                *global_transform,
+            ));
     }
 }
 #[derive(Clone, Component)]
@@ -38,7 +44,7 @@ pub(crate) struct EntityStorage(pub Entity);
 /// Extracts all visible grass entities into the render world.
 pub(crate) fn extract_visibility(
     visibility_queue: Extract<
-        Query<(Entity, &ComputedVisibility), (With<GrassSpawner>, With<Transform>)>,
+        Query<(Entity, &ComputedVisibility), (With<DitheredBuffer>, With<Transform>)>,
     >,
     mut entity_cache: ResMut<EntityCache>,
 ) {

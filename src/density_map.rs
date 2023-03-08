@@ -1,19 +1,18 @@
 use bevy::prelude::*;
 
-#[derive(Reflect, Clone)]
+#[derive(Reflect, Clone, Component)]
 pub struct DensityMap {
     /// The density map of the grass chunk
     ///
     /// Should be a Gray scale image
     pub density_map: Handle<Image>,
-    /// The footprint describes how far apart the grass should be.
+    /// The density of the grass. 
+    /// 
+    /// If the density is high, more grass is spawned in a dense area
     pub density: f32,
-    /// Describes how far the density map should reach
-    pub span_xz: Vec2,
-    /// If the positions should be influenced by noise.
-    ///
-    /// Since we generate the positions out using ordered dithering,
-    /// the positions are placed in a grid like structure without noise.
-    /// For noise the blue channel from the wind noise texture is used.
-    pub noise: bool,
+}
+impl From<Handle<Image>> for DensityMap {
+    fn from(value: Handle<Image>) -> Self {
+        DensityMap { density_map: value, density: 1.}
+    }
 }

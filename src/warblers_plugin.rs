@@ -9,12 +9,11 @@ use bevy::{
         render_phase::AddRenderCommand,
         render_resource::{PrimitiveTopology, SpecializedMeshPipelines},
         texture::FallbackImage,
-        RenderApp, RenderSet,
+        RenderApp, RenderSet, render_asset::RenderAssetPlugin,
     },
 };
 
 use crate::{
-    grass_spawner::{add_aabb_box_to_grass, add_dither_to_density},
     hot_reloading,
     render::{
         self,
@@ -23,7 +22,7 @@ use crate::{
         grass_pipeline::GrassPipeline,
         prepare, queue,
     },
-    GrassConfiguration,
+    GrassConfiguration, dithering::{add_dither_to_density, DitheredBuffer},
 };
 
 /// A raw handle which points to the shader used to render the grass.
@@ -53,8 +52,11 @@ impl Plugin for WarblersPlugin {
         let mut meshes = app.world.resource_mut::<Assets<Mesh>>();
         meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
         // Add systems
-        app.add_system(add_aabb_box_to_grass)
-            .add_system(add_dither_to_density);
+        // app.add_system(add_aabb_box_to_grass)
+            // .add_system(add_dither_to_density);
+        app.add_system(add_dither_to_density);
+        app.add_asset::<DitheredBuffer>();
+        app.add_plugin(RenderAssetPlugin::<DitheredBuffer>::default());
         app.add_system(hot_reloading::hot_reload_height_map);
         // Init resources
         app.init_resource::<GrassConfiguration>()
@@ -66,6 +68,7 @@ impl Plugin for WarblersPlugin {
             .add_render_command::<Opaque3d, render::GrassDrawCall>()
             .init_resource::<FallbackImage>()
             .init_resource::<GrassPipeline>()
+
             .init_resource::<GrassCache>()
             .init_resource::<EntityCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
@@ -78,9 +81,9 @@ impl Plugin for WarblersPlugin {
                     .in_schedule(ExtractSchedule),
             )
             .add_system(prepare::prepare_uniform_buffers.in_set(RenderSet::Prepare))
-            .add_system(prepare::prepare_explicit_xz_buffer.in_set(RenderSet::Prepare))
-            .add_system(prepare::prepare_density_buffer.in_set(RenderSet::Prepare))
-            .add_system(prepare::prepare_explicit_y_buffer.in_set(RenderSet::Prepare))
+            // .add_system(prepare::prepare_explicit_xz_buffer.in_set(RenderSet::Prepare))
+            // .add_system(prepare::prepare_density_buffer.in_set(RenderSet::Prepare))
+            // .add_system(prepare::prepare_explicit_y_buffer.in_set(RenderSet::Prepare))
             .add_system(prepare::prepare_height_buffer.in_set(RenderSet::Prepare))
             // .add_system(prepare::prepare_density_map_buffer.in_set(RenderSet::Prepare))
             .add_system(prepare::prepare_height_map_buffer.in_set(RenderSet::Prepare))

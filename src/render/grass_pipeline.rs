@@ -13,7 +13,7 @@ use bevy::{
     },
 };
 
-use crate::{grass_spawner::GrassSpawnerFlags, warblers_plugin::GRASS_SHADER_HANDLE};
+use crate::{warblers_plugin::GRASS_SHADER_HANDLE};
 #[derive(Resource)]
 pub struct GrassPipeline {
     shader: Handle<Shader>,
@@ -199,18 +199,18 @@ impl SpecializedMeshPipeline for GrassPipeline {
         let vertex = &mut descriptor.vertex;
 
         vertex.shader = self.shader.clone();
-        if key.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
+        // if key.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
             vertex.shader_defs.push("HEIGHT_MAP".into());
             descriptor.layout.push(self.height_map_layout.clone());
-        } else {
-            descriptor.layout.push(self.explicit_y_layout.clone());
-        }
-        if key.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
+        // } else {
+            // descriptor.layout.push(self.explicit_y_layout.clone());
+        // }
+        // if key.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
             vertex.shader_defs.push("UNIFORM_HEIGHT".into());
             descriptor.layout.push(self.uniform_height_layout.clone());
-        } else {
-            descriptor.layout.push(self.explicit_height_layout.clone());
-        }
+        // } else {
+            // descriptor.layout.push(self.explicit_height_layout.clone());
+        // }
 
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone();
         Ok(descriptor)
@@ -220,20 +220,20 @@ impl SpecializedMeshPipeline for GrassPipeline {
 #[derive(Eq, PartialEq, Hash, Clone)]
 pub struct GrassRenderKey {
     pub mesh_key: MeshPipelineKey,
-    flags: GrassSpawnerFlags,
+    // flags: GrassSpawnerFlags,
 }
 
 impl From<MeshPipelineKey> for GrassRenderKey {
     fn from(mesh_key: MeshPipelineKey) -> Self {
         Self {
             mesh_key,
-            flags: GrassSpawnerFlags::NONE,
+            // flags: GrassSpawnerFlags::NONE,
         }
     }
 }
-impl GrassRenderKey {
-    pub fn with_flags(mut self, flags: GrassSpawnerFlags) -> Self {
-        self.flags = flags;
-        self
-    }
-}
+// impl GrassRenderKey {
+//     pub fn with_flags(mut self, flags: GrassSpawnerFlags) -> Self {
+//         self.flags = flags;
+//         self
+//     }
+// }

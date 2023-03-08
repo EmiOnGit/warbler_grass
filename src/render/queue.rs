@@ -6,6 +6,8 @@ use bevy::render::render_phase::{DrawFunctions, RenderPhase};
 use bevy::render::render_resource::{PipelineCache, SpecializedMeshPipelines};
 use bevy::render::view::ExtractedView;
 
+use crate::dithering::DitheredBuffer;
+
 use super::cache::GrassCache;
 use super::grass_pipeline::{GrassPipeline, GrassRenderKey};
 use super::GrassDrawCall;
@@ -39,8 +41,7 @@ pub fn queue_grass_buffers(
             if let Some(mesh) = meshes.get(mesh_handle) {
                 let mesh_key =
                     view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);
-                let grass_key = GrassRenderKey::from(mesh_key)
-                    .with_flags(grass_cacher.get(&entity).unwrap().flags);
+                let grass_key = GrassRenderKey::from(mesh_key);
                 let pipeline = pipelines
                     .specialize(&pipeline_cache, &grass_pipeline, grass_key, &mesh.layout)
                     .unwrap();

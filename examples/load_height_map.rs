@@ -1,7 +1,7 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::primitives::Aabb};
 use warbler_grass::{
     density_map::DensityMap, editor, grass_spawner::GrassSpawner, height_map::HeightMap,
-    warblers_plugin::WarblersPlugin, WarblersBundle,
+    warblers_plugin::WarblersPlugin, bundle::WarblersBundle,
 };
 mod helper;
 
@@ -22,22 +22,25 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let height_map = HeightMap {
         height_map,
-        height: 5.,
+        // height: 5.,
     };
     let density_map = asset_server.load("grass_density_map.png");
 
     let density_map = DensityMap {
         density_map,
         density: 2.,
-        span_xz: Vec2::new(100., 100.),
-        noise: false,
+        // span_xz: Vec2::new(100., 100.),
+        // noise: false,
     };
-    let grass_spawner = GrassSpawner::new()
-        .with_density_map(density_map)
+    // let grass_spawner = GrassSpawner::new()
+        // .with_density_map(density_map)
         // .with_positions_xz(positions_xz)
-        .with_height_map(height_map);
+        // .with_height_map(height_map);
     commands.spawn(WarblersBundle {
-        grass_spawner,
+        // grass_spawner,
+        density_map,
+        height_map,
+        aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100.,5.,100.)),
         spatial: SpatialBundle {
             transform: Transform::from_xyz(0., 1., 0.),
             ..default()
