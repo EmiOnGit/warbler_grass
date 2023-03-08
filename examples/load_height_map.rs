@@ -20,11 +20,6 @@ fn main() {
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     let height_map = asset_server.load("grass_height_map.png");
 
-    let positions_xz: Vec<Vec2> = (0..10_000)
-        .into_iter()
-        .map(|i| (i / 100, i % 100))
-        .map(|(x, z)| Vec2::new(x as f32, z as f32))
-        .collect();
     let height_map = HeightMap {
         height_map,
         height: 5.,

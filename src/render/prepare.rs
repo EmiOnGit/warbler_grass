@@ -51,7 +51,6 @@ pub(crate) fn prepare_explicit_xz_buffer(
         }
 
         if let Some(chunk) = cache.get_mut(id) {
-            println!("here");
             chunk.instance_count = spawner.positions_xz.len() as u32;
 
             let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
