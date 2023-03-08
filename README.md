@@ -15,8 +15,7 @@ Don't fear if you are a beginner in bevy or even rust!
 
 Currently, the code can be optimized in many places and many features I'd like to have been partially or completely missing.
 You can always just create an issue and ask if something you want to do is needed.
-I'll try to make issues in advance about the larger topics I'll want to be implemented.
-Look at the [milestones](https://github.com/emiongit/warbler_grass/milestones) for inspiration.
+
 
 ![alt text](images/preview.png)
 The preview image comes from [my demo project](https://github.com/EmiOnGit/birdylook) where I use this crate for grass rending
