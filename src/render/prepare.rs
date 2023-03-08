@@ -4,10 +4,11 @@ use std::ops::Mul;
 
 use super::extract::EntityStorage;
 use super::grass_pipeline::GrassPipeline;
-use crate::bundle::WarblerHeight;
+use crate::bundle::{Grass, WarblerHeight};
 use crate::height_map::HeightMap;
 use crate::render::cache::GrassCache;
 use crate::GrassConfiguration;
+use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
@@ -21,55 +22,50 @@ use bevy::render::renderer::{RenderDevice, RenderQueue};
 use bevy::render::texture::FallbackImage;
 use bytemuck::{Pod, Zeroable};
 
-// pub(crate) fn prepare_density_buffer(
-//     mut cache: ResMut<GrassCache>,
-//     inserted_dither_buffer: Query<(&EntityStorage, &DitheredBuffer)>,
-//     render_device: Res<RenderDevice>,
-// ) {
-//     for (EntityStorage(e), dither) in &inserted_dither_buffer {
-//         if let Some(chunk) = cache.get_mut(e) {
-//             chunk.instance_count = dither.positions.len() as u32;
-//             let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-//                 label: "xz vertex buffer".into(),
-//                 contents: bytemuck::cast_slice(dither.positions.as_slice()),
-//                 usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
-//             });
-//             chunk.explicit_xz_buffer = Some(buffer);
-//         }
-//     }
-// }
-// pub(crate) fn prepare_explicit_xz_buffer(
-//     mut cache: ResMut<GrassCache>,
-//     render_device: Res<RenderDevice>,
-//     mut inserted_grass: Query<(&mut GrassSpawner, &EntityStorage)>,
-// ) {
-//     for (spawner, EntityStorage(id)) in inserted_grass.iter_mut() {
-//         if !spawner.flags.contains(GrassSpawnerFlags::XZ_DEFINED) {
-//             panic!("Cannot spawn grass without the xz-positions defined");
-//         }
-//         if spawner.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
-//             continue;
-//         }
+pub(crate) fn prepare_explicit_positions_buffer(
+    mut cache: ResMut<GrassCache>,
+    pipeline: Res<GrassPipeline>,
+    render_device: Res<RenderDevice>,
+    render_queue: Res<RenderQueue>,
+    mut inserted_grass: Query<(&mut Grass, &EntityStorage)>,
+) {
+    for (grass, EntityStorage(id)) in inserted_grass.iter_mut() {
+        if let Some(chunk) = cache.get_mut(id) {
+            chunk.explicit_count = grass.positions.len() as u32;
+            let (xz, mut y): (Vec<Vec2>, Vec<f32>) =
+                grass.positions.iter().map(|v| (v.xz(), v.y)).unzip();
+            let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                label: "xz vertex buffer".into(),
+                contents: bytemuck::cast_slice(xz.as_slice()),
+                usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
+            });
 
-//         if let Some(chunk) = cache.get_mut(id) {
-//             chunk.instance_count = spawner.positions_xz.len() as u32;
+            chunk.explicit_xz_buffer = Some(buffer);
 
-//             let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-//                 label: "xz vertex buffer".into(),
-//                 contents: bytemuck::cast_slice(spawner.positions_xz.as_slice()),
-//                 usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
-//             });
-
-//             chunk.explicit_xz_buffer = Some(buffer);
-
-//             chunk.flags = spawner.flags;
-//         } else {
-//             warn!(
-//                 "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"
-//             );
-//         }
-//     }
-// }
+            let view = prepare_texture_from_data(
+                &mut y,
+                &render_device,
+                &render_queue,
+                TextureFormat::R32Float,
+            );
+            let layout = pipeline.explicit_y_layout.clone();
+            let bind_group_descriptor = BindGroupDescriptor {
+                label: Some("grass explicit y positions bind group"),
+                layout: &layout,
+                entries: &[BindGroupEntry {
+                    binding: 0,
+                    resource: BindingResource::TextureView(&view),
+                }],
+            };
+            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+            chunk.explicit_y_buffer = Some(bind_group);
+        } else {
+            warn!(
+                "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"
+            );
+        }
+    }
+}
 
 pub(crate) fn prepare_height_buffer(
     mut cache: ResMut<GrassCache>,
@@ -117,39 +113,6 @@ pub(crate) fn prepare_height_buffer(
         }
     }
 }
-// pub(crate) fn prepare_explicit_y_buffer(
-//     mut cache: ResMut<GrassCache>,
-//     render_device: Res<RenderDevice>,
-//     render_queue: Res<RenderQueue>,
-//     pipeline: Res<GrassPipeline>,
-//     mut inserted_grass: Query<(&mut GrassSpawner, &EntityStorage)>,
-// ) {
-//     for (mut spawner, EntityStorage(id)) in inserted_grass.iter_mut() {
-//         if let Some(chunk) = cache.get_mut(id) {
-//             let view = prepare_texture_from_data(
-//                 &mut spawner.positions_y,
-//                 &render_device,
-//                 &render_queue,
-//                 TextureFormat::R32Float,
-//             );
-//             let layout = pipeline.explicit_y_layout.clone();
-//             let bind_group_descriptor = BindGroupDescriptor {
-//                 label: Some("grass explicit y positions bind group"),
-//                 layout: &layout,
-//                 entries: &[BindGroupEntry {
-//                     binding: 0,
-//                     resource: BindingResource::TextureView(&view),
-//                 }],
-//             };
-//             let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-//             chunk.explicit_y_buffer = Some(bind_group);
-//         } else {
-//             warn!(
-//                 "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"
-//             );
-//         }
-//     }
-// }
 
 pub(crate) fn prepare_height_map_buffer(
     mut cache: ResMut<GrassCache>,

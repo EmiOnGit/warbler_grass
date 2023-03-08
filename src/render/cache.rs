@@ -15,15 +15,15 @@ pub struct GrassCache {
 pub struct CachedGrassChunk {
     pub uniform_bindgroup: Option<BindGroup>,
     pub explicit_xz_buffer: Option<Buffer>,
+    pub explicit_count: u32,
     pub dither_handle: Option<Handle<DitheredBuffer>>,
     pub height_map: Option<BindGroup>,
     pub density_map: Option<BindGroup>,
     pub explicit_y_buffer: Option<BindGroup>,
     pub height_buffer: Option<BindGroup>,
     pub transform: GlobalTransform,
-    // pub instance_count: u32,
-    // pub flags: GrassSpawnerFlags,
 }
+
 #[derive(Resource, DerefMut, Deref, Debug, Default)]
 pub struct EntityCache {
     pub entities: HashSet<Entity>,
