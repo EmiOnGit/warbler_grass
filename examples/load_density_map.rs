@@ -7,16 +7,13 @@ mod helper;
 
 fn main() {
     App::new()
-        .add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        present_mode: PresentMode::AutoNoVsync,
-                        ..default()
-                    }),
-                    ..default()
-                }),
-        )
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                present_mode: PresentMode::AutoNoVsync,
+                ..default()
+            }),
+            ..default()
+        }))
         .add_plugin(WarblersPlugin)
         .add_plugin(helper::FpsPlugin)
         .add_plugin(helper::SimpleCamera)
@@ -57,11 +54,10 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
         .map(|i| (i / 1000, i % 1000))
         .map(|(x, z)| Vec2::new(x as f32, z as f32) / 1.5)
         .collect();
-    
+
     let grass_spawner = GrassSpawner::new()
         .with_positions_xz(positions_xz)
         .with_height_uniform(4.5)
-
         .with_height_map(height_map);
     commands.spawn(WarblersBundle {
         grass_spawner,

@@ -24,21 +24,18 @@ pub(crate) fn prepare_density_buffer(
     mut cache: ResMut<GrassCache>,
     inserted_dither_buffer: Query<(&EntityStorage, &DitheredBuffer)>,
     render_device: Res<RenderDevice>,
-
 ) {
-    for (EntityStorage(e),dither) in &inserted_dither_buffer {
+    for (EntityStorage(e), dither) in &inserted_dither_buffer {
         if let Some(chunk) = cache.get_mut(e) {
             chunk.instance_count = dither.positions.len() as u32;
             let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                    label: "xz vertex buffer".into(),
-                    contents: bytemuck::cast_slice(dither.positions.as_slice()),
-                    usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
-                });
+                label: "xz vertex buffer".into(),
+                contents: bytemuck::cast_slice(dither.positions.as_slice()),
+                usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
+            });
             chunk.explicit_xz_buffer = Some(buffer);
-
         }
     }
-    
 }
 pub(crate) fn prepare_explicit_xz_buffer(
     mut cache: ResMut<GrassCache>,
@@ -58,11 +55,11 @@ pub(crate) fn prepare_explicit_xz_buffer(
             chunk.instance_count = spawner.positions_xz.len() as u32;
 
             let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                    label: "xz vertex buffer".into(),
-                    contents: bytemuck::cast_slice(spawner.positions_xz.as_slice()),
-                    usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
-                });
-           
+                label: "xz vertex buffer".into(),
+                contents: bytemuck::cast_slice(spawner.positions_xz.as_slice()),
+                usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
+            });
+
             chunk.explicit_xz_buffer = Some(buffer);
 
             chunk.flags = spawner.flags;
@@ -82,58 +79,56 @@ pub(crate) fn prepare_height_buffer(
     mut inserted_grass: Query<(&mut GrassSpawner, &EntityStorage)>,
 ) {
     for (mut spawner, EntityStorage(id)) in inserted_grass.iter_mut() {
-        let count = spawner.blade_count();
         if let Some(chunk) = cache.get_mut(id) {
-            if let HeightRepresentation::Uniform(height) = &mut spawner.heights {
-
-            }
-
             match &mut spawner.heights {
                 HeightRepresentation::Uniform(height) => {
-            let layout = pipeline.uniform_height_layout.clone();
+                    let layout = pipeline.uniform_height_layout.clone();
 
                     let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
                         label: "xz vertex buffer".into(),
                         contents: &height.to_ne_bytes(),
-                        usage: BufferUsages::VERTEX | BufferUsages::COPY_DST | BufferUsages::UNIFORM,
+                        usage: BufferUsages::VERTEX
+                            | BufferUsages::COPY_DST
+                            | BufferUsages::UNIFORM,
                     });
                     let bind_group_descriptor = BindGroupDescriptor {
                         label: Some("grass height bind group"),
                         layout: &layout,
                         entries: &[BindGroupEntry {
                             binding: 0,
-                            resource: BindingResource::Buffer(BufferBinding { buffer: &buffer, offset: 0, size: NonZeroU64::new(4) }),
+                            resource: BindingResource::Buffer(BufferBinding {
+                                buffer: &buffer,
+                                offset: 0,
+                                size: NonZeroU64::new(4),
+                            }),
                         }],
                     };
-                let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-                chunk.height_buffer = Some(bind_group);
-                chunk.flags = spawner.flags;
-
+                    let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+                    chunk.height_buffer = Some(bind_group);
+                    chunk.flags = spawner.flags;
                 }
                 HeightRepresentation::PerBlade(heights) => {
-            let layout = pipeline.explicit_height_layout.clone();
+                    let layout = pipeline.explicit_height_layout.clone();
 
                     let view = prepare_texture_from_data(
-                    heights,
-                    &render_device,
-                    &render_queue,
-                    TextureFormat::R32Float,
-                );
-                let bind_group_descriptor = BindGroupDescriptor {
-                    label: Some("grass height bind group"),
-                    layout: &layout,
-                    entries: &[BindGroupEntry {
-                        binding: 0,
-                        resource: BindingResource::TextureView(&view),
-                    }],
-                };
-                let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-                chunk.height_buffer = Some(bind_group);
-                chunk.flags = spawner.flags;
-
-             },
+                        heights,
+                        &render_device,
+                        &render_queue,
+                        TextureFormat::R32Float,
+                    );
+                    let bind_group_descriptor = BindGroupDescriptor {
+                        label: Some("grass height bind group"),
+                        layout: &layout,
+                        entries: &[BindGroupEntry {
+                            binding: 0,
+                            resource: BindingResource::TextureView(&view),
+                        }],
+                    };
+                    let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+                    chunk.height_buffer = Some(bind_group);
+                    chunk.flags = spawner.flags;
+                }
             };
-            
         } else {
             warn!(
                 "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"

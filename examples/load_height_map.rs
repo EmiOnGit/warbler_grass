@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use warbler_grass::{
-    editor, grass_spawner::GrassSpawner, height_map::HeightMap, warblers_plugin::WarblersPlugin,
-    WarblersBundle, density_map::DensityMap,
+    density_map::DensityMap, editor, grass_spawner::GrassSpawner, height_map::HeightMap,
+    warblers_plugin::WarblersPlugin, WarblersBundle,
 };
 mod helper;
 
@@ -34,9 +34,8 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     let density_map = DensityMap {
         density_map,
         density: 2.,
-        span_xz: Vec2::new(100.,100.),
-        noise: false
-
+        span_xz: Vec2::new(100., 100.),
+        noise: false,
     };
     let grass_spawner = GrassSpawner::new()
         .with_density_map(density_map)

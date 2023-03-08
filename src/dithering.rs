@@ -23,15 +23,14 @@ pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Opti
             //normalize i,j between 0,1
             let i = i as f32 / i_count as f32;
             let j = j as f32 / j_count as f32;
-            
-            let x = i * buffer.dimensions().0 as f32;            
+
+            let x = i * buffer.dimensions().0 as f32;
             let y = j * buffer.dimensions().1 as f32;
 
             let pixel = buffer.get_pixel(x as u32, y as u32).0[0];
             if pixel > threshold {
                 dither_buffer.push(Vec2::new(i * field_size.x, j * field_size.y));
             }
-
         }
     }
     return Some(DitheredBuffer {
