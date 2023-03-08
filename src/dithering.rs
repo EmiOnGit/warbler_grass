@@ -1,7 +1,18 @@
-use bevy::{prelude::*, render::{primitives::Aabb, render_asset::RenderAsset, render_resource::{Buffer, BufferInitDescriptor, BufferUsages}, renderer::RenderDevice}, math::Vec3Swizzles, reflect::TypeUuid, ecs::system::lifetimeless::SRes};
+use bevy::{
+    ecs::system::lifetimeless::SRes,
+    math::Vec3Swizzles,
+    prelude::*,
+    reflect::TypeUuid,
+    render::{
+        primitives::Aabb,
+        render_asset::RenderAsset,
+        render_resource::{Buffer, BufferInitDescriptor, BufferUsages},
+        renderer::RenderDevice,
+    },
+};
 use serde::Deserialize;
 
-use crate::density_map::{DensityMap};
+use crate::density_map::DensityMap;
 
 // see https://surma.dev/things/ditherpunk/ for a good resource regarding dithering
 const BAYER_DITHER: [[u8; 4]; 4] = [
@@ -41,8 +52,7 @@ pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Opti
     });
 }
 
-#[derive(Reflect, Clone, Component)]
-#[derive(Debug, Deserialize, TypeUuid)]
+#[derive(Reflect, Clone, Component, Debug, Deserialize, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
 pub struct DitheredBuffer {
     pub positions: Vec<Vec2>,
@@ -56,7 +66,7 @@ impl RenderAsset for DitheredBuffer {
 
     type PreparedAsset = GpuDitheredBuffer;
 
-    type Param= SRes<RenderDevice>;
+    type Param = SRes<RenderDevice>;
 
     fn extract_asset(&self) -> Self::ExtractedAsset {
         self.clone()
@@ -65,19 +75,20 @@ impl RenderAsset for DitheredBuffer {
     fn prepare_asset(
         extracted_asset: Self::ExtractedAsset,
         param: &mut bevy::ecs::system::SystemParamItem<Self::Param>,
-    ) -> Result<Self::PreparedAsset, bevy::render::render_asset::PrepareAssetError<Self::ExtractedAsset>> {
+    ) -> Result<
+        Self::PreparedAsset,
+        bevy::render::render_asset::PrepareAssetError<Self::ExtractedAsset>,
+    > {
         let render_device = param;
         let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: "dither buffer".into(),
             contents: bytemuck::cast_slice(extracted_asset.positions.as_slice()),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
-        Ok(GpuDitheredBuffer { 
-            buffer, 
-            instances: extracted_asset.positions.len() 
+        Ok(GpuDitheredBuffer {
+            buffer,
+            instances: extracted_asset.positions.len(),
         })
-
-
     }
 }
 

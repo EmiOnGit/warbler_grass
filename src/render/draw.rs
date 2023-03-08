@@ -13,7 +13,7 @@ use bevy::{
 
 // use crate::grass_spawner::GrassSpawnerFlags;
 
-use crate::dithering::{GpuDitheredBuffer, DitheredBuffer};
+use crate::dithering::DitheredBuffer;
 
 use super::cache::GrassCache;
 pub struct SetUniformBindGroup<const I: usize>;
@@ -61,9 +61,9 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
             return RenderCommandResult::Failure;
         };
         // if chunk.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
-            pass.set_bind_group(I, chunk.height_map.as_ref().unwrap(), &[]);
+        pass.set_bind_group(I, chunk.height_map.as_ref().unwrap(), &[]);
         // } else {
-            // pass.set_bind_group(I, chunk.explicit_y_buffer.as_ref().unwrap(), &[]);
+        // pass.set_bind_group(I, chunk.explicit_y_buffer.as_ref().unwrap(), &[]);
         // }
         println!("f y");
 
@@ -97,7 +97,11 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
 pub(crate) struct SetVertexBuffer;
 
 impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
-    type Param = (SRes<RenderAssets<Mesh>>, SRes<GrassCache>, SRes<RenderAssets<DitheredBuffer>>);
+    type Param = (
+        SRes<RenderAssets<Mesh>>,
+        SRes<GrassCache>,
+        SRes<RenderAssets<DitheredBuffer>>,
+    );
     type ViewWorldQuery = ();
     type ItemWorldQuery = Read<Handle<Mesh>>;
 
@@ -105,7 +109,7 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
     fn render<'w>(
         item: &P,
         _view: (),
-        (mesh_handle): &'w Handle<bevy::prelude::Mesh>,
+        mesh_handle: &'w Handle<bevy::prelude::Mesh>,
         (meshes, cache, dither): SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {

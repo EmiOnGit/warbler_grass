@@ -6,13 +6,16 @@ pub struct DensityMap {
     ///
     /// Should be a Gray scale image
     pub density_map: Handle<Image>,
-    /// The density of the grass. 
-    /// 
+    /// The density of the grass.
+    ///
     /// If the density is high, more grass is spawned in a dense area
     pub density: f32,
 }
 impl From<Handle<Image>> for DensityMap {
     fn from(value: Handle<Image>) -> Self {
-        DensityMap { density_map: value, density: 1.}
+        DensityMap {
+            density_map: value,
+            density: 1.,
+        }
     }
 }

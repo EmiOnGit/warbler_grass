@@ -6,7 +6,6 @@ use bevy::{
 
 use crate::dithering::DitheredBuffer;
 
-
 #[derive(Resource, DerefMut, Deref, Debug, Default)]
 pub struct GrassCache {
     pub data: HashMap<Entity, CachedGrassChunk>,

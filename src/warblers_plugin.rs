@@ -6,14 +6,16 @@ use bevy::{
     render::{
         extract_resource::ExtractResourcePlugin,
         mesh::Indices,
+        render_asset::RenderAssetPlugin,
         render_phase::AddRenderCommand,
         render_resource::{PrimitiveTopology, SpecializedMeshPipelines},
         texture::FallbackImage,
-        RenderApp, RenderSet, render_asset::RenderAssetPlugin,
+        RenderApp, RenderSet,
     },
 };
 
 use crate::{
+    dithering::{add_dither_to_density, DitheredBuffer},
     hot_reloading,
     render::{
         self,
@@ -22,7 +24,7 @@ use crate::{
         grass_pipeline::GrassPipeline,
         prepare, queue,
     },
-    GrassConfiguration, dithering::{add_dither_to_density, DitheredBuffer},
+    GrassConfiguration,
 };
 
 /// A raw handle which points to the shader used to render the grass.
@@ -53,7 +55,7 @@ impl Plugin for WarblersPlugin {
         meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
         // Add systems
         // app.add_system(add_aabb_box_to_grass)
-            // .add_system(add_dither_to_density);
+        // .add_system(add_dither_to_density);
         app.add_system(add_dither_to_density);
         app.add_asset::<DitheredBuffer>();
         app.add_plugin(RenderAssetPlugin::<DitheredBuffer>::default());
@@ -68,7 +70,6 @@ impl Plugin for WarblersPlugin {
             .add_render_command::<Opaque3d, render::GrassDrawCall>()
             .init_resource::<FallbackImage>()
             .init_resource::<GrassPipeline>()
-
             .init_resource::<GrassCache>()
             .init_resource::<EntityCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()

@@ -209,7 +209,11 @@ pub(crate) fn prepare_height_map_buffer(
             &tex.texture_view
         } else {
             // if the texture is not loaded, we will push it locally and try next frame again
-            local_height_map_storage.push((entity_store.clone(), height_map.height_map.clone(), *aabb));
+            local_height_map_storage.push((
+                entity_store.clone(),
+                height_map.height_map.clone(),
+                *aabb,
+            ));
             &fallback_img.texture_view
         };
 

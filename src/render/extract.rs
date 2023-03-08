@@ -1,5 +1,5 @@
 use super::cache::{EntityCache, GrassCache};
-use crate::{dithering::DitheredBuffer, grass_spawner::GrassSpawner, height_map::HeightMap, density_map::DensityMap, bundle::WarblerHeight};
+use crate::{bundle::WarblerHeight, dithering::DitheredBuffer, height_map::HeightMap};
 use bevy::{
     prelude::*,
     render::{primitives::Aabb, Extract},
@@ -18,7 +18,14 @@ pub(crate) fn extract_grass(
     mut commands: Commands,
     grass_spawner: Extract<
         Query<
-            (Entity, &HeightMap, &Handle<DitheredBuffer>, &WarblerHeight, &GlobalTransform, &Aabb),
+            (
+                Entity,
+                &HeightMap,
+                &Handle<DitheredBuffer>,
+                &WarblerHeight,
+                &GlobalTransform,
+                &Aabb,
+            ),
             Or<(Changed<HeightMap>, Changed<DitheredBuffer>)>,
         >,
     >,
@@ -30,13 +37,13 @@ pub(crate) fn extract_grass(
         cache_value.dither_handle = Some(dithered.clone());
 
         commands.spawn((
-                EntityStorage(entity),
-                height_map.clone(),
-                dithered.clone(),
-                height.clone(),
-                *aabb,
-                *global_transform,
-            ));
+            EntityStorage(entity),
+            height_map.clone(),
+            dithered.clone(),
+            height.clone(),
+            *aabb,
+            *global_transform,
+        ));
     }
 }
 #[derive(Clone, Component)]
