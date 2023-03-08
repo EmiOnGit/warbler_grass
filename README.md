@@ -1,3 +1,5 @@
+[![crates.io](https://img.shields.io/badge/crates.io-v0.2-orange)](https://crates.io/crates/warbler_grass)
+
 # warbler_grass
 Warbler is a common name for several birds. Warblers are not related biologically but by characteristics.
 They are commonly small and vocal birds found in nature all over the globe. However, they couldn't sing their songs without having nature to comfort them.
