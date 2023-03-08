@@ -1,5 +1,5 @@
 use bevy::{
-    diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
     window::PresentMode,
 };

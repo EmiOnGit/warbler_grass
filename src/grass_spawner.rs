@@ -263,7 +263,7 @@ pub(crate) fn add_dither_to_density(
         }
         let density_map = spawner.density_map.as_ref().unwrap();
         if let Some(image) = images.get(&density_map.density_map) {
-            let Some(buffer) = dither_density_map(image, density_map.density) else {
+            let Some(buffer) = dither_density_map(image, density_map.density, Vec2::new(100.,10.)) else {
                 warn!("couldn't dither density map");
                 continue
             };
