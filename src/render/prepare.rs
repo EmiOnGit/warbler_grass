@@ -24,9 +24,9 @@ use bytemuck::{Pod, Zeroable};
 pub(crate) fn prepare_explicit_xz_buffer(
     mut cache: ResMut<GrassCache>,
     render_device: Res<RenderDevice>,
-    mut inserted_grass: Query<(&mut GrassSpawner, &EntityStore)>,
+    mut inserted_grass: Query<(&mut GrassSpawner, &EntityStorage)>,
 ) {
-    for (spawner, EntityStore(id)) in inserted_grass.iter_mut() {
+    for (spawner, EntityStorage(id)) in inserted_grass.iter_mut() {
         if !spawner.flags.contains(GrassSpawnerFlags::XZ_DEFINED) {
             panic!("Cannot spawn grass without the xz-positions defined");
         }
