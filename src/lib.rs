@@ -15,9 +15,9 @@ pub mod height_map;
 mod render;
 pub mod warblers_plugin;
 pub mod prelude {
+    pub use crate::bundle;
     pub use crate::warblers_plugin::WarblersPlugin;
     pub use crate::GrassConfiguration;
-    pub use crate::bundle;
 }
 
 /// A [resource](bevy::prelude::Resource) used to globally define parameters about the grass.

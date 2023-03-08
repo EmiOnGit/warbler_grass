@@ -1,7 +1,5 @@
 use bevy::prelude::{Assets, EventReader, Handle, Image, ResMut, Vec2};
 
-
-
 use super::brush::ActiveBrush;
 
 pub fn draw_map(

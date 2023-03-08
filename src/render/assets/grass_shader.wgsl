@@ -31,9 +31,6 @@ var noise_texture: texture_2d<f32>;
     @group(3) @binding(1)
     var<uniform> aabb: vec3<f32>;
 #endif
-
-// @group(4) @binding(0)
-// var xz_positions: texture_2d<f32>;
 #ifdef UNIFORM_HEIGHT
     @group(4) @binding(0)
     var<uniform> height_uniform: f32;
@@ -99,19 +96,14 @@ fn storage_pixel_from_texture(index: u32, texture: texture_2d<f32>) -> vec4<f32>
 fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
     var out: VertexOutput;
     
-    // load explicit xz positions
-    // let xz_pixel = storage_pixel_from_texture(instance_index, xz_positions);
-    // var position_field_offset = vec3<f32>(xz_pixel.r, 0.,xz_pixel.g);
     var position_field_offset = vec3<f32>(vertex.xz_position.x, 0.,vertex.xz_position.y);
 
     let density_offset = density_map_offset(position_field_offset.xz) / 1.;
     position_field_offset += vec3<f32>(density_offset.x, 0.,density_offset.y);
-    // position of the vertex in the y_texture
     // ---Y_POSITIONS---
     #ifdef EXPLICIT
         // from explicit y positions
         position_field_offset.y = storage_pixel_from_texture(instance_index, y_positions).r;
-        
     #else
        // from height map
         position_field_offset.y = height_map_offset(position_field_offset.xz);
