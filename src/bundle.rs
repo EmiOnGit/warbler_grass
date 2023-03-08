@@ -62,7 +62,17 @@ impl From<&[Vec3]> for Grass {
 #[derive(Bundle)]
 pub struct WarblersExplicitBundle {
     pub grass_mesh: Handle<Mesh>,
-    pub grass_positions: Grass,
+    pub grass: Grass,
     #[bundle]
     pub spatial: SpatialBundle,
+}
+
+impl Default for WarblersExplicitBundle {
+    fn default() -> Self {
+        Self {
+            grass_mesh: GRASS_MESH_HANDLE.typed(),
+            grass: Grass::default(),
+            spatial: Default::default(),
+        }
+    }
 }

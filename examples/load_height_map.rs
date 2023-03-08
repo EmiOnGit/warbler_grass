@@ -30,7 +30,7 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(WarblersBundle {
         density_map,
         height_map,
-        aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 5., 100.)),
+        aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 10., 100.)),
         spatial: SpatialBundle {
             transform: Transform::from_xyz(0., 1., 0.),
             ..default()

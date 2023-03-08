@@ -20,15 +20,16 @@ var<uniform> config: ShaderRegionConfiguration;
 @group(2) @binding(1)
 var noise_texture: texture_2d<f32>;
 
-#ifdef HEIGHT_MAP
+#ifdef EXPLICIT
+    @group(3) @binding(0)
+    var y_positions: texture_2d<f32>;
+#else
+
     @group(3) @binding(0)
     var height_map: texture_2d<f32>;
 
     @group(3) @binding(1)
     var<uniform> aabb: vec3<f32>;
-#else
-    @group(3) @binding(0)
-    var y_positions: texture_2d<f32>;
 #endif
 
 // @group(4) @binding(0)
@@ -74,7 +75,8 @@ fn density_map_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     var texture_pixel = textureLoad(noise_texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0);
     return texture_pixel.xz - vec2<f32>(0.5,0.5) ;
 }
-#ifdef HEIGHT_MAP
+#ifdef EXPLICIT
+#else
     fn height_map_offset(vertex_position: vec2<f32>) -> f32 {
         let dim = textureDimensions(height_map, 0);
         let texture_position = abs((vertex_position.xy / aabb.xz ) * vec2<f32>(dim)) ;
@@ -106,12 +108,13 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
     position_field_offset += vec3<f32>(density_offset.x, 0.,density_offset.y);
     // position of the vertex in the y_texture
     // ---Y_POSITIONS---
-    #ifdef HEIGHT_MAP
-        // from height map
-        position_field_offset.y = height_map_offset(position_field_offset.xz);
-    #else
+    #ifdef EXPLICIT
         // from explicit y positions
         position_field_offset.y = storage_pixel_from_texture(instance_index, y_positions).r;
+        
+    #else
+       // from height map
+        position_field_offset.y = height_map_offset(position_field_offset.xz);
     #endif
     // ---HEIGHT---
     var height = 0.;

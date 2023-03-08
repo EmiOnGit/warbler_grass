@@ -203,8 +203,10 @@ impl SpecializedMeshPipeline for GrassPipeline {
         // vertex.shader_defs.push("HEIGHT_MAP".into());
         if key.is_explicit {
             vertex.shader_defs.push("EXPLICIT".into());
+            descriptor.layout.push(self.explicit_y_layout.clone());
+        } else {
+            descriptor.layout.push(self.height_map_layout.clone());
         }
-        descriptor.layout.push(self.height_map_layout.clone());
         // } else {
         // descriptor.layout.push(self.explicit_y_layout.clone());
         // }

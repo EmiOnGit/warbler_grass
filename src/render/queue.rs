@@ -40,9 +40,7 @@ pub fn queue_grass_buffers(
                 let mesh_key =
                     view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);
                 let mut grass_key = GrassRenderKey::from(mesh_key);
-                if grass_cacher[&entity].density_map.is_none() {
-                    grass_key.is_explicit = true;
-                }
+                grass_key.is_explicit = grass_cacher[&entity].explicit_xz_buffer.is_some();
                 let pipeline = pipelines
                     .specialize(&pipeline_cache, &grass_pipeline, grass_key, &mesh.layout)
                     .unwrap();

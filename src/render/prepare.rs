@@ -92,7 +92,6 @@ pub(crate) fn prepare_height_buffer(
     mut cache: ResMut<GrassCache>,
     pipeline: Res<GrassPipeline>,
     render_device: Res<RenderDevice>,
-    render_queue: Res<RenderQueue>,
     mut inserted_grass: Query<(&mut WarblerHeight, &EntityStorage)>,
 ) {
     for (mut height, EntityStorage(id)) in inserted_grass.iter_mut() {

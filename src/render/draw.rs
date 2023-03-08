@@ -113,16 +113,18 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
             return RenderCommandResult::Failure;
         };
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
-
-        let dither_handle = chunk.dither_handle.as_ref().unwrap();
         let mut blade_count = 0;
-        if let Some(gpu_dither) = dither.into_inner().get(dither_handle) {
-            blade_count = gpu_dither.instances as u32;
-            if blade_count == 0 {
+
+        if let Some(dither_handle) = chunk.dither_handle.as_ref() {
+            if let Some(gpu_dither) = dither.into_inner().get(dither_handle) {
+                blade_count = gpu_dither.instances as u32;
+                if blade_count == 0 {
+                    return RenderCommandResult::Failure;
+                }
+                pass.set_vertex_buffer(1, gpu_dither.buffer.slice(..));
+            } else {
                 return RenderCommandResult::Failure;
             }
-            pass.set_vertex_buffer(1, gpu_dither.buffer.slice(..));
-
         } else {
             blade_count = chunk.explicit_count;
             let Some(xz_buffer) = chunk.explicit_xz_buffer.as_ref() else {
@@ -131,7 +133,6 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
             pass.set_vertex_buffer(1, xz_buffer.slice(..));
         }
 
-        
         match &gpu_mesh.buffer_info {
             GpuBufferInfo::Indexed {
                 buffer,

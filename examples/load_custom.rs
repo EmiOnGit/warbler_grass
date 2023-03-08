@@ -1,5 +1,8 @@
 use bevy::prelude::*;
-use warbler_grass::{grass_spawner::GrassSpawner, prelude::*};
+use warbler_grass::{
+    bundle::{Grass, WarblersExplicitBundle},
+    prelude::*,
+};
 mod helper;
 fn main() {
     App::new()
@@ -10,20 +13,22 @@ fn main() {
         .run();
 }
 fn setup_grass(mut commands: Commands) {
-    // we can define our blades how we want
-    let (positions, heights) = (0..1000)
+    // The positions of each blade (relative from entity transform)
+    let positions = (0..1000)
         .into_iter()
         .map(|i| {
             let i = i as f32;
+            // let's make them circly
             (i.sin() * 20. / i.ln(), i.cos() * 20. / i.ln())
         })
-        .map(|(x, z)| (Vec3::new(x, x, z), (x * x + z * z).ln().max(0.5)))
-        .unzip();
-    let grass_spawner = GrassSpawner::new()
-        .with_positions(positions)
-        .with_heights(heights);
-    commands.spawn(WarblersBundle {
-        grass_spawner,
+        .map(|(x, z)| Vec3::new(x, x * z / 10., z))
+        .collect();
+
+    commands.spawn(WarblersExplicitBundle {
+        grass: Grass {
+            positions,
+            height: 2.,
+        },
         ..default()
     });
 }
