@@ -1,5 +1,8 @@
 use super::cache::{EntityCache, GrassCache};
-use crate::{bundle::WarblerHeight, dithering::DitheredBuffer, height_map::HeightMap};
+use crate::{
+    bundle::WarblerHeight, density_map::DensityMap, dithering::DitheredBuffer,
+    height_map::HeightMap,
+};
 use bevy::{
     prelude::*,
     render::{primitives::Aabb, Extract},
@@ -26,7 +29,7 @@ pub(crate) fn extract_grass(
                 &GlobalTransform,
                 &Aabb,
             ),
-            Or<(Changed<HeightMap>, Changed<DitheredBuffer>)>,
+            Or<(Changed<HeightMap>, Changed<DensityMap>)>,
         >,
     >,
     mut grass_cache: ResMut<GrassCache>,
@@ -35,7 +38,6 @@ pub(crate) fn extract_grass(
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.transform = *global_transform;
         cache_value.dither_handle = Some(dithered.clone());
-
         commands.spawn((
             EntityStorage(entity),
             height_map.clone(),
@@ -48,6 +50,7 @@ pub(crate) fn extract_grass(
 }
 #[derive(Clone, Component)]
 pub(crate) struct EntityStorage(pub Entity);
+
 /// Extracts all visible grass entities into the render world.
 pub(crate) fn extract_visibility(
     visibility_queue: Extract<

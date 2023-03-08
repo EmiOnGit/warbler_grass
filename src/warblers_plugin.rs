@@ -74,11 +74,7 @@ impl Plugin for WarblersPlugin {
             .init_resource::<EntityCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_systems(
-                (
-                    extract::extract_grass,
-                    extract::extract_visibility,
-                )
-                    .in_schedule(ExtractSchedule),
+                (extract::extract_grass, extract::extract_visibility).in_schedule(ExtractSchedule),
             )
             .add_system(prepare::prepare_uniform_buffers.in_set(RenderSet::Prepare))
             // .add_system(prepare::prepare_explicit_xz_buffer.in_set(RenderSet::Prepare))

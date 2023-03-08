@@ -2,7 +2,7 @@ use bevy::prelude::Plugin;
 
 use self::{
     brush::{ActiveBrush, Stencil},
-    draw_event::{draw_map, DrawEvent},
+    draw_event::{draw_map, notify_image_change, DrawEvent},
     ray_cast::RayCastPlugin,
 };
 
@@ -21,6 +21,7 @@ impl Plugin for EditorPlugin {
         app.add_plugin(RayCastPlugin)
             .insert_resource(ActiveBrush::new(Stencil::default()))
             .add_event::<DrawEvent>()
-            .add_system(draw_map);
+            .add_system(draw_map)
+            .add_system(notify_image_change);
     }
 }

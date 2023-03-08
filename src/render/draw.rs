@@ -11,8 +11,6 @@ use bevy::{
     },
 };
 
-// use crate::grass_spawner::GrassSpawnerFlags;
-
 use crate::dithering::DitheredBuffer;
 
 use super::cache::GrassCache;
@@ -30,7 +28,6 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
         cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-
         let Some(chunk) = cache.into_inner().get(&item.entity()) else {
             return RenderCommandResult::Failure;
         };
@@ -53,7 +50,6 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
         cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-
         let Some(chunk) = cache.into_inner().get(&item.entity()) else {
             return RenderCommandResult::Failure;
         };
