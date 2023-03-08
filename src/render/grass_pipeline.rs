@@ -22,7 +22,8 @@ pub struct GrassPipeline {
     pub height_map_layout: BindGroupLayout,
     pub density_map_layout: BindGroupLayout,
     pub explicit_y_layout: BindGroupLayout,
-    pub height_layout: BindGroupLayout,
+    pub explicit_height_layout: BindGroupLayout,
+    pub uniform_height_layout: BindGroupLayout,
     pub explicit_xz_layout: BindGroupLayout,
 }
 
@@ -116,7 +117,7 @@ impl FromWorld for GrassPipeline {
                     count: None,
                 }],
             });
-        let height_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+        let explicit_height_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
             label: Some("warbler_grass explicit height layout"),
             entries: &[BindGroupLayoutEntry {
                 binding: 0,
@@ -146,13 +147,30 @@ impl FromWorld for GrassPipeline {
                     },
                 ],
             });
+        let uniform_height_layout =
+        render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+            label: Some("warblersneeds configuration layout"),
+            entries: &[
+                BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+            ],
+        });
         let shader = GRASS_SHADER_HANDLE.typed::<Shader>();
         let mesh_pipeline = world.resource::<MeshPipeline>();
         GrassPipeline {
             shader,
             mesh_pipeline: mesh_pipeline.clone(),
             region_layout,
-            height_layout,
+            explicit_height_layout,
+            uniform_height_layout,
             density_map_layout,
             explicit_xz_layout,
             explicit_y_layout,
@@ -189,8 +207,14 @@ impl SpecializedMeshPipeline for GrassPipeline {
         } else {
             descriptor.layout.push(self.explicit_y_layout.clone());
         }
+        if key.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
+            vertex.shader_defs.push("UNIFORM_HEIGHT".into());
+            descriptor.layout.push(self.uniform_height_layout.clone());
 
-        descriptor.layout.push(self.height_layout.clone());
+        } else {
+
+            descriptor.layout.push(self.explicit_height_layout.clone());
+        }
 
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone();
         Ok(descriptor)

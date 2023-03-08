@@ -20,8 +20,7 @@ pub struct CachedGrassChunk {
     pub explicit_y_buffer: Option<BindGroup>,
     pub height_buffer: Option<BindGroup>,
     pub transform: GlobalTransform,
-    pub instance_count: usize,
-
+    pub instance_count: u32,
     pub flags: GrassSpawnerFlags,
 }
 #[derive(Resource, DerefMut, Deref, Debug, Default)]

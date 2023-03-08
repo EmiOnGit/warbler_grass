@@ -209,9 +209,7 @@ impl GrassSpawner {
         if let HeightRepresentation::PerBlade(heights) = &self.heights {
             return heights.len();
         }
-        if let Some(density) = self.density_map.as_ref() {
-            return (density.span_xz.x * density.span_xz.y) as usize;
-        }
+       
         0
     }
 }
@@ -263,7 +261,7 @@ pub(crate) fn add_dither_to_density(
         }
         let density_map = spawner.density_map.as_ref().unwrap();
         if let Some(image) = images.get(&density_map.density_map) {
-            let Some(buffer) = dither_density_map(image, density_map.density, Vec2::new(100.,10.)) else {
+            let Some(buffer) = dither_density_map(image, density_map.density, density_map.span_xz) else {
                 warn!("couldn't dither density map");
                 continue
             };

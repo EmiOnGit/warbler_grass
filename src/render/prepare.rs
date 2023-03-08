@@ -1,5 +1,5 @@
 use std::mem;
-use std::num::NonZeroU32;
+use std::num::{NonZeroU32, NonZeroU64};
 use std::ops::Mul;
 
 use super::extract::EntityStorage;
@@ -20,7 +20,26 @@ use bevy::render::render_resource::{
 use bevy::render::renderer::{RenderDevice, RenderQueue};
 use bevy::render::texture::FallbackImage;
 use bytemuck::{Pod, Zeroable};
+pub(crate) fn prepare_density_buffer(
+    mut cache: ResMut<GrassCache>,
+    inserted_dither_buffer: Query<(&EntityStorage, &DitheredBuffer)>,
+    render_device: Res<RenderDevice>,
 
+) {
+    for (EntityStorage(e),dither) in &inserted_dither_buffer {
+        if let Some(chunk) = cache.get_mut(e) {
+            chunk.instance_count = dither.positions.len() as u32;
+            let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                    label: "xz vertex buffer".into(),
+                    contents: bytemuck::cast_slice(dither.positions.as_slice()),
+                    usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
+                });
+            chunk.explicit_xz_buffer = Some(buffer);
+
+        }
+    }
+    
+}
 pub(crate) fn prepare_explicit_xz_buffer(
     mut cache: ResMut<GrassCache>,
     render_device: Res<RenderDevice>,
@@ -30,15 +49,20 @@ pub(crate) fn prepare_explicit_xz_buffer(
         if !spawner.flags.contains(GrassSpawnerFlags::XZ_DEFINED) {
             panic!("Cannot spawn grass without the xz-positions defined");
         }
+        if spawner.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
+            continue;
+        }
 
         if let Some(chunk) = cache.get_mut(id) {
-            chunk.instance_count = spawner.positions_xz.len();
+            println!("here");
+            chunk.instance_count = spawner.positions_xz.len() as u32;
 
             let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                label: "xz vertex buffer".into(),
-                contents: bytemuck::cast_slice(spawner.positions_xz.as_slice()),
-                usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
-            });
+                    label: "xz vertex buffer".into(),
+                    contents: bytemuck::cast_slice(spawner.positions_xz.as_slice()),
+                    usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
+                });
+           
             chunk.explicit_xz_buffer = Some(buffer);
 
             chunk.flags = spawner.flags;
@@ -60,37 +84,56 @@ pub(crate) fn prepare_height_buffer(
     for (mut spawner, EntityStorage(id)) in inserted_grass.iter_mut() {
         let count = spawner.blade_count();
         if let Some(chunk) = cache.get_mut(id) {
-            let view = match &mut spawner.heights {
+            if let HeightRepresentation::Uniform(height) = &mut spawner.heights {
+
+            }
+
+            match &mut spawner.heights {
                 HeightRepresentation::Uniform(height) => {
-                    let mut heights = vec![*height; count];
-                    println!("count is {} heights count is {}", count, heights.len());
-                    prepare_texture_from_data(
-                        &mut heights,
-                        &render_device,
-                        &render_queue,
-                        TextureFormat::R32Float,
-                    )
+            let layout = pipeline.uniform_height_layout.clone();
+
+                    let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                        label: "xz vertex buffer".into(),
+                        contents: &height.to_ne_bytes(),
+                        usage: BufferUsages::VERTEX | BufferUsages::COPY_DST | BufferUsages::UNIFORM,
+                    });
+                    let bind_group_descriptor = BindGroupDescriptor {
+                        label: Some("grass height bind group"),
+                        layout: &layout,
+                        entries: &[BindGroupEntry {
+                            binding: 0,
+                            resource: BindingResource::Buffer(BufferBinding { buffer: &buffer, offset: 0, size: NonZeroU64::new(4) }),
+                        }],
+                    };
+                let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+                chunk.height_buffer = Some(bind_group);
+                chunk.flags = spawner.flags;
+
                 }
-                HeightRepresentation::PerBlade(heights) => prepare_texture_from_data(
+                HeightRepresentation::PerBlade(heights) => {
+            let layout = pipeline.explicit_height_layout.clone();
+
+                    let view = prepare_texture_from_data(
                     heights,
                     &render_device,
                     &render_queue,
                     TextureFormat::R32Float,
-                ),
-            };
-            let layout = pipeline.height_layout.clone();
-            let bind_group_descriptor = BindGroupDescriptor {
-                label: Some("grass height bind group"),
-                layout: &layout,
-                entries: &[BindGroupEntry {
-                    binding: 0,
-                    resource: BindingResource::TextureView(&view),
-                }],
-            };
-            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-            chunk.height_buffer = Some(bind_group);
+                );
+                let bind_group_descriptor = BindGroupDescriptor {
+                    label: Some("grass height bind group"),
+                    layout: &layout,
+                    entries: &[BindGroupEntry {
+                        binding: 0,
+                        resource: BindingResource::TextureView(&view),
+                    }],
+                };
+                let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+                chunk.height_buffer = Some(bind_group);
+                chunk.flags = spawner.flags;
 
-            chunk.flags = spawner.flags;
+             },
+            };
+            
         } else {
             warn!(
                 "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"
@@ -236,37 +279,37 @@ pub(crate) fn prepare_height_map_buffer(
     }
 }
 
-pub(crate) fn prepare_density_map_buffer(
-    mut cache: ResMut<GrassCache>,
-    render_queue: Res<RenderQueue>,
-    render_device: Res<RenderDevice>,
-    pipeline: Res<GrassPipeline>,
-    mut inserted_grass: Query<(&mut DitheredBuffer, &EntityStorage)>,
-) {
-    for (mut dither, entity_store) in inserted_grass.iter_mut() {
-        let id = entity_store.0;
-        let view = prepare_texture_from_data(
-            &mut dither.positions,
-            &render_device,
-            &render_queue,
-            TextureFormat::Rg32Float,
-        );
-        let layout = pipeline.density_map_layout.clone();
-        let bind_group_descriptor = BindGroupDescriptor {
-            label: Some("grass explicit dither positions bind group"),
-            layout: &layout,
-            entries: &[BindGroupEntry {
-                binding: 0,
-                resource: BindingResource::TextureView(&view),
-            }],
-        };
-        let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-        if let Some(chunk) = cache.get_mut(&id) {
-            chunk.instance_count = dither.positions.len();
-            chunk.density_map = Some(bind_group);
-        }
-    }
-}
+// pub(crate) fn prepare_density_map_buffer(
+//     mut cache: ResMut<GrassCache>,
+//     render_queue: Res<RenderQueue>,
+//     render_device: Res<RenderDevice>,
+//     pipeline: Res<GrassPipeline>,
+//     mut inserted_grass: Query<(&mut DitheredBuffer, &EntityStorage)>,
+// ) {
+//     for (mut dither, entity_store) in inserted_grass.iter_mut() {
+//         let id = entity_store.0;
+//         let view = prepare_texture_from_data(
+//             &mut dither.positions,
+//             &render_device,
+//             &render_queue,
+//             TextureFormat::Rg32Float,
+//         );
+//         let layout = pipeline.density_map_layout.clone();
+//         let bind_group_descriptor = BindGroupDescriptor {
+//             label: Some("grass explicit dither positions bind group"),
+//             layout: &layout,
+//             entries: &[BindGroupEntry {
+//                 binding: 0,
+//                 resource: BindingResource::TextureView(&view),
+//             }],
+//         };
+//         let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+//         if let Some(chunk) = cache.get_mut(&id) {
+//             chunk.instance_count = dither.positions.len();
+//             chunk.density_map = Some(bind_group);
+//         }
+//     }
+// }
 pub(crate) fn prepare_uniform_buffers(
     pipeline: Res<GrassPipeline>,
     mut cache: ResMut<GrassCache>,

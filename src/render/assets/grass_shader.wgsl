@@ -33,10 +33,13 @@ var noise_texture: texture_2d<f32>;
 
 // @group(4) @binding(0)
 // var xz_positions: texture_2d<f32>;
-
-@group(4) @binding(0)
-var heights: texture_2d<f32>;
-
+#ifdef UNIFORM_HEIGHT
+    @group(4) @binding(0)
+    var<uniform> height_uniform: f32;
+#else
+    @group(4) @binding(0)
+    var heights: texture_2d<f32>;
+#endif
 #import bevy_pbr::mesh_functions
 
 struct VertexOutput {
@@ -111,7 +114,12 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
         position_field_offset.y = storage_pixel_from_texture(instance_index, y_positions).r;
     #endif
     // ---HEIGHT---
-    let height = storage_pixel_from_texture(instance_index, heights).r;
+    var height = 0.;
+    #ifdef UNIFORM_HEIGHT
+        height = height_uniform;
+    #else
+        height = storage_pixel_from_texture(instance_index, heights).r;
+    #endif
     var position = vertex.vertex_position * vec3<f32>(1.,height, 1.) + position_field_offset;
 
     // ---WIND---

@@ -26,6 +26,7 @@ pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Opti
             
             let x = i * buffer.dimensions().0 as f32;            
             let y = j * buffer.dimensions().1 as f32;
+
             let pixel = buffer.get_pixel(x as u32, y as u32).0[0];
             if pixel > threshold {
                 dither_buffer.push(Vec2::new(i * field_size.x, j * field_size.y));

@@ -79,9 +79,10 @@ impl Plugin for WarblersPlugin {
             )
             .add_system(prepare::prepare_uniform_buffers.in_set(RenderSet::Prepare))
             .add_system(prepare::prepare_explicit_xz_buffer.in_set(RenderSet::Prepare))
+            .add_system(prepare::prepare_density_buffer.in_set(RenderSet::Prepare))
             .add_system(prepare::prepare_explicit_y_buffer.in_set(RenderSet::Prepare))
             .add_system(prepare::prepare_height_buffer.in_set(RenderSet::Prepare))
-            .add_system(prepare::prepare_density_map_buffer.in_set(RenderSet::Prepare))
+            // .add_system(prepare::prepare_density_map_buffer.in_set(RenderSet::Prepare))
             .add_system(prepare::prepare_height_map_buffer.in_set(RenderSet::Prepare))
             .add_system(queue::queue_grass_buffers.in_set(RenderSet::Queue));
     }
