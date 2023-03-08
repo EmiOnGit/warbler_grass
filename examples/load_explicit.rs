@@ -1,8 +1,5 @@
 use bevy::prelude::*;
-use warbler_grass::{
-    bundle::{Grass, WarblersExplicitBundle},
-    prelude::*,
-};
+use warbler_grass::prelude::*;
 mod helper;
 fn main() {
     App::new()

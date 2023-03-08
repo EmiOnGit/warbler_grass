@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
     window::PresentMode, render::primitives::Aabb,
 };
-use warbler_grass::{prelude::*, height_map::HeightMap, density_map::DensityMap, bundle::WarblersBundle};
+use warbler_grass::prelude::*;
 mod helper;
 fn main() {
     App::new()
@@ -45,7 +45,7 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(WarblersBundle {
         density_map,
         height_map,
-        height: bundle::WarblerHeight::Uniform(5.),
+        height: WarblerHeight::Uniform(5.),
         aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(2000., 100., 2000.)),
         ..default()
     });

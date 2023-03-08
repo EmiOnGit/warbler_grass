@@ -2,7 +2,7 @@
 //! You can use the TAB key to swap between the new mesh and the standard mesh
 
 use bevy::{prelude::*, render::primitives::Aabb};
-use warbler_grass::{prelude::*, warblers_plugin::GRASS_MESH_HANDLE, height_map::HeightMap, density_map::DensityMap, bundle::WarblersBundle};
+use warbler_grass::{prelude::*, warblers_plugin::GRASS_MESH_HANDLE};
 mod helper;
 
 fn main() {

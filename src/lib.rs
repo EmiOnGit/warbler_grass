@@ -10,16 +10,18 @@ pub mod bundle;
 pub mod density_map;
 pub mod dithering;
 #[cfg(feature = "editor")]
-
 pub mod editor;
 pub mod grass;
 pub mod height_map;
 mod render;
 pub mod warblers_plugin;
 pub mod prelude {
-    pub use crate::bundle;
+    pub use crate::bundle::*;
     pub use crate::warblers_plugin::WarblersPlugin;
     pub use crate::GrassConfiguration;
+    pub use crate::height_map::HeightMap;
+    pub use crate::density_map::DensityMap;
+
 }
 
 /// A [resource](bevy::prelude::Resource) used to globally define parameters about the grass.

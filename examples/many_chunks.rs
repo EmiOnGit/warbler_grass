@@ -1,5 +1,5 @@
 use bevy::{prelude::*, render::primitives::Aabb};
-use warbler_grass::{prelude::*, bundle::WarblersBundle, density_map::DensityMap, height_map::HeightMap};
+use warbler_grass::prelude::*;
 mod helper;
 fn main() {
     App::new()
