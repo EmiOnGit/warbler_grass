@@ -52,7 +52,7 @@ pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Opti
     })
 }
 
-#[derive(Reflect, Clone, Component, Debug, Deserialize, TypeUuid)]
+#[derive(Reflect, Clone, Debug, Deserialize, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
 pub struct DitheredBuffer {
     pub positions: Vec<Vec2>,
