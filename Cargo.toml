@@ -12,7 +12,7 @@ description = "A bevy plugin for creating 3d grass in your game"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = []
+default = ["editor"]
 editor = ["dep:bevy-inspector-egui"]
 
 [dependencies]
