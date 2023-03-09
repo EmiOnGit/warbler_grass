@@ -72,15 +72,12 @@ fn density_map_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     var texture_pixel = textureLoad(noise_texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0);
     return texture_pixel.xz - vec2<f32>(0.5,0.5) ;
 }
-#ifdef EXPLICIT
-#else
-    fn height_map_offset(vertex_position: vec2<f32>) -> f32 {
-        let dim = textureDimensions(height_map, 0);
-        let texture_position = abs((vertex_position.xy / aabb.xz ) * vec2<f32>(dim)) ;
-        var texture_r = textureLoad(height_map, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0).r;
-        return texture_r * aabb.y;
-    }
-#endif
+fn texture2d_offset(texture: texture_2d<f32>, vertex_position: vec2<f32>) -> f32 {
+    let dim = textureDimensions(texture, 0);
+    let texture_position = abs((vertex_position.xy / aabb.xz ) * vec2<f32>(dim)) ;
+    var texture_r = textureLoad(texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0).r;
+    return texture_r * aabb.y;
+}
 
 // 2d textures are used to store vertex information.
 // normally this would be done using storage buffers.
@@ -106,14 +103,14 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
         position_field_offset.y = storage_pixel_from_texture(instance_index, y_positions).r;
     #else
        // from height map
-        position_field_offset.y = height_map_offset(position_field_offset.xz);
+        position_field_offset.y = texture2d_offset(height_map, position_field_offset.xz);
     #endif
     // ---HEIGHT---
     var height = 0.;
     #ifdef UNIFORM_HEIGHT
         height = height_uniform;
     #else
-        height = storage_pixel_from_texture(instance_index, heights).r;
+        height = (texture2d_offset(heights, position_field_offset.xz) + 4.) / 3.;
     #endif
     var position = vertex.vertex_position * vec3<f32>(1.,height, 1.) + position_field_offset;
 

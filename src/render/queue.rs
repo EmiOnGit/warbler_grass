@@ -41,6 +41,7 @@ pub fn queue_grass_buffers(
                     view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);
                 let mut grass_key = GrassRenderKey::from(mesh_key);
                 grass_key.is_explicit = grass_cacher[&entity].explicit_xz_buffer.is_some();
+                grass_key.uniform_height = grass_cacher[&entity].blade_height_texture.is_none();
                 let pipeline = pipelines
                     .specialize(&pipeline_cache, &grass_pipeline, grass_key, &mesh.layout)
                     .unwrap();

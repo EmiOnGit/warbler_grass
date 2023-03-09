@@ -44,7 +44,7 @@ pub enum WarblerHeight {
     /// Sets the height of the grass blades all to the same height
     Uniform(f32),
     /// Currently not supported
-    _Texture(Handle<Image>),
+    Texture(Handle<Image>),
 }
 
 /// Used to define explicitly the positions of all the grass blades.

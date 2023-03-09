@@ -21,6 +21,7 @@ pub struct CachedGrassChunk {
     pub density_map: Option<BindGroup>,
     pub explicit_y_buffer: Option<BindGroup>,
     pub height_buffer: Option<BindGroup>,
+    pub blade_height_texture: Option<BindGroup>,
     pub transform: GlobalTransform,
 }
 

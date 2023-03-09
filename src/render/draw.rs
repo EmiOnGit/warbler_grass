@@ -81,9 +81,15 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
         let Some(chunk) = cache.into_inner().get(&item.entity()) else {
             return RenderCommandResult::Failure;
         };
-        pass.set_bind_group(I, chunk.height_buffer.as_ref().unwrap(), &[]);
-
-        RenderCommandResult::Success
+        if let Some(height_buffer) = chunk.height_buffer.as_ref() {
+            pass.set_bind_group(I, height_buffer, &[]);
+            return RenderCommandResult::Success;
+        }
+        if let Some(height_buffer) = chunk.blade_height_texture.as_ref() {
+            pass.set_bind_group(I, height_buffer, &[]);
+            return RenderCommandResult::Success;
+        }
+        RenderCommandResult::Failure
     }
 }
 pub(crate) struct SetVertexBuffer;

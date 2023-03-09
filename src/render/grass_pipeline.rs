@@ -21,6 +21,7 @@ pub struct GrassPipeline {
     pub region_layout: BindGroupLayout,
     pub height_map_layout: BindGroupLayout,
     pub density_map_layout: BindGroupLayout,
+    pub heights_texture_layout: BindGroupLayout,
     pub explicit_y_layout: BindGroupLayout,
     pub explicit_height_layout: BindGroupLayout,
     pub uniform_height_layout: BindGroupLayout,
@@ -31,7 +32,7 @@ impl FromWorld for GrassPipeline {
     fn from_world(world: &mut World) -> Self {
         let render_device = world.get_resource::<RenderDevice>().unwrap();
         let region_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("warblersneeds configuration layout"),
+            label: Some("warbler_grass configuration layout"),
             entries: &[
                 // config
                 BindGroupLayoutEntry {
@@ -59,7 +60,7 @@ impl FromWorld for GrassPipeline {
         });
         let height_map_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warblersneeds configuration layout"),
+                label: Some("warbler_grass height map layout"),
                 entries: &[
                     // height_map
                     BindGroupLayoutEntry {
@@ -87,7 +88,7 @@ impl FromWorld for GrassPipeline {
             });
         let density_map_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warblersneeds density map layout"),
+                label: Some("warbler_grass density map layout"),
                 entries: &[
                     // density map
                     BindGroupLayoutEntry {
@@ -130,6 +131,22 @@ impl FromWorld for GrassPipeline {
                     count: None,
                 }],
             });
+            let heights_texture_layout =
+            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+                label: Some("warbler_grass height texture layout"),
+                entries: &[
+                    BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: ShaderStages::VERTEX,
+                        ty: BindingType::Texture {
+                            sample_type: TextureSampleType::Float { filterable: false },
+                            view_dimension: TextureViewDimension::D2,
+                            multisampled: false,
+                        },
+                        count: None,
+                    },
+                ],
+            });
         let explicit_xz_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
                 label: Some("warbler_grass explicit height layout"),
@@ -169,6 +186,7 @@ impl FromWorld for GrassPipeline {
             region_layout,
             explicit_height_layout,
             uniform_height_layout,
+            heights_texture_layout,
             density_map_layout,
             explicit_xz_layout,
             explicit_y_layout,
@@ -199,23 +217,20 @@ impl SpecializedMeshPipeline for GrassPipeline {
         let vertex = &mut descriptor.vertex;
 
         vertex.shader = self.shader.clone();
-        // if key.flags.contains(GrassSpawnerFlags::HEIGHT_MAP) {
-        // vertex.shader_defs.push("HEIGHT_MAP".into());
+
         if key.is_explicit {
             vertex.shader_defs.push("EXPLICIT".into());
             descriptor.layout.push(self.explicit_y_layout.clone());
         } else {
             descriptor.layout.push(self.height_map_layout.clone());
         }
-        // } else {
-        // descriptor.layout.push(self.explicit_y_layout.clone());
-        // }
-        // if key.flags.contains(GrassSpawnerFlags::DENSITY_MAP) {
-        vertex.shader_defs.push("UNIFORM_HEIGHT".into());
-        descriptor.layout.push(self.uniform_height_layout.clone());
-        // } else {
-        // descriptor.layout.push(self.explicit_height_layout.clone());
-        // }
+ 
+        if key.uniform_height {
+            vertex.shader_defs.push("UNIFORM_HEIGHT".into());
+            descriptor.layout.push(self.uniform_height_layout.clone());
+        } else {
+            descriptor.layout.push(self.heights_texture_layout.clone());
+        }
 
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone();
         Ok(descriptor)
@@ -226,6 +241,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
 pub struct GrassRenderKey {
     pub mesh_key: MeshPipelineKey,
     pub is_explicit: bool,
+    pub uniform_height: bool,
 }
 
 impl From<MeshPipelineKey> for GrassRenderKey {
@@ -233,12 +249,7 @@ impl From<MeshPipelineKey> for GrassRenderKey {
         Self {
             mesh_key,
             is_explicit: false,
+            uniform_height: false
         }
     }
 }
-// impl GrassRenderKey {
-//     pub fn with_flags(mut self, flags: GrassSpawnerFlags) -> Self {
-//         self.flags = flags;
-//         self
-//     }
-// }
