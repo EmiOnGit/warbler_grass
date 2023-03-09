@@ -1,7 +1,8 @@
 use bevy::{
     diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
-    window::PresentMode, render::primitives::Aabb,
+    render::primitives::Aabb,
+    window::PresentMode,
 };
 use warbler_grass::prelude::*;
 mod helper;

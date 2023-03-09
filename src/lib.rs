@@ -11,17 +11,15 @@ pub mod density_map;
 pub mod dithering;
 #[cfg(feature = "editor")]
 pub mod editor;
-pub mod grass;
 pub mod height_map;
 mod render;
 pub mod warblers_plugin;
 pub mod prelude {
     pub use crate::bundle::*;
+    pub use crate::density_map::DensityMap;
+    pub use crate::height_map::HeightMap;
     pub use crate::warblers_plugin::WarblersPlugin;
     pub use crate::GrassConfiguration;
-    pub use crate::height_map::HeightMap;
-    pub use crate::density_map::DensityMap;
-
 }
 
 /// A [resource](bevy::prelude::Resource) used to globally define parameters about the grass.
@@ -40,14 +38,13 @@ pub struct GrassConfiguration {
     ///
     /// The direction of the wind is on the x,z plane.
     ///
-    /// Be aware that the strength of the wind is controlled by the (euclidean) norm of the vector.
+    /// Be aware that the strength of the wind is controlled by the length of the vector.
     /// If you want to turn of wind in your game, you can just set this to [`Vec2::ZERO`]
     pub wind: Vec2,
     /// The texture used to animate the wind on the grass.
     ///
-    /// Most likely you don't need to change that unless you want your wind to feel different.
+    /// Most likely you don't need to change that unless you want your wind to "feel" different.
     /// If you decide to swap it, note that you want the texture to be tileable,
-    /// also currently only the red and green chanel are used
     pub wind_noise_texture: Handle<Image>,
 }
 impl FromWorld for GrassConfiguration {

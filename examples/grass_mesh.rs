@@ -15,7 +15,11 @@ fn main() {
         .run();
 }
 
-fn setup_grass(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>,  asset_server: Res<AssetServer>) {
+fn setup_grass(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    asset_server: Res<AssetServer>,
+) {
     // The interesting part in this example
     // (The capsules would looks cool in the water!) :)
     // Normally, the grass mesh should start at y >= 0.
@@ -52,7 +56,6 @@ fn setup_grass(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>,  asset_
         aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 10., 100.)),
         ..default()
     });
-    
 }
 
 /// Used to keep track of the standard mesh and the custom mesh for the grass

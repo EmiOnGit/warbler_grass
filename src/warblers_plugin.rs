@@ -37,7 +37,9 @@ pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
 pub const GRASS_MESH_HANDLE: HandleUntyped =
     HandleUntyped::weak_from_u64(Mesh::TYPE_UUID, 9357128457583957921);
 
-/// Adds the render pipeline for drawing grass to an App
+/// Adds the render pipeline for drawing grass to an [`App`]
+///
+/// Should always be inserted to render grass
 pub struct WarblersPlugin;
 impl Plugin for WarblersPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
@@ -52,16 +54,14 @@ impl Plugin for WarblersPlugin {
         // Load default grass blade mesh
         let mut meshes = app.world.resource_mut::<Assets<Mesh>>();
         meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
-        // Add systems
-        // app.add_system(add_aabb_box_to_grass)
-        // .add_system(add_dither_to_density);
-        app.add_system(add_dither_to_density);
-        app.add_asset::<DitheredBuffer>();
-        app.add_plugin(RenderAssetPlugin::<DitheredBuffer>::default());
+
+        app.add_system(add_dither_to_density)
+            .add_asset::<DitheredBuffer>()
+            .add_plugin(RenderAssetPlugin::<DitheredBuffer>::default());
         // Init resources
         app.init_resource::<GrassConfiguration>()
             .register_type::<GrassConfiguration>();
-        // Add extraction
+        // Add extraction of the configuration
         app.add_plugin(ExtractResourcePlugin::<GrassConfiguration>::default());
         // Init render app
         app.sub_app_mut(RenderApp)
@@ -79,18 +79,23 @@ impl Plugin for WarblersPlugin {
                 )
                     .in_schedule(ExtractSchedule),
             )
-            .add_system(prepare::prepare_uniform_buffers.in_set(RenderSet::Prepare))
-            .add_system(prepare::prepare_explicit_positions_buffer.in_set(RenderSet::Prepare))
-            // .add_system(prepare::prepare_density_buffer.in_set(RenderSet::Prepare))
-            // .add_system(prepare::prepare_explicit_y_buffer.in_set(RenderSet::Prepare))
-            .add_system(prepare::prepare_height_buffer.in_set(RenderSet::Prepare))
-            // .add_system(prepare::prepare_density_map_buffer.in_set(RenderSet::Prepare))
-            .add_system(prepare::prepare_height_map_buffer.in_set(RenderSet::Prepare))
+            .add_systems(
+                (
+                    prepare::prepare_uniform_buffers,
+                    prepare::prepare_explicit_positions_buffer,
+                    prepare::prepare_height_buffer,
+                    prepare::prepare_height_map_buffer,
+                )
+                    .in_set(RenderSet::Prepare),
+            )
             .add_system(queue::queue_grass_buffers.in_set(RenderSet::Queue));
     }
 }
 
-/// Constructs the default look of the grass, as shown in the examples
+/// Constructs the default mesh of the grass, as shown in the examples
+///
+/// Can be overridden in the corresponding [`Bundle`] using the grass_mesh [`Component`].
+/// You can take a look at the grass_mesh example in the repository on how this might work
 fn default_grass_mesh() -> Mesh {
     let mut grass_mesh = Mesh::new(PrimitiveTopology::TriangleList);
     grass_mesh.insert_attribute(

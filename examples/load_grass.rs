@@ -23,7 +23,7 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     let density_map = DensityMap {
         density_map,
         // The density corresponds to how dense a dense area is supposed to be.
-        // Be careful with this parameter since the blade count grows fast. 
+        // Be careful with this parameter since the blade count grows fast.
         density: 2.,
     };
     commands.spawn(WarblersBundle {

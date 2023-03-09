@@ -1,11 +1,11 @@
 //! #NOTE
 //! The editor is still worked on and can't be used currently
 use bevy::{prelude::*, render::primitives::Aabb};
+use warbler_grass::editor::ray_cast::RayCamera;
 use warbler_grass::{
     bundle::WarblersBundle, density_map::DensityMap, editor, height_map::HeightMap,
     warblers_plugin::WarblersPlugin,
 };
-use warbler_grass::editor::ray_cast::RayCamera;
 
 mod helper;
 fn main() {
@@ -42,13 +42,13 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 fn setup_camera(mut commands: Commands) {
-        commands.spawn((
-            Camera3dBundle {
-                transform: Transform::from_xyz(0.0, 15., 55.0)
-                    .looking_at(Vec3::new(0., 10., 0.), Vec3::Y),
-                ..default()
-            },
-            // The ray camera component is needed to find the positions of the press.
-            RayCamera::default(),
+    commands.spawn((
+        Camera3dBundle {
+            transform: Transform::from_xyz(0.0, 15., 55.0)
+                .looking_at(Vec3::new(0., 10., 0.), Vec3::Y),
+            ..default()
+        },
+        // The ray camera component is needed to find the positions of the press.
+        RayCamera::default(),
     ));
-} 
+}

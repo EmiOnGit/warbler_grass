@@ -5,7 +5,7 @@ use bevy::{
     reflect::TypeUuid,
     render::{
         primitives::Aabb,
-        render_asset::{RenderAsset, PrepareAssetError},
+        render_asset::{PrepareAssetError, RenderAsset},
         render_resource::{Buffer, BufferInitDescriptor, BufferUsages},
         renderer::RenderDevice,
     },
@@ -75,10 +75,7 @@ impl RenderAsset for DitheredBuffer {
     fn prepare_asset(
         extracted_asset: Self::ExtractedAsset,
         param: &mut SystemParamItem<Self::Param>,
-    ) -> Result<
-        Self::PreparedAsset,
-        PrepareAssetError<Self::ExtractedAsset>,
-    > {
+    ) -> Result<Self::PreparedAsset, PrepareAssetError<Self::ExtractedAsset>> {
         let render_device = param;
         let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: "dither buffer".into(),

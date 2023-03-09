@@ -11,13 +11,10 @@ impl Plugin for SimpleCamera {
     }
 }
 fn setup_camera(mut commands: Commands) {
-    commands.spawn((
-        Camera3dBundle {
-            transform: Transform::from_xyz(0.0, 15., 55.0)
-                .looking_at(Vec3::new(0., 10., 0.), Vec3::Y),
-            ..default()
-        },
-    ));
+    commands.spawn((Camera3dBundle {
+        transform: Transform::from_xyz(0.0, 15., 55.0).looking_at(Vec3::new(0., 10., 0.), Vec3::Y),
+        ..default()
+    },));
 }
 pub fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transform, With<Camera>>) {
     for mut transform in &mut query {
