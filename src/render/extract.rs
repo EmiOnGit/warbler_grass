@@ -1,7 +1,6 @@
 use super::cache::{EntityCache, GrassCache};
 use crate::{
     bundle::{Grass, WarblerHeight},
-    density_map::DensityMap,
     dithering::DitheredBuffer,
     height_map::HeightMap,
 };
@@ -31,12 +30,14 @@ pub(crate) fn extract_grass(
                 &GlobalTransform,
                 &Aabb,
             ),
-            Or<(Changed<HeightMap>, Changed<DensityMap>)>,
+            Changed<Handle<DitheredBuffer>>,
         >,
     >,
     mut grass_cache: ResMut<GrassCache>,
 ) {
+
     for (entity, height_map, dithered, height, global_transform, aabb) in grass_spawner.iter() {
+
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.transform = *global_transform;
         cache_value.dither_handle = Some(dithered.clone());
