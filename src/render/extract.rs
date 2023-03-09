@@ -78,7 +78,7 @@ pub(crate) fn extract_visibility(
     visibility_queue: Extract<
         Query<
             (Entity, &ComputedVisibility),
-            (Or<(With<DitheredBuffer>, With<Grass>)>, With<Transform>),
+            (Or<(With<Handle<DitheredBuffer>>, With<Grass>)>, With<Transform>),
         >,
     >,
     mut entity_cache: ResMut<EntityCache>,
