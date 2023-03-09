@@ -1,6 +1,7 @@
 use bevy::prelude::{Assets, EventReader, Handle, Image, ResMut, Vec2};
 
 use super::brush::ActiveBrush;
+use crate::editor::brush::Brush;
 
 pub fn draw_map(
     mut active_brush: ResMut<ActiveBrush>,

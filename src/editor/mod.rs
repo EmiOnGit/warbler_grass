@@ -6,7 +6,11 @@ use self::{
     hot_reloading::notify_image_change,
     ray_cast::RayCastPlugin,
 };
-
+use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+use bevy::input::common_conditions::input_toggle_active;
+use bevy_inspector_egui::DefaultInspectorConfigPlugin;
+use crate::editor::brush::Brushes;
+use bevy::prelude::KeyCode;
 pub mod brush;
 pub mod draw_event;
 mod hot_reloading;
@@ -21,7 +25,13 @@ pub struct EditorPlugin;
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_plugin(RayCastPlugin)
-            .insert_resource(ActiveBrush::new(Stencil::default()))
+
+            .add_plugin(
+                ResourceInspectorPlugin::<ActiveBrush>::default()
+                    .run_if(input_toggle_active(true, KeyCode::Escape)),
+            )            
+            .insert_resource(ActiveBrush::new(Brushes::default()))
+            .register_type::<ActiveBrush>()
             .add_event::<DrawEvent>()
             .add_system(draw_map)
             .add_system(notify_image_change);

@@ -1,16 +1,47 @@
 use bevy::{prelude::*, render::render_resource::TextureFormat};
-
-#[derive(Resource)]
+use bevy_inspector_egui::prelude::ReflectInspectorOptions;
+use bevy_inspector_egui::InspectorOptions;
+#[derive(Resource, Reflect, Default, InspectorOptions)]
+#[reflect(Resource, InspectorOptions)]
 pub struct ActiveBrush {
-    pub brush: Box<dyn Brush>,
+    pub brush: Brushes,
 }
+
 impl ActiveBrush {
-    pub fn new(brush: impl Brush + 'static) -> Self {
+    pub fn new(brush: Brushes) -> Self {
         ActiveBrush {
-            brush: Box::new(brush),
+            brush,
         }
     }
 }
+#[derive(Reflect)]
+pub enum Brushes {
+    Stencil(Stencil),
+}
+impl Default for Brushes {
+    fn default() -> Self {
+        Self::Stencil(Stencil::default())
+    }
+}
+impl From<Stencil> for Brushes {
+    fn from(value: Stencil) -> Self {
+        Self::Stencil(value)
+    }
+}
+impl Brush for Brushes {
+    fn draw(&mut self, image: &mut Image, position: Vec2) {
+        match self {
+            Self::Stencil(stencil) => stencil.draw(image,position)
+        }
+    }
+    fn size(&self) -> u32 {
+        match self {
+            Self::Stencil(stencil) => stencil.size()
+        }
+    }
+
+}
+#[derive(Reflect, FromReflect)]
 pub struct Stencil {
     size: u32,
     strength: f32,
