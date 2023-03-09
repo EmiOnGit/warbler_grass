@@ -1,7 +1,6 @@
 use bevy::prelude::{Assets, EventReader, Handle, Image, ResMut, Vec2};
 
 use super::brush::ActiveBrush;
-use crate::editor::brush::Brush;
 
 pub fn draw_map(
     mut active_brush: ResMut<ActiveBrush>,
@@ -11,7 +10,7 @@ pub fn draw_map(
     for event in draw_events.iter() {
         if let DrawEvent::Draw { positions, image } = event {
             if let Some(image) = images.get_mut(image) {
-                active_brush.brush.draw(image, positions.clone());
+                active_brush.draw(image, positions.clone());
             }
         }
     }
