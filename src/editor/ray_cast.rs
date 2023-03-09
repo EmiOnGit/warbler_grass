@@ -3,8 +3,9 @@ use bevy::{
     math::{Vec3A, Vec3Swizzles},
     render::primitives::Aabb,
 };
+use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
 
-use crate::density_map::DensityMap;
+use crate::{density_map::DensityMap, prelude::HeightMap};
 
 use super::draw_event::DrawEvent;
 pub(super) struct RayCastPlugin;
@@ -15,11 +16,18 @@ impl Plugin for RayCastPlugin {
             .add_system(update_camera_ray);
     }
 }
-
+#[derive(Resource, Reflect, Default, InspectorOptions)]
+#[reflect(Resource, InspectorOptions)]
+pub enum SelectedMap {
+    #[default]
+    HeightMap,
+    DensityMap
+}
 fn check_collision_on_click(
-    grass_chunk: Query<(&Transform, &Aabb, &DensityMap), Without<RayCamera>>,
+    grass_chunk: Query<(&Transform, &Aabb, &DensityMap, &HeightMap), Without<RayCamera>>,
     camera_source: Query<(&Transform, &RayCamera)>,
     mouse_presses: Res<Input<MouseButton>>,
+    selection: Res<SelectedMap>,
     mut draw_events: EventWriter<DrawEvent>,
 ) {
     if !mouse_presses.pressed(MouseButton::Left) {
@@ -27,7 +35,7 @@ fn check_collision_on_click(
     }
     let (_camera_transform, raycast_camera) = camera_source.single();
     let click_ray = raycast_camera.ray.as_ref().unwrap();
-    for (chunk_transform, aabb, density_map) in &grass_chunk {
+    for (chunk_transform, aabb, density_map, height_map) in &grass_chunk {
         let aabb_center = aabb.center.as_dvec3().as_vec3() + chunk_transform.translation;
 
         let grass_plane = Primitive3d::Plane {
@@ -48,7 +56,10 @@ fn check_collision_on_click(
             ) + Vec2::ONE)
                 / 2.;
             // let image = grass.height_map.as_ref().unwrap().height_map.clone();
-            let image = density_map.density_map.clone();
+            let image = match *selection {
+                SelectedMap::HeightMap => height_map.height_map.clone(),
+                SelectedMap::DensityMap => density_map.density_map.clone(),
+            };
             draw_events.send(DrawEvent::Draw { positions, image });
         }
     }

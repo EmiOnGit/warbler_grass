@@ -4,13 +4,13 @@ use self::{
     brush::ActiveBrush,
     draw_event::{draw_map, DrawEvent},
     hot_reloading::notify_image_change,
-    ray_cast::RayCastPlugin,
+    ray_cast::{RayCastPlugin, SelectedMap},
 };
-use bevy::input::common_conditions::input_toggle_active;
+
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
 use crate::editor::brush::Brushes;
-use bevy::prelude::KeyCode;
+
 pub mod brush;
 pub mod draw_event;
 mod hot_reloading;
@@ -25,12 +25,12 @@ pub struct EditorPlugin;
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_plugin(RayCastPlugin)
-            .add_plugin(
-                ResourceInspectorPlugin::<ActiveBrush>::default()
-                    .run_if(input_toggle_active(true, KeyCode::Escape)),
-            )
+            .add_plugin(ResourceInspectorPlugin::<ActiveBrush>::default())
+            .add_plugin(ResourceInspectorPlugin::<SelectedMap>::default())
             .insert_resource(ActiveBrush::new(Brushes::default()))
+            .init_resource::<SelectedMap>()
             .register_type::<ActiveBrush>()
+            .register_type::<SelectedMap>()
             .add_event::<DrawEvent>()
             .add_system(draw_map)
             .add_system(notify_image_change);
