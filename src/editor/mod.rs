@@ -1,14 +1,14 @@
 use bevy::prelude::Plugin;
 
 use self::{
-    brush::{ActiveBrush, Stencil},
+    brush::ActiveBrush,
     draw_event::{draw_map, DrawEvent},
     hot_reloading::notify_image_change,
     ray_cast::RayCastPlugin,
 };
-use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use bevy::input::common_conditions::input_toggle_active;
-use bevy_inspector_egui::DefaultInspectorConfigPlugin;
+use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+
 use crate::editor::brush::Brushes;
 use bevy::prelude::KeyCode;
 pub mod brush;
@@ -25,11 +25,10 @@ pub struct EditorPlugin;
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_plugin(RayCastPlugin)
-
             .add_plugin(
                 ResourceInspectorPlugin::<ActiveBrush>::default()
                     .run_if(input_toggle_active(true, KeyCode::Escape)),
-            )            
+            )
             .insert_resource(ActiveBrush::new(Brushes::default()))
             .register_type::<ActiveBrush>()
             .add_event::<DrawEvent>()

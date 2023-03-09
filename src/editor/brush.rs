@@ -1,6 +1,7 @@
 use bevy::{prelude::*, render::render_resource::TextureFormat};
 use bevy_inspector_egui::prelude::ReflectInspectorOptions;
 use bevy_inspector_egui::InspectorOptions;
+
 #[derive(Resource, Reflect, Default, InspectorOptions)]
 #[reflect(Resource, InspectorOptions)]
 pub struct ActiveBrush {
@@ -9,9 +10,7 @@ pub struct ActiveBrush {
 
 impl ActiveBrush {
     pub fn new(brush: Brushes) -> Self {
-        ActiveBrush {
-            brush,
-        }
+        ActiveBrush { brush }
     }
 }
 #[derive(Reflect)]
@@ -31,15 +30,14 @@ impl From<Stencil> for Brushes {
 impl Brush for Brushes {
     fn draw(&mut self, image: &mut Image, position: Vec2) {
         match self {
-            Self::Stencil(stencil) => stencil.draw(image,position)
+            Self::Stencil(stencil) => stencil.draw(image, position),
         }
     }
     fn size(&self) -> u32 {
         match self {
-            Self::Stencil(stencil) => stencil.size()
+            Self::Stencil(stencil) => stencil.size(),
         }
     }
-
 }
 #[derive(Reflect, FromReflect)]
 pub struct Stencil {
