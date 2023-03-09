@@ -15,11 +15,15 @@ use serde::Deserialize;
 use crate::{density_map::DensityMap, render::extract::EntityStorage};
 
 // see https://surma.dev/things/ditherpunk/ for a good resource regarding dithering
-const BAYER_DITHER: [[u8; 4]; 4] = [
-    [1, 9, 3, 11],
-    [13, 5, 15, 7],
-    [4, 12, 2, 10],
-    [16, 8, 14, 6],
+const BAYER_DITHER: [[u8; 8]; 8] = [
+    [0, 32, 8, 40, 2, 34,10,42],
+    [48,16,56,24,50,18,58,26],
+    [12,44,4,36,14,46,6,38],
+    [60,28,52,20,62,30,54,22],
+    [3,35,11,43,1,33,9,41],
+    [51,19,59,27,49,17,57,25],
+    [15,47,7,39,13,45,5,37],
+    [61,31,55,23,61,29,53,21]
 ];
 pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Option<DitheredBuffer> {
     let Ok(dynamic_image)  = image.clone().try_into_dynamic() else {
@@ -32,7 +36,7 @@ pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Opti
     let j_count = (density * field_size.y) as usize;
     for i in 0..i_count {
         for j in 0..j_count {
-            let threshold = BAYER_DITHER[i % 4][j % 4];
+            let threshold = BAYER_DITHER[i % 8][j % 8];
 
             //normalize i,j between 0,1
             let i = i as f32 / i_count as f32;
@@ -42,7 +46,7 @@ pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Opti
             let y = j * buffer.dimensions().1 as f32;
 
             let pixel = buffer.get_pixel(x as u32, y as u32).0[0];
-            if pixel > threshold * 15 {
+            if pixel > threshold * 4 {
                 dither_buffer.push(Vec2::new(i * field_size.x, j * field_size.y));
             }
         }
