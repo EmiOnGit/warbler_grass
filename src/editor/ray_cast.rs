@@ -3,7 +3,7 @@ use bevy::{
     math::{Vec3A, Vec3Swizzles},
     render::primitives::Aabb,
 };
-use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
+use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 
 use crate::{density_map::DensityMap, prelude::HeightMap};
 
@@ -19,9 +19,9 @@ impl Plugin for RayCastPlugin {
 #[derive(Resource, Reflect, Default, InspectorOptions)]
 #[reflect(Resource, InspectorOptions)]
 pub enum SelectedMap {
-    #[default]
     HeightMap,
-    DensityMap
+    #[default]
+    DensityMap,
 }
 fn check_collision_on_click(
     grass_chunk: Query<(&Transform, &Aabb, &DensityMap, &HeightMap), Without<RayCamera>>,

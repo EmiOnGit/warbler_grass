@@ -102,7 +102,7 @@ impl Brush for Airbrush {
         for (x, y) in positions.into_iter() {
             let pixel = &mut buffer.get_pixel_mut(x as u32, y as u32).0;
             
-            let distance = ((((x as f32 - center.0 as f32)).powf(2.) + ((y as f32 - center.1 as f32)).powf(2.)) / max_distance).powf(0.3) ;
+            let distance = ((((x as f32 - center.0 as f32)).powf(2.) + ((y as f32 - center.1 as f32)).powf(2.)) / max_distance).powf(0.1) ;
             let total_strength = strength - (strength * distance);
             
             paint_gray(pixel, total_strength);
