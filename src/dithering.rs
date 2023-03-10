@@ -97,9 +97,10 @@ pub(crate) fn add_dither_to_density(
     mut storage: Local<Vec<(EntityStorage, DensityMap, Aabb)>>,
 ) {
     let stored = std::mem::take(&mut *storage);
-    for (e, density_map, aabb) in grasses.iter()
-        .chain(stored.iter()
-            .map(|(e,map,aabb)| (e.0, map, aabb))) {
+    for (e, density_map, aabb) in grasses
+        .iter()
+        .chain(stored.iter().map(|(e, map, aabb)| (e.0, map, aabb)))
+    {
         if let Some(image) = images.get(&density_map.density_map) {
             let xz = aabb.half_extents.xz() * 2.;
             let Some(buffer) = dither_density_map(image, density_map.density, xz) else {
@@ -109,7 +110,7 @@ pub(crate) fn add_dither_to_density(
             let handle = dithered.add(buffer);
             commands.entity(e).insert(handle);
         } else {
-            storage.push((EntityStorage(e), density_map.clone(), *aabb ));
+            storage.push((EntityStorage(e), density_map.clone(), *aabb));
         }
     }
 }

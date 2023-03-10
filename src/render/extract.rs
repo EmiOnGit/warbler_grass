@@ -35,9 +35,7 @@ pub(crate) fn extract_grass(
     >,
     mut grass_cache: ResMut<GrassCache>,
 ) {
-
     for (entity, height_map, dithered, height, global_transform, aabb) in grass_spawner.iter() {
-
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.transform = *global_transform;
         cache_value.dither_handle = Some(dithered.clone());
@@ -78,7 +76,10 @@ pub(crate) fn extract_visibility(
     visibility_queue: Extract<
         Query<
             (Entity, &ComputedVisibility),
-            (Or<(With<Handle<DitheredBuffer>>, With<Grass>)>, With<Transform>),
+            (
+                Or<(With<Handle<DitheredBuffer>>, With<Grass>)>,
+                With<Transform>,
+            ),
         >,
     >,
     mut entity_cache: ResMut<EntityCache>,
