@@ -30,7 +30,10 @@ fn check_collision_on_click(
     selection: Res<SelectedMap>,
     mut draw_events: EventWriter<DrawEvent>,
 ) {
-    if !mouse_presses.pressed(MouseButton::Left) {
+    if !mouse_presses.pressed(MouseButton::Left)
+        && !mouse_presses.pressed(MouseButton::Middle)
+        && !mouse_presses.pressed(MouseButton::Right)
+    {
         return;
     }
     let (_camera_transform, raycast_camera) = camera_source.single();
@@ -60,7 +63,13 @@ fn check_collision_on_click(
                 SelectedMap::HeightMap => height_map.height_map.clone(),
                 SelectedMap::DensityMap => density_map.density_map.clone(),
             };
-            draw_events.send(DrawEvent::Draw { positions, image });
+            if mouse_presses.pressed(MouseButton::Left) {
+                draw_events.send(DrawEvent::Draw { positions, image });
+            } else if mouse_presses.pressed(MouseButton::Middle) {
+                draw_events.send(DrawEvent::Clear { image });
+            } else if mouse_presses.pressed(MouseButton::Right) {
+                draw_events.send(DrawEvent::Fill { image });
+            }
         }
     }
 }

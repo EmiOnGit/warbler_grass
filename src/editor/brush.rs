@@ -27,7 +27,6 @@ impl ActiveBrush {
     }
 }
 #[derive(Reflect, FromReflect, InspectorOptions)]
-
 #[reflect(InspectorOptions)]
 pub enum Brushes {
     Stencil,
@@ -43,7 +42,7 @@ impl Brushes {
     fn draw(&self, image: &mut Image, position: Vec2, brush_size: u32, strength: f32) {
         match self {
             Self::Stencil => Stencil::draw(image, position, brush_size, strength),
-            Self::Airbrush=> Airbrush::draw(image, position, brush_size, strength),
+            Self::Airbrush => Airbrush::draw(image, position, brush_size, strength),
         }
     }
 }
@@ -75,8 +74,7 @@ impl Brush for Stencil {
 }
 
 #[derive(Reflect, FromReflect, Default, InspectorOptions)]
-
-#[reflect(InspectorOptions)] 
+#[reflect(InspectorOptions)]
 pub struct Airbrush;
 impl Brush for Airbrush {
     fn draw(image: &mut Image, position: Vec2, brush_size: u32, strength: f32) {
@@ -86,28 +84,34 @@ impl Brush for Airbrush {
         };
         let mut buffer = dynamic_image.into_rgba8();
         let positions = pixel_positions(brush_size, image.size(), position);
-        let mut max = (u32::MIN,u32::MIN);
+        let mut max = (u32::MIN, u32::MIN);
         let mut center = positions
             .iter()
-            .map(|(x,y)| {
-                if x >= &max.0  && y >= &max.1 {
-                    max = (*x,*y);
+            .map(|(x, y)| {
+                if x >= &max.0 && y >= &max.1 {
+                    max = (*x, *y);
                 }
-              
-                (x,y)
+
+                (x, y)
             })
             .fold((0, 0), |(sumx, sumy), (x, y)| (sumx + x, sumy + y));
-        
 
-        center = (center.0 / positions.len() as u32, center.1 / positions.len() as u32);
-        let max_distance = (max.0 as f32 - center.0 as f32).powf(2.) + (max.1 as f32 - center.1 as f32).powf(2.);
+        center = (
+            center.0 / positions.len() as u32,
+            center.1 / positions.len() as u32,
+        );
+        let max_distance =
+            (max.0 as f32 - center.0 as f32).powf(2.) + (max.1 as f32 - center.1 as f32).powf(2.);
 
         for (x, y) in positions.into_iter() {
             let pixel = &mut buffer.get_pixel_mut(x as u32, y as u32).0;
-            
-            let distance = ((((x as f32 - center.0 as f32)).powf(2.) + ((y as f32 - center.1 as f32)).powf(2.)) / max_distance).powf(0.1) ;
+
+            let distance = (((x as f32 - center.0 as f32).powf(2.)
+                + (y as f32 - center.1 as f32).powf(2.))
+                / max_distance)
+                .powf(0.1);
             let total_strength = strength - (strength * distance);
-            
+
             paint_gray(pixel, total_strength);
         }
 

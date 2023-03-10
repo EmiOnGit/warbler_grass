@@ -7,7 +7,7 @@ use self::{
     ray_cast::{RayCastPlugin, SelectedMap},
 };
 
-use bevy_inspector_egui::{quick::ResourceInspectorPlugin, bevy_egui::EguiSettings};
+use bevy_inspector_egui::{bevy_egui::EguiSettings, quick::ResourceInspectorPlugin};
 
 use crate::editor::brush::Brushes;
 
@@ -20,6 +20,7 @@ mod hot_reloading;
 ///
 /// Since I only use a tiny part, which isn't the focus of the crate, I ported it into this file.
 pub mod ray_cast;
+pub mod tools;
 
 pub struct EditorPlugin;
 impl Plugin for EditorPlugin {

@@ -15,21 +15,19 @@ pub fn notify_image_change(
     >,
 ) {
     for ev in ev_asset.iter() {
-        if let DrawEvent::Draw {
-            positions: _,
-            image: handle,
-        } = ev
-        {
-            for (height_map, density_map) in &mut q {
-                if let Some(height_map_ref) = height_map.as_ref() {
-                    if height_map_ref.height_map == *handle {
-                        height_map.unwrap().as_mut();
-                    }
+        let Some(image) = ev.image_handle() else {
+            continue;
+        };
+
+        for (height_map, density_map) in &mut q {
+            if let Some(height_map_ref) = height_map.as_ref() {
+                if height_map_ref.height_map == *image {
+                    height_map.unwrap().as_mut();
                 }
-                if let Some(density_map_ref) = density_map.as_ref() {
-                    if density_map_ref.density_map == *handle {
-                        density_map.unwrap().as_mut();
-                    }
+            }
+            if let Some(density_map_ref) = density_map.as_ref() {
+                if density_map_ref.density_map == *image {
+                    density_map.unwrap().as_mut();
                 }
             }
         }

@@ -22,8 +22,11 @@ fn main() {
 }
 #[derive(Component)]
 struct Marker;
-fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>,     mut meshes: ResMut<Assets<Mesh>>,    mut materials: ResMut<Assets<StandardMaterial>>,
-
+fn setup_grass(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let height_map = asset_server.load("grass_height_map.png");
 
@@ -34,22 +37,21 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>,     mut m
         density_map: density_map_texture.clone(),
         density: 2.,
     };
-    let quad_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
-        10.,
-        10.,
-    ))));
+    let quad_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(10., 10.))));
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(density_map.density_map.clone()),
         alpha_mode: AlphaMode::Blend,
         unlit: true,
         ..default()
     });
-    commands.spawn(PbrBundle {
-        mesh: quad_handle.clone(),
-        material: material_handle,
-        transform: Transform::from_xyz(0.0, 0.0, 1.5),
-        ..default()
-    }).insert(Marker);
+    commands
+        .spawn(PbrBundle {
+            mesh: quad_handle.clone(),
+            material: material_handle,
+            transform: Transform::from_xyz(0.0, 0.0, 1.5),
+            ..default()
+        })
+        .insert(Marker);
     commands.spawn(WarblersBundle {
         density_map,
         height_map,
@@ -78,14 +80,16 @@ fn refresh_texture_view(
     marked: Query<(Entity, &Handle<StandardMaterial>), With<Marker>>,
     chunk: Query<(&DensityMap, &HeightMap), Without<Marker>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    selected_map: Res<SelectedMap>
-){
-    let (e,mat) = marked.single();
+    selected_map: Res<SelectedMap>,
+) {
+    let (e, mat) = marked.single();
     let (density_map, height_map) = chunk.single();
     if let Some(mat) = materials.get_mut(&mat) {
         match *selected_map {
             SelectedMap::HeightMap => mat.base_color_texture = Some(height_map.height_map.clone()),
-            SelectedMap::DensityMap => mat.base_color_texture = Some(density_map.density_map.clone()),
+            SelectedMap::DensityMap => {
+                mat.base_color_texture = Some(density_map.density_map.clone())
+            }
         }
     }
 }

@@ -131,21 +131,19 @@ impl FromWorld for GrassPipeline {
                     count: None,
                 }],
             });
-            let heights_texture_layout =
+        let heights_texture_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
                 label: Some("warbler_grass height texture layout"),
-                entries: &[
-                    BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: ShaderStages::VERTEX,
-                        ty: BindingType::Texture {
-                            sample_type: TextureSampleType::Float { filterable: false },
-                            view_dimension: TextureViewDimension::D2,
-                            multisampled: false,
-                        },
-                        count: None,
+                entries: &[BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Texture {
+                        sample_type: TextureSampleType::Float { filterable: false },
+                        view_dimension: TextureViewDimension::D2,
+                        multisampled: false,
                     },
-                ],
+                    count: None,
+                }],
             });
         let explicit_xz_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
@@ -224,7 +222,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
         } else {
             descriptor.layout.push(self.height_map_layout.clone());
         }
- 
+
         if key.uniform_height {
             vertex.shader_defs.push("UNIFORM_HEIGHT".into());
             descriptor.layout.push(self.uniform_height_layout.clone());
@@ -249,7 +247,7 @@ impl From<MeshPipelineKey> for GrassRenderKey {
         Self {
             mesh_key,
             is_explicit: false,
-            uniform_height: false
+            uniform_height: false,
         }
     }
 }

@@ -16,14 +16,14 @@ use crate::{density_map::DensityMap, render::extract::EntityStorage};
 
 // see https://surma.dev/things/ditherpunk/ for a good resource regarding dithering
 const BAYER_DITHER: [[u8; 8]; 8] = [
-    [0, 32, 8, 40, 2, 34,10,42],
-    [48,16,56,24,50,18,58,26],
-    [12,44,4,36,14,46,6,38],
-    [60,28,52,20,62,30,54,22],
-    [3,35,11,43,1,33,9,41],
-    [51,19,59,27,49,17,57,25],
-    [15,47,7,39,13,45,5,37],
-    [61,31,55,23,61,29,53,21]
+    [0, 32, 8, 40, 2, 34, 10, 42],
+    [48, 16, 56, 24, 50, 18, 58, 26],
+    [12, 44, 4, 36, 14, 46, 6, 38],
+    [60, 28, 52, 20, 62, 30, 54, 22],
+    [3, 35, 11, 43, 1, 33, 9, 41],
+    [51, 19, 59, 27, 49, 17, 57, 25],
+    [15, 47, 7, 39, 13, 45, 5, 37],
+    [61, 31, 55, 23, 61, 29, 53, 21],
 ];
 pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Option<DitheredBuffer> {
     let Ok(dynamic_image)  = image.clone().try_into_dynamic() else {

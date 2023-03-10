@@ -95,34 +95,29 @@ pub(crate) fn prepare_height_buffer(
     images: Res<RenderAssets<Image>>,
 
     render_device: Res<RenderDevice>,
-    inserted_grass: Query<(&EntityStorage, &WarblerHeight )>,
+    inserted_grass: Query<(&EntityStorage, &WarblerHeight)>,
     mut local_height_map_storage: Local<Vec<(EntityStorage, Handle<Image>)>>,
-
 ) {
     let stored = std::mem::take(&mut *local_height_map_storage);
     for (entity_storage, heights_texture) in stored.into_iter() {
         if let Some(chunk) = cache.get_mut(&entity_storage.0) {
-
-        let layout = pipeline.heights_texture_layout.clone();
-        if let Some(tex) = images.get(&heights_texture) {
-             
-            let bind_group_descriptor = BindGroupDescriptor {
-                label: Some("grass height map bind group"),
-                layout: &layout,
-                entries: &[
-                    BindGroupEntry {
+            let layout = pipeline.heights_texture_layout.clone();
+            if let Some(tex) = images.get(&heights_texture) {
+                let bind_group_descriptor = BindGroupDescriptor {
+                    label: Some("grass height map bind group"),
+                    layout: &layout,
+                    entries: &[BindGroupEntry {
                         binding: 0,
                         resource: BindingResource::TextureView(&tex.texture_view),
-                    },
-                ],
-            };
+                    }],
+                };
 
-            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-            chunk.blade_height_texture = Some(bind_group);
-        } else {
-            local_height_map_storage.push((entity_storage, heights_texture));
+                let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+                chunk.blade_height_texture = Some(bind_group);
+            } else {
+                local_height_map_storage.push((entity_storage, heights_texture));
+            }
         }
-    }
     }
     for (entity_storage, height) in inserted_grass.iter() {
         let id = &entity_storage.0;
@@ -160,22 +155,21 @@ pub(crate) fn prepare_height_buffer(
                         &tex.texture_view
                     } else {
                         // if the texture is not loaded, we will push it locally and try next frame again
-                        local_height_map_storage.push((entity_storage.clone(), heights_texture.clone()));
+                        local_height_map_storage
+                            .push((entity_storage.clone(), heights_texture.clone()));
 
                         &fallback_img.texture_view
                     };
-                    
+
                     let bind_group_descriptor = BindGroupDescriptor {
                         label: Some("grass height map bind group"),
                         layout: &layout,
-                        entries: &[
-                            BindGroupEntry {
-                                binding: 0,
-                                resource: BindingResource::TextureView(tex),
-                            },
-                        ],
+                        entries: &[BindGroupEntry {
+                            binding: 0,
+                            resource: BindingResource::TextureView(tex),
+                        }],
                     };
-        
+
                     let bind_group = render_device.create_bind_group(&bind_group_descriptor);
                     chunk.blade_height_texture = Some(bind_group);
                 }
