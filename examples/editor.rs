@@ -2,6 +2,7 @@
 //! The editor is still worked on and can't be used currently
 use bevy::{prelude::*, render::primitives::Aabb};
 use warbler_grass::editor::ray_cast::{RayCamera, SelectedMap};
+use warbler_grass::prelude::WarblerHeight;
 use warbler_grass::{
     bundle::WarblersBundle, density_map::DensityMap, editor, height_map::HeightMap,
     warblers_plugin::WarblersPlugin,
@@ -32,6 +33,7 @@ fn setup_grass(
 
     let height_map = HeightMap { height_map };
     let density_map_texture = asset_server.load("grass_density_map.png");
+    let heights_map_texture = asset_server.load("heights_map.png");
 
     let density_map = DensityMap {
         density_map: density_map_texture.clone(),
@@ -55,7 +57,7 @@ fn setup_grass(
     commands.spawn(WarblersBundle {
         density_map,
         height_map,
-        height: warbler_grass::prelude::WarblerHeight::Texture(density_map_texture),
+        height: warbler_grass::prelude::WarblerHeight::Texture(heights_map_texture),
         aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 5., 100.)),
         spatial: SpatialBundle {
             transform: Transform::from_xyz(0., 1., 0.),
@@ -78,17 +80,24 @@ fn setup_camera(mut commands: Commands) {
 fn refresh_texture_view(
     mut commands: Commands,
     marked: Query<(Entity, &Handle<StandardMaterial>), With<Marker>>,
-    chunk: Query<(&DensityMap, &HeightMap), Without<Marker>>,
+    chunk: Query<(&DensityMap, &HeightMap, &WarblerHeight), Without<Marker>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     selected_map: Res<SelectedMap>,
 ) {
     let (e, mat) = marked.single();
-    let (density_map, height_map) = chunk.single();
+    let (density_map, height_map, heights) = chunk.single();
     if let Some(mat) = materials.get_mut(&mat) {
         match *selected_map {
             SelectedMap::HeightMap => mat.base_color_texture = Some(height_map.height_map.clone()),
             SelectedMap::DensityMap => {
                 mat.base_color_texture = Some(density_map.density_map.clone())
+            }
+            SelectedMap::HeightsMap => {
+                if let WarblerHeight::Texture(heights_map) = heights {
+                    mat.base_color_texture = Some(heights_map.clone())
+                } else {
+                    mat.base_color_texture = Some(density_map.density_map.clone())
+                }
             }
         }
     }

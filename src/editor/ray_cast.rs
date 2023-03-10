@@ -5,7 +5,7 @@ use bevy::{
 };
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 
-use crate::{density_map::DensityMap, prelude::HeightMap};
+use crate::{density_map::DensityMap, prelude::{HeightMap, WarblerHeight}};
 
 use super::draw_event::DrawEvent;
 pub(super) struct RayCastPlugin;
@@ -16,15 +16,16 @@ impl Plugin for RayCastPlugin {
             .add_system(update_camera_ray);
     }
 }
-#[derive(Resource, Reflect, Default, InspectorOptions)]
+#[derive(Resource, Reflect, Default, InspectorOptions, PartialEq)]
 #[reflect(Resource, InspectorOptions)]
 pub enum SelectedMap {
     HeightMap,
     #[default]
     DensityMap,
+    HeightsMap,
 }
 fn check_collision_on_click(
-    grass_chunk: Query<(&Transform, &Aabb, &DensityMap, &HeightMap), Without<RayCamera>>,
+    grass_chunk: Query<(&Transform, &Aabb, &DensityMap, &HeightMap, &WarblerHeight), Without<RayCamera>>,
     camera_source: Query<(&Transform, &RayCamera)>,
     mouse_presses: Res<Input<MouseButton>>,
     selection: Res<SelectedMap>,
@@ -38,7 +39,7 @@ fn check_collision_on_click(
     }
     let (_camera_transform, raycast_camera) = camera_source.single();
     let click_ray = raycast_camera.ray.as_ref().unwrap();
-    for (chunk_transform, aabb, density_map, height_map) in &grass_chunk {
+    for (chunk_transform, aabb, density_map, height_map, heights) in &grass_chunk {
         let aabb_center = aabb.center.as_dvec3().as_vec3() + chunk_transform.translation;
 
         let grass_plane = Primitive3d::Plane {
@@ -62,6 +63,14 @@ fn check_collision_on_click(
             let image = match *selection {
                 SelectedMap::HeightMap => height_map.height_map.clone(),
                 SelectedMap::DensityMap => density_map.density_map.clone(),
+                SelectedMap::HeightsMap => {
+                    if let WarblerHeight::Texture(image) = heights {
+                        image.clone()
+                    } else {
+                        warn!("No heights texture found. Using density map instead");
+                        density_map.density_map.clone()
+                    }
+                },
             };
             if mouse_presses.pressed(MouseButton::Left) {
                 draw_events.send(DrawEvent::Draw { positions, image });

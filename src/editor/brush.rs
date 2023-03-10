@@ -1,61 +1,15 @@
 use bevy::{prelude::*, render::render_resource::TextureFormat};
-use bevy_inspector_egui::inspector_options::std_options::NumberDisplay;
-use bevy_inspector_egui::prelude::ReflectInspectorOptions;
-use bevy_inspector_egui::InspectorOptions;
 
-#[derive(Resource, Reflect, Default, InspectorOptions)]
-#[reflect(Resource, InspectorOptions)]
-pub struct ActiveBrush {
-    pub brush: Brushes,
-    #[inspector(min = 5, max = 20 , display = NumberDisplay::Slider)]
-    brush_size: u32,
-    #[inspector(min = -20.0, max = 20.0, display = NumberDisplay::Slider)]
-    strength: f32,
-}
-
-impl ActiveBrush {
-    pub fn new(brush: Brushes) -> Self {
-        ActiveBrush {
-            brush,
-            brush_size: 5,
-            strength: 10.,
-        }
-    }
-    pub fn draw(&mut self, image: &mut Image, position: Vec2) {
-        self.brush
-            .draw(image, position, self.brush_size, self.strength);
-    }
-}
-#[derive(Reflect, FromReflect, InspectorOptions)]
-#[reflect(InspectorOptions)]
-pub enum Brushes {
-    Stencil,
-    Airbrush,
-}
-impl Default for Brushes {
-    fn default() -> Self {
-        Self::Airbrush
-    }
-}
-
-impl Brushes {
-    fn draw(&self, image: &mut Image, position: Vec2, brush_size: u32, strength: f32) {
-        match self {
-            Self::Stencil => Stencil::draw(image, position, brush_size, strength),
-            Self::Airbrush => Airbrush::draw(image, position, brush_size, strength),
-        }
-    }
-}
-
-pub trait Brush: Sync + Send {
+pub trait BrushBehavior: Sync + Send {
     /// position should be between 0 and 1
-    fn draw(image: &mut Image, position: Vec2, brush_size: u32, strength: f32);
+    fn draw(&self, image: &mut Image, position: Vec2, brush_size: u32, strength: f32);
 }
-#[derive(Reflect, FromReflect, Default)]
+#[derive(Reflect, FromReflect, Clone, Default)]
+#[reflect(Default)]
 pub struct Stencil;
 
-impl Brush for Stencil {
-    fn draw(image: &mut Image, position: Vec2, brush_size: u32, strength: f32) {
+impl BrushBehavior for Stencil {
+    fn draw(&self, image: &mut Image, position: Vec2, brush_size: u32, strength: f32) {
         let Ok(dynamic_image)  = image.clone().try_into_dynamic() else {
             warn!("couldn't convert image");
             return;
@@ -73,11 +27,11 @@ impl Brush for Stencil {
     }
 }
 
-#[derive(Reflect, FromReflect, Default, InspectorOptions)]
-#[reflect(InspectorOptions)]
+#[derive(Reflect, FromReflect, Clone, Default)]
+#[reflect(Default)]
 pub struct Airbrush;
-impl Brush for Airbrush {
-    fn draw(image: &mut Image, position: Vec2, brush_size: u32, strength: f32) {
+impl BrushBehavior for Airbrush {
+    fn draw(&self, image: &mut Image, position: Vec2, brush_size: u32, strength: f32) {
         let Ok(dynamic_image)  = image.clone().try_into_dynamic() else {
             warn!("couldn't convert image");
             return;

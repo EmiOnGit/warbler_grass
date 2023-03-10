@@ -1,12 +1,11 @@
 use bevy::prelude::{Assets, EventReader, Handle, Image, ResMut, Vec2};
 
 use super::{
-    brush::ActiveBrush,
-    tools::{Eraser, Filler},
+    tools::{Eraser, Filler}, ui::ActiveTool,
 };
 
 pub fn draw_map(
-    mut active_brush: ResMut<ActiveBrush>,
+    mut active_brush: ResMut<ActiveTool>,
     mut draw_events: EventReader<DrawEvent>,
     mut images: ResMut<Assets<Image>>,
 ) {
@@ -14,7 +13,7 @@ pub fn draw_map(
         match event {
             DrawEvent::Draw { positions, image } => {
                 if let Some(image) = images.get_mut(image) {
-                    active_brush.draw(image, positions.clone());
+                    active_brush.apply(image, positions.clone());
                 }
             }
             DrawEvent::Clear { image } => {
