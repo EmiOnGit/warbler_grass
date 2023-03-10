@@ -5,9 +5,12 @@ use bevy::{
 };
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 
-use crate::{density_map::DensityMap, prelude::{HeightMap, WarblerHeight}};
+use crate::{
+    density_map::DensityMap,
+    prelude::{HeightMap, WarblerHeight},
+};
 
-use super::draw_event::DrawEvent;
+use super::{draw_event::DrawEvent, ActiveEditorChunk};
 pub(super) struct RayCastPlugin;
 
 impl Plugin for RayCastPlugin {
@@ -25,7 +28,18 @@ pub enum SelectedMap {
     HeightsMap,
 }
 fn check_collision_on_click(
-    grass_chunk: Query<(&Transform, &Aabb, &DensityMap, &HeightMap, &WarblerHeight), Without<RayCamera>>,
+    mut active_chunk: ResMut<ActiveEditorChunk>,
+    grass_chunk: Query<
+        (
+            Entity,
+            &Transform,
+            &Aabb,
+            &DensityMap,
+            &HeightMap,
+            &WarblerHeight,
+        ),
+        Without<RayCamera>,
+    >,
     camera_source: Query<(&Transform, &RayCamera)>,
     mouse_presses: Res<Input<MouseButton>>,
     selection: Res<SelectedMap>,
@@ -39,7 +53,7 @@ fn check_collision_on_click(
     }
     let (_camera_transform, raycast_camera) = camera_source.single();
     let click_ray = raycast_camera.ray.as_ref().unwrap();
-    for (chunk_transform, aabb, density_map, height_map, heights) in &grass_chunk {
+    for (entity, chunk_transform, aabb, density_map, height_map, heights) in &grass_chunk {
         let aabb_center = aabb.center.as_dvec3().as_vec3() + chunk_transform.translation;
 
         let grass_plane = Primitive3d::Plane {
@@ -70,8 +84,9 @@ fn check_collision_on_click(
                         warn!("No heights texture found. Using density map instead");
                         density_map.density_map.clone()
                     }
-                },
+                }
             };
+            active_chunk.0 = Some(entity);
             if mouse_presses.pressed(MouseButton::Left) {
                 draw_events.send(DrawEvent::Draw { positions, image });
             } else if mouse_presses.pressed(MouseButton::Middle) {

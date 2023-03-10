@@ -1,7 +1,8 @@
 use bevy::prelude::{Assets, EventReader, Handle, Image, ResMut, Vec2};
 
 use super::{
-    tools::{Eraser, Filler}, ui::ActiveTool,
+    tools::{Eraser, Filler},
+    ui::ActiveTool,
 };
 
 pub fn draw_map(

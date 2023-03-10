@@ -10,7 +10,11 @@ use super::draw_event::DrawEvent;
 pub fn notify_image_change(
     mut ev_asset: EventReader<DrawEvent>,
     mut q: Query<
-        (Option<&mut HeightMap>, Option<&mut DensityMap>, &mut WarblerHeight),
+        (
+            Option<&mut HeightMap>,
+            Option<&mut DensityMap>,
+            &mut WarblerHeight,
+        ),
         Or<(With<HeightMap>, With<DensityMap>)>,
     >,
 ) {
