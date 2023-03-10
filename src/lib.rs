@@ -14,6 +14,7 @@ pub mod editor;
 pub mod height_map;
 mod render;
 pub mod warblers_plugin;
+pub mod diagnose;
 pub mod prelude {
     pub use crate::bundle::*;
     pub use crate::density_map::DensityMap;
