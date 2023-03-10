@@ -1,4 +1,5 @@
 use bevy::{prelude::*, render::render_resource::TextureFormat};
+use bevy_inspector_egui::inspector_options::std_options::NumberDisplay;
 use bevy_inspector_egui::prelude::ReflectInspectorOptions;
 use bevy_inspector_egui::InspectorOptions;
 
@@ -6,7 +7,9 @@ use bevy_inspector_egui::InspectorOptions;
 #[reflect(Resource, InspectorOptions)]
 pub struct ActiveBrush {
     pub brush: Brushes,
+    #[inspector(min = 5, max = 20 , display = NumberDisplay::Slider)]
     brush_size: u32,
+    #[inspector(min = -20.0, max = 20.0, display = NumberDisplay::Slider)]
     strength: f32,
 }
 

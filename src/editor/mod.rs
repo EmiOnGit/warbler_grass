@@ -7,7 +7,7 @@ use self::{
     ray_cast::{RayCastPlugin, SelectedMap},
 };
 
-use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+use bevy_inspector_egui::{quick::ResourceInspectorPlugin, bevy_egui::EguiSettings};
 
 use crate::editor::brush::Brushes;
 
@@ -24,7 +24,10 @@ pub mod ray_cast;
 pub struct EditorPlugin;
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
+        let mut egui_settings = EguiSettings::default();
+        egui_settings.scale_factor = 2.;
         app.add_plugin(RayCastPlugin)
+            .insert_resource(egui_settings)
             .add_plugin(ResourceInspectorPlugin::<ActiveBrush>::default())
             .add_plugin(ResourceInspectorPlugin::<SelectedMap>::default())
             .insert_resource(ActiveBrush::new(Brushes::default()))

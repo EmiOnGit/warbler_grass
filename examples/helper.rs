@@ -18,8 +18,8 @@ fn setup_camera(mut commands: Commands) {
 }
 pub fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transform, With<Camera>>) {
     for mut transform in &mut query {
-        let move_speed = 0.2;
-        let rotate_speed = 0.02;
+        let move_speed = 0.6;
+        let rotate_speed = 0.03;
         let mut forward = transform.forward();
         forward.y = 0.;
         let right = transform.right();
