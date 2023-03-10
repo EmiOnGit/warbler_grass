@@ -1,7 +1,7 @@
 //! #NOTE
 //! The editor is still worked on and can't be used currently
 use bevy::{prelude::*, render::primitives::Aabb};
-use warbler_grass::editor::ray_cast::RayCamera;
+use warbler_grass::editor::ray_cast::{RayCamera, SelectedMap};
 use warbler_grass::{
     bundle::WarblersBundle, density_map::DensityMap, editor, height_map::HeightMap,
     warblers_plugin::WarblersPlugin,
@@ -16,7 +16,7 @@ fn main() {
         .add_system(helper::camera_movement)
         // enable the editor by adding the plugin
         .add_plugin(editor::EditorPlugin)
-        .add_system(refresh)
+        .add_system(refresh_texture_view)
         .add_startup_system(setup_grass)
         .run();
 }
@@ -73,15 +73,19 @@ fn setup_camera(mut commands: Commands) {
         RayCamera::default(),
     ));
 }
-fn refresh(
+fn refresh_texture_view(
     mut commands: Commands,
     marked: Query<(Entity, &Handle<StandardMaterial>), With<Marker>>,
-    density: Query<&DensityMap, Without<Marker>>,
+    chunk: Query<(&DensityMap, &HeightMap), Without<Marker>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    selected_map: Res<SelectedMap>
 ){
     let (e,mat) = marked.single();
-    let map = density.single();
+    let (density_map, height_map) = chunk.single();
     if let Some(mat) = materials.get_mut(&mat) {
-        mat.base_color_texture = Some(map.density_map.clone());
+        match *selected_map {
+            SelectedMap::HeightMap => mat.base_color_texture = Some(height_map.height_map.clone()),
+            SelectedMap::DensityMap => mat.base_color_texture = Some(density_map.density_map.clone()),
+        }
     }
 }
