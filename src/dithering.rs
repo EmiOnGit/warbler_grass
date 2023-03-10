@@ -25,7 +25,7 @@ const BAYER_DITHER: [[u8; 8]; 8] = [
     [15, 47, 7, 39, 13, 45, 5, 37],
     [61, 31, 55, 23, 61, 29, 53, 21],
 ];
-pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Option<DitheredBuffer> {
+pub(crate) fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Option<DitheredBuffer> {
     let Ok(dynamic_image)  = image.clone().try_into_dynamic() else {
         return None;
     };
@@ -55,13 +55,16 @@ pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Opti
         positions: dither_buffer,
     })
 }
-
+/// A buffer containing the dithered density map
+/// 
+/// This struct shouldn't be modified by the user
 #[derive(Reflect, Clone, Debug, Deserialize, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
-pub struct DitheredBuffer {
+pub(crate) struct DitheredBuffer {
     pub positions: Vec<Vec2>,
 }
-pub struct GpuDitheredBuffer {
+/// The gpu representation of a [`DitheredBuffer`]
+pub(crate) struct GpuDitheredBuffer {
     pub buffer: Buffer,
     pub instances: usize,
 }
@@ -92,6 +95,8 @@ impl RenderAsset for DitheredBuffer {
         })
     }
 }
+
+/// Updates the [`DitheredBuffer`] of an entity
 #[allow(clippy::type_complexity)]
 pub(crate) fn add_dither_to_density(
     mut commands: Commands,
@@ -108,7 +113,7 @@ pub(crate) fn add_dither_to_density(
         if let Some(image) = images.get(&density_map.density_map) {
             let xz = aabb.half_extents.xz() * 2.;
             let Some(buffer) = dither_density_map(image, density_map.density, xz) else {
-                warn!("Couldn't dither density map. Maybe the image format is not supported");
+                warn!("Couldn't dither density map. Maybe the image format is not supported?");
                 continue
             };
             let handle = dithered.add(buffer);

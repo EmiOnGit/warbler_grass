@@ -11,7 +11,7 @@ use super::grass_pipeline::{GrassPipeline, GrassRenderKey};
 use super::GrassDrawCall;
 
 #[allow(clippy::too_many_arguments)]
-pub fn queue_grass_buffers(
+pub(crate) fn queue_grass_buffers(
     opaque_3d_draw_functions: Res<DrawFunctions<Opaque3d>>,
     grass_pipeline: Res<GrassPipeline>,
     msaa: Res<Msaa>,

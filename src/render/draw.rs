@@ -14,7 +14,7 @@ use bevy::{
 use crate::dithering::DitheredBuffer;
 
 use super::cache::GrassCache;
-pub struct SetUniformBindGroup<const I: usize>;
+pub(crate) struct SetUniformBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
     type Param = SRes<GrassCache>;
@@ -36,7 +36,7 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
         RenderCommandResult::Success
     }
 }
-pub struct SetYBindGroup<const I: usize>;
+pub(crate) struct SetYBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
     type Param = SRes<GrassCache>;
@@ -64,7 +64,7 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
         RenderCommandResult::Failure
     }
 }
-pub struct SetHeightBindGroup<const I: usize>;
+pub(crate) struct SetHeightBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
     type Param = SRes<GrassCache>;

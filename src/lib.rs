@@ -1,3 +1,8 @@
+//! [![crates.io](https://img.shields.io/badge/crates.io-v0.2-orange)](https://crates.io/crates/warbler_grass)
+//!
+//! A bevy plugin for easily creating million of grass blades in your game.
+//! The crate heavily uses instanced rendering to render as much grass as possible.
+//! More information can be found on the [`github repository`](https://github.com/EmiOnGit/warbler_grass)
 use bevy::{
     prelude::*,
     render::{
@@ -9,6 +14,7 @@ use bevy::{
 pub mod bundle;
 pub mod density_map;
 pub mod dithering;
+
 #[cfg(feature = "editor")]
 pub mod editor;
 pub mod height_map;
