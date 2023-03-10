@@ -30,7 +30,7 @@ pub(crate) fn extract_grass(
                 &GlobalTransform,
                 &Aabb,
             ),
-            Or<(Changed<Handle<DitheredBuffer>>, Changed<HeightMap>)>,
+            Or<(Changed<Handle<DitheredBuffer>>, Changed<HeightMap>, Changed<WarblerHeight>)>,
         >,
     >,
     mut grass_cache: ResMut<GrassCache>,

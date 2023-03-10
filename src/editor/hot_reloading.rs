@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{density_map::DensityMap, height_map::HeightMap};
+use crate::{density_map::DensityMap, height_map::HeightMap, prelude::WarblerHeight};
 
 use super::draw_event::DrawEvent;
 
@@ -10,7 +10,7 @@ use super::draw_event::DrawEvent;
 pub fn notify_image_change(
     mut ev_asset: EventReader<DrawEvent>,
     mut q: Query<
-        (Option<&mut HeightMap>, Option<&mut DensityMap>),
+        (Option<&mut HeightMap>, Option<&mut DensityMap>, &mut WarblerHeight),
         Or<(With<HeightMap>, With<DensityMap>)>,
     >,
 ) {
@@ -19,7 +19,7 @@ pub fn notify_image_change(
             continue;
         };
 
-        for (height_map, density_map) in &mut q {
+        for (height_map, density_map, mut heights) in &mut q {
             if let Some(height_map_ref) = height_map.as_ref() {
                 if height_map_ref.height_map == *image {
                     height_map.unwrap().as_mut();
@@ -28,6 +28,11 @@ pub fn notify_image_change(
             if let Some(density_map_ref) = density_map.as_ref() {
                 if density_map_ref.density_map == *image {
                     density_map.unwrap().as_mut();
+                }
+            }
+            if let WarblerHeight::Texture(texture) = heights.as_ref() {
+                if texture == image {
+                    heights.as_mut();
                 }
             }
         }
