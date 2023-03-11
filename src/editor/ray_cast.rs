@@ -54,7 +54,9 @@ fn check_collision_on_click(
     {
         return;
     }
-    let raycast_camera = camera_source.single();
+    let Ok(raycast_camera) = camera_source.get_single() else {
+        return;
+    };
     let click_ray = raycast_camera.ray.as_ref().unwrap();
     for (entity, chunk_transform, aabb, density_map, height_map, heights) in &grass_chunk {
         let aabb_center = aabb.center.as_dvec3().as_vec3() + chunk_transform.translation;
