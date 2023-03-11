@@ -5,6 +5,8 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(WarblersPlugin)
+        // Just a helper plugin for spawning a camera
+        // As in all examples, you can use the wasd keys for movement and qe for rotation
         .add_plugin(helper::SimpleCamera)
         // We can define the color at startup if we want to
         .insert_resource(GrassConfiguration {

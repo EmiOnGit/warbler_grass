@@ -8,7 +8,8 @@ fn main() {
         .add_plugins(DefaultPlugins)
         // always needed to create the grass render pipeline
         .add_plugin(WarblersPlugin)
-        // spawns a simple camera which can be moved
+        // Just a helper plugin for spawning a camera
+        // As in all examples, you can use the wasd keys for movement and qe for rotation
         .add_plugin(helper::SimpleCamera)
         .add_startup_system(setup_grass)
         .run();

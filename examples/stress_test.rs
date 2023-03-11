@@ -10,13 +10,14 @@ fn main() {
         .add_plugins(DefaultPlugins)
         // always needed to setup the grass render pipeline
         .add_plugin(WarblersPlugin)
-        // helper plugin to spawn a camera which is moveable
+        // Just a helper plugin for spawning a camera
+        // As in all examples, you can use the wasd keys for movement and qe for rotation
         .add_plugin(helper::SimpleCamera)
         // creates our grass
         .add_startup_system(setup_grass)
         // more wind
         .insert_resource(GrassConfiguration {
-            wind: Vec2::new(2.,2.),
+            wind: Vec2::new(2., 2.),
             ..default()
         })
         // Let's also log the amount of blades rendered
@@ -47,6 +48,7 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
         height_map,
         height: WarblerHeight::Uniform(5.),
         // Let's make a large chunk
+        // With our density map we spawn around 10 million blades on this area
         aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(1000., 0., 1000.)),
         spatial: SpatialBundle {
             // translate the chunk so we are in a nice middle place

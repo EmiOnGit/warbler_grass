@@ -1,7 +1,6 @@
 //! Demonstrates how to spawn multiple chunks
 //!
-//! Currently, it spawns around 3 million grass blades in total
-//! so you might want to run in release mode
+//! Currently, the example spawns around 3 million grass blades in total
 use bevy::{diagnostic::LogDiagnosticsPlugin, prelude::*, render::primitives::Aabb};
 use warbler_grass::{diagnostic::WarblerDiagnosticsPlugin, prelude::*};
 mod helper;
@@ -10,6 +9,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(WarblersPlugin)
         // Just a helper plugin for spawning a camera
+        // As in all examples, you can use the wasd keys for movement and qe for rotation
         .add_plugin(helper::SimpleCamera)
         // Let's also log the amount of blades rendered
         .add_plugin(WarblerDiagnosticsPlugin)

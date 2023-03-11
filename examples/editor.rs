@@ -12,6 +12,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(WarblersPlugin)
         .add_startup_system(setup_camera)
+        // As in all examples, you can use the wasd keys for movement and qe for rotation
         .add_system(helper::camera_movement)
         // enable the editor by adding the plugin
         .add_plugin(editor::EditorPlugin)
