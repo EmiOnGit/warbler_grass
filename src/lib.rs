@@ -19,7 +19,7 @@ pub mod bundle;
 pub mod dithering;
 
 pub mod diagnostic;
-// #[cfg(feature = "editor")]
+#[cfg(feature = "editor")]
 pub mod editor;
 
 mod density_map;
