@@ -1,5 +1,3 @@
-//! #NOTE
-//! The editor is still worked on and can't be used currently
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
 use warbler_grass::editor::ray_cast::{RayCamera, SelectedMap};
@@ -69,7 +67,7 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn((
         Camera3dBundle {
             transform: Transform::from_xyz(0.0, 15., 55.0)
-                .looking_at(Vec3::new(0., 10., 0.), Vec3::Y),
+                .looking_at(Vec3::new(10., 10., 55.), Vec3::Y),
             ..default()
         },
         // The ray camera component is needed to find the positions of the press.
