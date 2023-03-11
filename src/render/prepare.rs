@@ -7,7 +7,7 @@ use super::grass_pipeline::GrassPipeline;
 use crate::bundle::{Grass, WarblerHeight};
 use crate::height_map::HeightMap;
 use crate::render::cache::GrassCache;
-use crate::GrassConfiguration;
+use crate::{GrassConfiguration, GrassNoiseTexture};
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
@@ -284,13 +284,14 @@ pub(crate) fn prepare_uniform_buffers(
     pipeline: Res<GrassPipeline>,
     mut cache: ResMut<GrassCache>,
     region_config: Res<GrassConfiguration>,
+    noise_config: Res<GrassNoiseTexture>,
     fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
     mut last_texture_id: Local<Option<TextureViewId>>,
 ) {
     let texture = &images
-        .get(&region_config.wind_noise_texture)
+        .get(&noise_config.0)
         .unwrap_or(&fallback_img)
         .texture_view;
     if !region_config.is_changed() && Some(texture.id()) == *last_texture_id && !cache.is_changed()

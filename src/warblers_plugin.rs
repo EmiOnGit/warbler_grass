@@ -23,7 +23,7 @@ use crate::{
         grass_pipeline::GrassPipeline,
         prepare, queue,
     },
-    GrassConfiguration,
+    GrassConfiguration, GrassNoiseTexture,
 };
 
 /// A raw handle which points to the shader used to render the grass.
@@ -60,9 +60,11 @@ impl Plugin for WarblersPlugin {
             .add_plugin(RenderAssetPlugin::<DitheredBuffer>::default());
         // Init resources
         app.init_resource::<GrassConfiguration>()
-            .register_type::<GrassConfiguration>();
+            .register_type::<GrassConfiguration>()
+            .init_resource::<GrassNoiseTexture>();
         // Add extraction of the configuration
         app.add_plugin(ExtractResourcePlugin::<GrassConfiguration>::default());
+        app.add_plugin(ExtractResourcePlugin::<GrassNoiseTexture>::default());
         // Init render app
         app.sub_app_mut(RenderApp)
             .add_render_command::<Opaque3d, render::GrassDrawCall>()
