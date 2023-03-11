@@ -57,8 +57,8 @@ fn check_collision_on_click(
     for (entity, chunk_transform, aabb, density_map, height_map, heights) in &grass_chunk {
         let aabb_center = aabb.center.as_dvec3().as_vec3() + chunk_transform.translation;
 
-        let grass_plane = Primitive3d::Plane {
-            point: aabb_center,
+        let grass_plane = Plane {
+            origin: aabb_center,
             normal: Vec3::Y,
         };
         let res = intersects_primitive(click_ray, grass_plane).unwrap();
@@ -148,27 +148,25 @@ fn ray_from_screenspace(
     })
 }
 
-pub fn intersects_primitive(ray: &Ray, shape: Primitive3d) -> Option<Vec3> {
-    match shape {
-        Primitive3d::Plane {
-            point: plane_origin,
-            normal: plane_normal,
-        } => {
+pub fn intersects_primitive(ray: &Ray, plane: Plane) -> Option<Vec3> {
+    let Plane{origin,normal} = plane;
+   
             // assuming vectors are all normalized
-            let denominator = plane_normal.dot(ray.direction.into());
+            let denominator = normal.dot(ray.direction.into());
             if denominator.abs() > f32::EPSILON {
-                let point_to_point = plane_origin - Vec3::from(ray.origin);
-                let intersect_dist = plane_normal.dot(point_to_point) / denominator;
+                let point_to_point = origin - Vec3::from(ray.origin);
+                let intersect_dist = normal.dot(point_to_point) / denominator;
                 let intersect_position =
                     Vec3::from(ray.direction) * intersect_dist + Vec3::from(ray.origin);
                 Some(intersect_position)
             } else {
                 None
             }
-        }
-    }
+        
+    
 }
 
-pub enum Primitive3d {
-    Plane { point: Vec3, normal: Vec3 },
+pub struct Plane {
+    origin: Vec3, 
+    normal: Vec3,
 }
