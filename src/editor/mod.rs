@@ -1,6 +1,7 @@
 use bevy::prelude::{Entity, Plugin, Resource};
 
 use self::{
+    brush::{Airbrush, Stencil},
     draw_event::{draw_map, DrawEvent},
     hot_reloading::notify_image_change,
     ray_cast::{RayCastPlugin, SelectedMap},
@@ -48,6 +49,8 @@ impl Plugin for EditorPlugin {
             .init_resource::<SelectedMap>()
             .register_type::<BrushType>()
             .register_type::<Brush>()
+            .register_type::<Stencil>()
+            .register_type::<Airbrush>()
             .register_type::<ActiveTool>()
             .register_type::<SelectedMap>()
             .add_event::<DrawEvent>()

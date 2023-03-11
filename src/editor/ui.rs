@@ -114,7 +114,7 @@ pub enum BrushType {
 }
 impl Default for BrushType {
     fn default() -> Self {
-        Self::Airbrush(Airbrush::default())
+        Self::Stencil(Stencil::default())
     }
 }
 
