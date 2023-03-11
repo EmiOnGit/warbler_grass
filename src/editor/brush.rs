@@ -17,7 +17,7 @@ impl BrushBehavior for Stencil {
         let mut buffer = dynamic_image.into_rgba8();
 
         for (x, y) in pixel_positions(brush_size, image.size(), position).into_iter() {
-            let pixel = &mut buffer.get_pixel_mut(x as u32, y as u32).0;
+            let pixel = &mut buffer.get_pixel_mut(x, y).0;
             paint_gray(pixel, strength);
         }
 
@@ -58,7 +58,7 @@ impl BrushBehavior for Airbrush {
             (max.0 as f32 - center.0 as f32).powf(2.) + (max.1 as f32 - center.1 as f32).powf(2.);
 
         for (x, y) in positions.into_iter() {
-            let pixel = &mut buffer.get_pixel_mut(x as u32, y as u32).0;
+            let pixel = &mut buffer.get_pixel_mut(x, y).0;
 
             let distance = (((x as f32 - center.0 as f32).powf(2.)
                 + (y as f32 - center.1 as f32).powf(2.))

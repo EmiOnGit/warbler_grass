@@ -4,9 +4,13 @@
 //! The crate heavily uses instanced rendering to render as much grass as possible.
 //! More information can be found on the [`github repository`](https://github.com/EmiOnGit/warbler_grass)
 use bevy::{
-    prelude::*,
+    asset::{Assets, Handle},
+    ecs::prelude::{FromWorld, ReflectResource, Resource, World},
+    math::Vec2,
+    reflect::Reflect,
     render::{
         extract_resource::ExtractResource,
+        prelude::{Color, Image},
         texture::{CompressedImageFormats, ImageType},
     },
 };
@@ -16,7 +20,7 @@ pub mod density_map;
 pub mod dithering;
 
 pub mod diagnostic;
-#[cfg(feature = "editor")]
+// #[cfg(feature = "editor")]
 pub mod editor;
 pub mod height_map;
 mod render;

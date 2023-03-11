@@ -1,14 +1,15 @@
 use bevy::{
-    asset::load_internal_asset,
+    app::Plugin,
+    asset::{load_internal_asset, Assets, HandleUntyped},
     core_pipeline::core_3d::Opaque3d,
     prelude::*,
     reflect::TypeUuid,
     render::{
         extract_resource::ExtractResourcePlugin,
-        mesh::Indices,
+        mesh::{Indices, Mesh},
         render_asset::RenderAssetPlugin,
         render_phase::AddRenderCommand,
-        render_resource::{PrimitiveTopology, SpecializedMeshPipelines},
+        render_resource::{PrimitiveTopology, Shader, SpecializedMeshPipelines},
         texture::FallbackImage,
         RenderApp, RenderSet,
     },

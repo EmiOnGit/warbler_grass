@@ -45,7 +45,7 @@ pub fn check_for_save_files(
                     tex
                 }
             };
-            let Some(image) = images.get(&image_handle) else {
+            let Some(image) = images.get(image_handle) else {
                 info!("Image was not yet loaded. Saving failed");
                 return
             };

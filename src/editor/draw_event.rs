@@ -14,7 +14,7 @@ pub fn draw_map(
         match event {
             DrawEvent::Draw { positions, image } => {
                 if let Some(image) = images.get_mut(image) {
-                    active_brush.apply(image, positions.clone());
+                    active_brush.apply(image, *positions);
                 }
             }
             DrawEvent::Clear { image } => {
@@ -48,9 +48,9 @@ impl DrawEvent {
             DrawEvent::Draw {
                 positions: _,
                 image,
-            } => Some(&image),
-            DrawEvent::Clear { image } => Some(&image),
-            DrawEvent::Fill { image } => Some(&image),
+            } => Some(image),
+            DrawEvent::Clear { image } => Some(image),
+            DrawEvent::Fill { image } => Some(image),
         }
     }
 }

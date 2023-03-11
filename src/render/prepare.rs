@@ -279,7 +279,7 @@ pub(crate) fn prepare_height_map_buffer(
         }
     }
 }
-
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn prepare_uniform_buffers(
     pipeline: Res<GrassPipeline>,
     mut cache: ResMut<GrassCache>,

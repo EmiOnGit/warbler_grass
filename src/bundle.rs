@@ -1,6 +1,11 @@
 use bevy::{
-    prelude::*,
-    render::{primitives::Aabb, texture::DEFAULT_IMAGE_HANDLE},
+    asset::Handle,
+    ecs::{bundle::Bundle, component::Component},
+    math::Vec3,
+    render::{
+        mesh::Mesh, prelude::SpatialBundle, primitives::Aabb, texture::Image,
+        texture::DEFAULT_IMAGE_HANDLE,
+    },
 };
 
 use crate::{density_map::DensityMap, height_map::HeightMap, warblers_plugin::GRASS_MESH_HANDLE};

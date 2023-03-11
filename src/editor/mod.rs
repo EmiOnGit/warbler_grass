@@ -33,8 +33,10 @@ pub mod ui;
 pub struct EditorPlugin;
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        let mut egui_settings = EguiSettings::default();
-        egui_settings.scale_factor = 1.2;
+        let egui_settings = EguiSettings{
+            scale_factor: 1.2,
+            ..Default::default()
+        };
 
         app.add_plugin(RayCastPlugin)
             .insert_resource(egui_settings)

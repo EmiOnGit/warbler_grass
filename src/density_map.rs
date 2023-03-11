@@ -1,6 +1,5 @@
 //! Contains the implementation of the [`DensityMap`] component
-
-use bevy::prelude::*;
+use bevy::{asset::Handle, ecs::component::Component, reflect::Reflect, render::texture::Image};
 /// The density map defining the density of grass at specific positions.
 /// White pixels corresponds to dense areas.
 ///

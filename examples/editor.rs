@@ -1,14 +1,14 @@
 //! #NOTE
 //! The editor is still worked on and can't be used currently
-use bevy::{prelude::*, render::primitives::Aabb};
+use bevy::render::primitives::Aabb;
 use warbler_grass::editor::ray_cast::{RayCamera, SelectedMap};
 use warbler_grass::prelude::WarblerHeight;
 use warbler_grass::{
     bundle::WarblersBundle, density_map::DensityMap, editor, height_map::HeightMap,
     warblers_plugin::WarblersPlugin,
 };
-
 mod helper;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)

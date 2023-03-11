@@ -1,13 +1,19 @@
 use bevy::{
-    ecs::system::{lifetimeless::SRes, SystemParamItem},
+    asset::Assets,
+    ecs::{
+        prelude::*,
+        system::{lifetimeless::SRes, SystemParamItem},
+    },
+    log::warn,
+    math::Vec2,
     math::Vec3Swizzles,
-    prelude::*,
-    reflect::TypeUuid,
+    reflect::{Reflect, TypeUuid},
     render::{
         primitives::Aabb,
         render_asset::{PrepareAssetError, RenderAsset},
         render_resource::{Buffer, BufferInitDescriptor, BufferUsages},
         renderer::RenderDevice,
+        texture::Image,
     },
 };
 use serde::Deserialize;

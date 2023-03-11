@@ -1,4 +1,4 @@
-pub use bevy::prelude::*;
+use bevy::prelude::*;
 use bevy::{
     math::{Vec3A, Vec3Swizzles},
     render::primitives::Aabb,
@@ -27,6 +27,7 @@ pub enum SelectedMap {
     DensityMap,
     HeightsMap,
 }
+#[allow(clippy::type_complexity)]
 fn check_collision_on_click(
     mut active_chunk: ResMut<ActiveEditorChunk>,
     grass_chunk: Query<
@@ -40,7 +41,7 @@ fn check_collision_on_click(
         ),
         Without<RayCamera>,
     >,
-    camera_source: Query<(&Transform, &RayCamera)>,
+    camera_source: Query<&RayCamera>,
     mouse_presses: Res<Input<MouseButton>>,
     selection: Res<SelectedMap>,
     mut draw_events: EventWriter<DrawEvent>,
@@ -51,7 +52,7 @@ fn check_collision_on_click(
     {
         return;
     }
-    let (_camera_transform, raycast_camera) = camera_source.single();
+    let raycast_camera = camera_source.single();
     let click_ray = raycast_camera.ray.as_ref().unwrap();
     for (entity, chunk_transform, aabb, density_map, height_map, heights) in &grass_chunk {
         let aabb_center = aabb.center.as_dvec3().as_vec3() + chunk_transform.translation;
@@ -60,7 +61,7 @@ fn check_collision_on_click(
             point: aabb_center,
             normal: Vec3::Y,
         };
-        let res = intersects_primitive(&click_ray, grass_plane).unwrap();
+        let res = intersects_primitive(click_ray, grass_plane).unwrap();
         let intersection_point = (res - aabb_center).xz();
         let aabb_extends = aabb.half_extents.as_dvec3().as_vec3().xz().abs();
         if aabb_extends.x > intersection_point.x
