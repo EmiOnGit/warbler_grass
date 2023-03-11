@@ -62,4 +62,4 @@ impl Plugin for EditorPlugin {
 }
 /// Marker component for the entity that is currently edited
 #[derive(Resource, Default)]
-pub struct ActiveEditorChunk(Option<Entity>);
+pub struct ActiveEditorChunk(pub Option<Entity>);

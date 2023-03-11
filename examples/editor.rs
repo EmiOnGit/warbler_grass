@@ -2,8 +2,8 @@
 //! The editor is still worked on and can't be used currently
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
-use warbler_grass::editor;
 use warbler_grass::editor::ray_cast::{RayCamera, SelectedMap};
+use warbler_grass::editor::{self, ActiveEditorChunk};
 use warbler_grass::prelude::*;
 mod helper;
 
@@ -56,7 +56,7 @@ fn setup_grass(
     commands.spawn(WarblersBundle {
         density_map,
         height_map,
-        height: warbler_grass::prelude::WarblerHeight::Texture(heights_map_texture),
+        height: warbler_grass::prelude::WarblerHeight::Texture(heights_map_texture.clone()),
         aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 5., 100.)),
         spatial: SpatialBundle {
             transform: Transform::from_xyz(0., 1., 0.),
@@ -81,9 +81,15 @@ fn refresh_texture_view(
     chunk: Query<(&DensityMap, &HeightMap, &WarblerHeight), Without<Marker>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     selected_map: Res<SelectedMap>,
+    active_chunk: Res<ActiveEditorChunk>,
 ) {
+    let Some(active_entity) = active_chunk.0 else {
+        return;
+    };
     let material = marked.single();
-    let (density_map, height_map, heights) = chunk.single();
+    let Ok((density_map, height_map, heights)) = chunk.get(active_entity) else {
+        return;
+    };
     if let Some(mat) = materials.get_mut(&material) {
         match *selected_map {
             SelectedMap::HeightMap => mat.base_color_texture = Some(height_map.height_map.clone()),
