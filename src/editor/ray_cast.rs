@@ -19,6 +19,8 @@ impl Plugin for RayCastPlugin {
             .add_system(update_camera_ray);
     }
 }
+/// Indicates the currently selected map in the editor
+/// can be directly choosen from the ui
 #[derive(Resource, Reflect, Default, InspectorOptions, PartialEq)]
 #[reflect(Resource, InspectorOptions)]
 pub enum SelectedMap {
@@ -94,7 +96,10 @@ fn check_collision_on_click(
         }
     }
 }
-
+/// Indicates a camera which can raycast on objects
+/// This is needed for the editor to extract the position of clicks on maps
+///
+/// You need to add this component to your camera to enable editing maps
 #[derive(Component, Default)]
 pub struct RayCamera {
     pub ray: Option<Ray>,
