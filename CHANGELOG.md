@@ -19,6 +19,7 @@ This is used in the `many_chunks` exampe if you'd like to see how to use it
 
 ### Fix
 Many bugs have been fixed; to many to count all of them
+* Warbler_grass only uses the dependencies it needs!
 * Grass chunks are updated now also updated if the height of the blades changed
 * The frustum culling of chunks now works properly with big chunks
 * A grass chunk is now set invisible if the parent is also invisible
