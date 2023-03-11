@@ -14,7 +14,7 @@ use crate::{density_map::DensityMap, height_map::HeightMap, warblers_plugin::GRA
 #[derive(Bundle)]
 pub struct WarblersBundle {
     /// The [`Mesh`] of the grass blades
-    /// 
+    ///
     /// Defaults to the mesh seen in the examples.
     /// The mesh may also be changed at runtime.
     /// You might want to take a look at the
@@ -27,7 +27,7 @@ pub struct WarblersBundle {
     /// An [`WarblerHeight`] component
     pub height: WarblerHeight,
     /// An [`Aabb`] component
-    /// 
+    ///
     /// Note that the Aabb is used to define the world dimensions of the [`DensityMap`] and [`HeightMap`].
     pub aabb: Aabb,
     #[bundle]
@@ -46,22 +46,22 @@ impl Default for WarblersBundle {
     }
 }
 /// The height of the grass blades
-/// 
+///
 /// Can be used in Combination with the [`WarblersBundle`] to spawn grass chunks
 #[derive(Component, Clone)]
 pub enum WarblerHeight {
     /// Sets the height of the grass blades to a constant value.
     Uniform(f32),
     /// Samples the height from an [`Image`]
-    /// 
-    /// The [`Image`] will be scaled over the plane defined by the [`Aabb`] 
+    ///
+    /// The [`Image`] will be scaled over the plane defined by the [`Aabb`]
     Texture(Handle<Image>),
 }
 
-/// Used to define the positions of all the grass blades explicitly 
-/// 
+/// Used to define the positions of all the grass blades explicitly
+///
 /// Can be used with the [`WarblersExplicitBundle`]
-/// 
+///
 /// # Example
 /// ```rust
 /// use warbler_grass::prelude::Grass;
@@ -73,18 +73,18 @@ pub enum WarblerHeight {
 ///     }
 /// }
 /// let height = 2.;
-/// 
+///
 /// // One way to create grass
 /// let grass1 = Grass::new(positions.clone(), height);
-/// 
-/// // Another way 
+///
+/// // Another way
 /// let grass2 = Grass::from(&positions[..]).with_height(height);
 /// assert_eq!(grass1, grass2);
 /// ```
 #[derive(Component, Clone, PartialEq, Debug)]
 pub struct Grass {
-    /// The positions of each grass blade defined 
-    /// 
+    /// The positions of each grass blade defined
+    ///
     /// The positions are always relative to the entity [`Transform`] component.
     pub positions: Vec<Vec3>,
     /// The height of the grass blades
@@ -110,7 +110,7 @@ impl Grass {
     }
 }
 /// Can be used to create grass from a slice of positions
-/// 
+///
 /// The height will be set to the default height
 impl From<&[Vec3]> for Grass {
     fn from(value: &[Vec3]) -> Self {
@@ -127,7 +127,7 @@ impl From<&[Vec3]> for Grass {
 #[derive(Bundle)]
 pub struct WarblersExplicitBundle {
     /// The [`Mesh`] of the grass blades
-    /// 
+    ///
     /// Defaults to the mesh seen in the examples.
     /// The mesh may also be changed at runtime.
     /// You might want to take a look at the

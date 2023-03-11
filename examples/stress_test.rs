@@ -18,17 +18,18 @@ fn main() {
         .add_startup_system(setup_grass)
         // Let's also log the amount of blades rendered
         // Since we spawn all grass in one huge chunk all blades get rendered
-        // as long as one is on the screen (normally you'd devide the area into chunks) 
+        // as long as one is on the screen (normally you'd devide the area into chunks)
         .add_plugin(WarblerDiagnosticsPlugin)
         .add_plugin(LogDiagnosticsPlugin)
         .run();
 }
 
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
-
     // load the image used for the height map
     let height_map_image = asset_server.load("grass_height_map.png");
-    let height_map = HeightMap { height_map: height_map_image };
+    let height_map = HeightMap {
+        height_map: height_map_image,
+    };
 
     // load the image used for the density map
     let density_map_image = asset_server.load("grass_density_map.png");

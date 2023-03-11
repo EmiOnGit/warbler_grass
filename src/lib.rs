@@ -15,12 +15,12 @@ pub mod bundle;
 pub mod density_map;
 pub mod dithering;
 
+pub mod diagnose;
 #[cfg(feature = "editor")]
 pub mod editor;
 pub mod height_map;
 mod render;
 pub mod warblers_plugin;
-pub mod diagnose;
 pub mod prelude {
     pub use crate::bundle::*;
     pub use crate::density_map::DensityMap;
@@ -47,12 +47,11 @@ pub struct GrassConfiguration {
     ///
     /// Be aware that the strength of the wind is controlled by the length of the vector.
     /// If you want to turn of wind in your game, you can just set this to `Vec2::ZERO`
-    /// 
+    ///
     /// If you want to change the generel look of the wind and not only the wind direction/ speed
     /// you can also change the noise texture used for the wind that is stored in the
     /// [`GrassNoiseTexture`] resource
     pub wind: Vec2,
-   
 }
 impl Default for GrassConfiguration {
     fn default() -> Self {
@@ -84,7 +83,8 @@ impl FromWorld for GrassNoiseTexture {
             ImageType::Extension("png"),
             CompressedImageFormats::default(),
             false,
-        ).unwrap();
+        )
+        .unwrap();
         GrassNoiseTexture(images.add(img))
     }
 }

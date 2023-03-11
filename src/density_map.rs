@@ -24,7 +24,7 @@ pub struct DensityMap {
     pub density: f32,
 }
 /// A density map can be created from the image alone
-/// 
+///
 /// The density will be set to 1
 impl From<Handle<Image>> for DensityMap {
     fn from(value: Handle<Image>) -> Self {
