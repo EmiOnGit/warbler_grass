@@ -224,9 +224,10 @@ impl SpecializedMeshPipeline for GrassPipeline {
         }
 
         if key.uniform_height {
-            vertex.shader_defs.push("UNIFORM_HEIGHT".into());
             descriptor.layout.push(self.uniform_height_layout.clone());
         } else {
+            vertex.shader_defs.push("HEIGHT_TEXTURE".into());
+
             descriptor.layout.push(self.heights_texture_layout.clone());
         }
 

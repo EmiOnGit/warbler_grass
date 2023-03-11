@@ -1,3 +1,7 @@
+//! Demonstrates how to spawn multiple chunks
+//!
+//! Currently, it spawns around 3 million grass blades in total
+//! so you might want to run in release mode
 use bevy::{diagnostic::LogDiagnosticsPlugin, prelude::*, render::primitives::Aabb};
 use warbler_grass::{diagnostic::WarblerDiagnosticsPlugin, prelude::*};
 mod helper;
@@ -9,7 +13,7 @@ fn main() {
         .add_plugin(helper::SimpleCamera)
         // Let's also log the amount of blades rendered
         .add_plugin(WarblerDiagnosticsPlugin)
-        .add_plugin(LogDiagnosticsPlugin)
+        .add_plugin(LogDiagnosticsPlugin::default())
         .add_startup_system(setup_grass_chunks)
         .run();
 }
@@ -28,9 +32,9 @@ fn setup_grass_chunks(mut commands: Commands, asset_server: Res<AssetServer>) {
     // spawns a 20x20 grid of chunks
     for chunk in 0..400 {
         let offset = Vec3::new(
-            (chunk / chunk_width) as f32 * chunk_width * 1.05,
+            (chunk / chunk_width as i32) as f32 * chunk_width * 1.05,
             0.,
-            (chunk % chunk_width) as f32 * chunk_height * 1.05,
+            (chunk % chunk_width as i32) as f32 * chunk_height * 1.05,
         );
         commands.spawn(WarblersBundle {
             // we could use seperate density maps for each one

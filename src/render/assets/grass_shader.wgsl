@@ -31,12 +31,12 @@ var noise_texture: texture_2d<f32>;
     @group(3) @binding(1)
     var<uniform> aabb: vec3<f32>;
 #endif
-#ifdef UNIFORM_HEIGHT
-    @group(4) @binding(0)
-    var<uniform> height_uniform: f32;
+#ifdef HEIGHT_TEXTURE
+ @group(4) @binding(0)
+    var heights: texture_2d<f32>;
 #else
     @group(4) @binding(0)
-    var heights: texture_2d<f32>;
+    var<uniform> height_uniform: f32;
 #endif
 #import bevy_pbr::mesh_functions
 
@@ -72,13 +72,15 @@ fn density_map_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     var texture_pixel = textureLoad(noise_texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0);
     return texture_pixel.xz - vec2<f32>(0.5,0.5) ;
 }
-fn texture2d_offset(texture: texture_2d<f32>, vertex_position: vec2<f32>) -> f32 {
-    let dim = textureDimensions(texture, 0);
-    let texture_position = abs((vertex_position.xy / aabb.xz ) * vec2<f32>(dim)) ;
-    var texture_r = textureLoad(texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0).r;
-    return texture_r * aabb.y;
-}
-
+#ifdef EXPLICIT
+#else
+    fn texture2d_offset(texture: texture_2d<f32>, vertex_position: vec2<f32>) -> f32 {
+        let dim = textureDimensions(texture, 0);
+        let texture_position = abs((vertex_position.xy / aabb.xz ) * vec2<f32>(dim)) ;
+        var texture_r = textureLoad(texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0).r;
+        return texture_r * aabb.y;
+    }
+#endif
 // 2d textures are used to store vertex information.
 // normally this would be done using storage buffers.
 // Storage buffer as of now are not supported by wgsl, therefore this hack is used
@@ -107,10 +109,10 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
     #endif
     // ---HEIGHT---
     var height = 0.;
-    #ifdef UNIFORM_HEIGHT
-        height = height_uniform;
-    #else
+    #ifdef HEIGHT_TEXTURE
         height = (texture2d_offset(heights, position_field_offset.xz) + 4.) / 3.;
+    #else
+        height = height_uniform;
     #endif
     var position = vertex.vertex_position * vec3<f32>(1.,height, 1.) + position_field_offset;
 

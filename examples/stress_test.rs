@@ -1,10 +1,6 @@
 //! A stresstest to measure the performance of rendering a single huge chunk
-//! Currently around 10 million grass blades are loaded
-use bevy::{
-    prelude::*,
-    render::primitives::Aabb,
-    diagnostic::LogDiagnosticsPlugin
-};
+//! Currently, around 10 million grass blades are loaded
+use bevy::{diagnostic::LogDiagnosticsPlugin, prelude::*, render::primitives::Aabb};
 use warbler_grass::diagnostic::WarblerDiagnosticsPlugin;
 use warbler_grass::prelude::*;
 mod helper;

@@ -33,7 +33,7 @@ fn setup_grass(
 
     let height_map = HeightMap { height_map };
     let density_map_texture = asset_server.load("grass_density_map.png");
-    let heights_map_texture = asset_server.load("heights_map.png");
+    let heights_map_texture = asset_server.load("grass_heights_map.png");
 
     let density_map = DensityMap {
         density_map: density_map_texture.clone(),
@@ -78,15 +78,14 @@ fn setup_camera(mut commands: Commands) {
     ));
 }
 fn refresh_texture_view(
-    mut commands: Commands,
-    marked: Query<(Entity, &Handle<StandardMaterial>), With<Marker>>,
+    marked: Query<&Handle<StandardMaterial>, With<Marker>>,
     chunk: Query<(&DensityMap, &HeightMap, &WarblerHeight), Without<Marker>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     selected_map: Res<SelectedMap>,
 ) {
-    let (e, mat) = marked.single();
+    let material = marked.single();
     let (density_map, height_map, heights) = chunk.single();
-    if let Some(mat) = materials.get_mut(&mat) {
+    if let Some(mat) = materials.get_mut(&material) {
         match *selected_map {
             SelectedMap::HeightMap => mat.base_color_texture = Some(height_map.height_map.clone()),
             SelectedMap::DensityMap => {
