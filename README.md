@@ -2,10 +2,7 @@
 [![docs.io](https://img.shields.io/badge/docs-v0.3-green)]([https://crates.io/crates/warbler_grass](https://docs.rs/warbler_grass/0.3.0/warbler_grass/))
 
 # Warbler Grass
-Warbler is a common name for several birds. Warblers are not related biologically but by characteristics.
-They are commonly small and vocal birds found in nature all over the globe. However, they couldn't sing their songs without having nature to comfort them.
-
-This crate is meant to make the warblers happy by implementing a simple way to spawn grass in your [bevy](https://github.com/bevyengine/bevy) game.
+A `bevy` plugin for ergonomic integration of grass in 3d games.
 
 Currently, bevy version `0.10` is supported
 
