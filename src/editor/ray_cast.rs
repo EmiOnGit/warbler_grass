@@ -112,7 +112,7 @@ fn update_camera_ray(
         return;
     };
     let cusor_position = cursor_position.position;
-    let Some((mut ray, cam, transform)) = ray_cam.get_single_mut() else {
+    let Ok((mut ray, cam, transform)) = ray_cam.get_single_mut() else {
         return;
     };
     let maybe_ray = ray_from_screenspace(cusor_position, cam, transform);
