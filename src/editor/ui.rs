@@ -91,7 +91,7 @@ impl ActiveTool {
     }
 }
 
-/// The brush which can be used to draw on a 
+/// The brush which can be used to draw on a
 /// Can be configured in the editor ui
 #[derive(InspectorOptions, Reflect, FromReflect, Clone)]
 #[reflect(InspectorOptions, Default)]
