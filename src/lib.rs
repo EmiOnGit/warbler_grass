@@ -1,4 +1,4 @@
-//! [![crates.io](https://img.shields.io/badge/crates.io-v0.2-orange)](https://crates.io/crates/warbler_grass)
+//! [![crates.io](https://img.shields.io/badge/crates.io-v0.3-orange)](https://crates.io/crates/warbler_grass)
 //!
 //! A bevy plugin for easily creating million of grass blades in your game.
 //! The crate heavily uses instanced rendering to render as much grass as possible.
@@ -24,7 +24,7 @@ pub mod editor;
 
 mod density_map;
 mod height_map;
-/// Contains the [`HeightMap`] and [`DensityMap`] component
+/// Contains the [`HeightMap`](crate::maps::HeightMap) and [`DensityMap`](crate::maps::DensityMap) component
 pub mod maps {
     pub use crate::density_map::*;
     pub use crate::height_map::*;
