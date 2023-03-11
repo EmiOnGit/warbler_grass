@@ -16,19 +16,24 @@ use bevy::{
 };
 
 pub mod bundle;
-pub mod density_map;
 pub mod dithering;
 
 pub mod diagnostic;
 // #[cfg(feature = "editor")]
 pub mod editor;
-pub mod height_map;
+
+mod height_map;
+mod density_map;
+/// Contains the [`HeightMap`] and [`DensityMap`] component
+pub mod maps {
+    pub use crate::height_map::*;
+    pub use crate::density_map::*;
+}
 mod render;
 pub mod warblers_plugin;
 pub mod prelude {
     pub use crate::bundle::*;
-    pub use crate::density_map::DensityMap;
-    pub use crate::height_map::HeightMap;
+    pub use crate::maps::*;
     pub use crate::warblers_plugin::WarblersPlugin;
     pub use crate::GrassConfiguration;
 }

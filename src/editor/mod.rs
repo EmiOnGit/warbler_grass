@@ -33,7 +33,7 @@ pub mod ui;
 pub struct EditorPlugin;
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        let egui_settings = EguiSettings{
+        let egui_settings = EguiSettings {
             scale_factor: 1.2,
             ..Default::default()
         };
