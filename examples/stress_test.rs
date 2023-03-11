@@ -14,6 +14,11 @@ fn main() {
         .add_plugin(helper::SimpleCamera)
         // creates our grass
         .add_startup_system(setup_grass)
+        // more wind
+        .insert_resource(GrassConfiguration {
+            wind: Vec2::new(2.,2.),
+            ..default()
+        })
         // Let's also log the amount of blades rendered
         // Since we spawn all grass in one huge chunk all blades get rendered
         // as long as one is on the screen (normally you'd devide the area into chunks)
@@ -42,7 +47,12 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
         height_map,
         height: WarblerHeight::Uniform(5.),
         // Let's make a large chunk
-        aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(1000., 100., 1000.)),
+        aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(1000., 0., 1000.)),
+        spatial: SpatialBundle {
+            // translate the chunk so we are in a nice middle place
+            transform: Transform::from_xyz(-480., -5., -480.),
+            ..default()
+        },
         ..default()
     });
 }
