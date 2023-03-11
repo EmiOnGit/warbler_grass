@@ -90,10 +90,6 @@ fn check_collision_on_click(
             active_chunk.0 = Some(entity);
             if mouse_presses.pressed(MouseButton::Left) {
                 draw_events.send(DrawEvent::Draw { positions, image });
-            } else if mouse_presses.pressed(MouseButton::Middle) {
-                draw_events.send(DrawEvent::Clear { image });
-            } else if mouse_presses.pressed(MouseButton::Right) {
-                draw_events.send(DrawEvent::Fill { image });
             }
         }
     }
