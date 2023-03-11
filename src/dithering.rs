@@ -165,7 +165,7 @@ mod tests {
         assert!(dither.unwrap().positions.len() == 5 * 5);
         let dither = super::dither_density_map(&image, 0.1, Vec2::new(10., 10.));
         assert!(dither.unwrap().positions.len() == 1);
-        
+
         // transform the image to be black
         let dynamic = image.try_into_dynamic().unwrap();
         let mut luma = dynamic.to_luma8();
