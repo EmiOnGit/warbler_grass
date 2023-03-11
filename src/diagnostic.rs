@@ -8,13 +8,13 @@ use crate::{dithering::DitheredBuffer, prelude::Grass};
 /// A [`Plugin`] that logs the blades drawn in each frame.
 ///
 /// If you want to simply log the values in the terminal,
-/// you can also add the [`LogDiagnosticsPlugin`] to your app
+/// you can also add the [`LogDiagnosticsPlugin`](bevy::diagnostic::LogDiagnosticsPlugin) to your app
 ///
 /// # Example
 /// ```rust
 /// use bevy::diagnostic::LogDiagnosticsPlugin;
 /// use bevy::prelude::App;
-/// use warbler_grass::diagnose::WarblerDiagnosticsPlugin;
+/// use warbler_grass::diagnostic::WarblerDiagnosticsPlugin;
 ///
 /// App::new()
 ///     // add this plugin to log the values

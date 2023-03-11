@@ -1,9 +1,11 @@
+//! A stresstest to measure the performance of rendering a single huge chunk
+//! Currently around 10 million grass blades are loaded
 use bevy::{
-    diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
     render::primitives::Aabb,
-    window::PresentMode,
+    diagnostic::LogDiagnosticsPlugin
 };
+use warbler_grass::diagnostic::WarblerDiagnosticsPlugin;
 use warbler_grass::prelude::*;
 mod helper;
 
@@ -20,7 +22,7 @@ fn main() {
         // Since we spawn all grass in one huge chunk all blades get rendered
         // as long as one is on the screen (normally you'd devide the area into chunks)
         .add_plugin(WarblerDiagnosticsPlugin)
-        .add_plugin(LogDiagnosticsPlugin)
+        .add_plugin(LogDiagnosticsPlugin::default())
         .run();
 }
 

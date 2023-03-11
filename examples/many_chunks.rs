@@ -1,5 +1,5 @@
 use bevy::{diagnostic::LogDiagnosticsPlugin, prelude::*, render::primitives::Aabb};
-use warbler_grass::{diagnose::WarblerDiagnosticsPlugin, prelude::*};
+use warbler_grass::{diagnostic::WarblerDiagnosticsPlugin, prelude::*};
 mod helper;
 fn main() {
     App::new()

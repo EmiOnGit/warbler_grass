@@ -15,7 +15,7 @@ pub mod bundle;
 pub mod density_map;
 pub mod dithering;
 
-pub mod diagnose;
+pub mod diagnostic;
 #[cfg(feature = "editor")]
 pub mod editor;
 pub mod height_map;

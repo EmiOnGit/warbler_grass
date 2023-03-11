@@ -66,9 +66,11 @@ pub enum WarblerHeight {
 /// ```rust
 /// use warbler_grass::prelude::Grass;
 /// use bevy::prelude::Vec3;
-/// let mut positions = Vec::with_capacity(100 * 100);
-/// for x in 0..100 {
-///     for y in 0..100 {
+/// 
+/// let mut positions = Vec::with_capacity(10 * 10);
+/// // let's make a simple 10x10 grid
+/// for x in 0..10 {
+///     for y in 0..10 {
 ///         positions.push(Vec3::new(x as f32,0., y as f32));
 ///     }
 /// }
