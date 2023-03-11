@@ -22,12 +22,12 @@ pub mod diagnostic;
 // #[cfg(feature = "editor")]
 pub mod editor;
 
-mod height_map;
 mod density_map;
+mod height_map;
 /// Contains the [`HeightMap`] and [`DensityMap`] component
 pub mod maps {
-    pub use crate::height_map::*;
     pub use crate::density_map::*;
+    pub use crate::height_map::*;
 }
 mod render;
 pub mod warblers_plugin;
