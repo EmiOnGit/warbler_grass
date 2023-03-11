@@ -1,11 +1,16 @@
 use bevy::{
-    prelude::*,
-    render::{primitives::Aabb, texture::DEFAULT_IMAGE_HANDLE},
+    asset::Handle,
+    ecs::{bundle::Bundle, component::Component},
+    math::Vec3,
+    render::{
+        mesh::Mesh, prelude::SpatialBundle, primitives::Aabb, texture::Image,
+        texture::DEFAULT_IMAGE_HANDLE,
+    },
 };
 
 use crate::{density_map::DensityMap, height_map::HeightMap, warblers_plugin::GRASS_MESH_HANDLE};
 
-/// A bundle spawning a grass chunk in the world.
+/// This [`Bundle`] spawns a grass chunk in the world.
 ///
 /// This is the recommended way to spawn grass in games.
 /// # Note
@@ -13,15 +18,21 @@ use crate::{density_map::DensityMap, height_map::HeightMap, warblers_plugin::GRA
 /// the [`WarblersExplicitBundle`].
 #[derive(Bundle)]
 pub struct WarblersBundle {
-    /// The mesh of the grass blades.
+    /// The [`Mesh`] of the grass blades
+    ///
     /// Defaults to the mesh seen in the examples.
     /// The mesh may also be changed at runtime.
     /// You might want to take a look at the
     /// `grass_mesh` example for that
     pub grass_mesh: Handle<Mesh>,
+    /// An [`HeightMap`] component
     pub height_map: HeightMap,
+    /// An [`DensityMap`] component
     pub density_map: DensityMap,
+    /// An [`WarblerHeight`] component
     pub height: WarblerHeight,
+    /// An [`Aabb`] component
+    ///
     /// Note that the Aabb is used to define the world dimensions of the [`DensityMap`] and [`HeightMap`].
     pub aabb: Aabb,
     #[bundle]
@@ -39,18 +50,49 @@ impl Default for WarblersBundle {
         }
     }
 }
+/// The height of the grass blades
+///
+/// Can be used in Combination with the [`WarblersBundle`] to spawn grass chunks
 #[derive(Component, Clone)]
 pub enum WarblerHeight {
-    /// Sets the height of the grass blades all to the same height
+    /// Sets the height of the grass blades to a constant value.
     Uniform(f32),
-    /// Currently not supported
-    _Texture(Handle<Image>),
+    /// Samples the height from an [`Image`]
+    ///
+    /// The [`Image`] will be scaled over the plane defined by the [`Aabb`]
+    Texture(Handle<Image>),
 }
 
-/// Used to define explicitly the positions of all the grass blades.
-#[derive(Component, Clone)]
+/// Used to define the positions of all the grass blades explicitly
+///
+/// Can be used with the [`WarblersExplicitBundle`]
+///
+/// # Example
+/// ```rust
+/// use warbler_grass::prelude::Grass;
+/// use bevy::prelude::Vec3;
+///
+/// let mut positions = Vec::with_capacity(10 * 10);
+/// // let's make a simple 10x10 grid
+/// for x in 0..10 {
+///     for y in 0..10 {
+///         positions.push(Vec3::new(x as f32,0., y as f32));
+///     }
+/// }
+/// let height = 2.;
+///
+/// // One way to create grass
+/// let grass1 = Grass::new(positions.clone(), height);
+///
+/// // Another way
+/// let grass2 = Grass::from(&positions[..]).with_height(height);
+/// assert_eq!(grass1, grass2);
+/// ```
+#[derive(Component, Clone, PartialEq, Debug)]
 pub struct Grass {
-    /// The positions defined here are relative to the entity [`Transform`] component
+    /// The positions of each grass blade defined
+    ///
+    /// The positions are always relative to the entity [`Transform`] component.
     pub positions: Vec<Vec3>,
     /// The height of the grass blades
     pub height: f32,
@@ -68,8 +110,14 @@ impl Grass {
     pub fn new(positions: Vec<Vec3>, height: f32) -> Self {
         Grass { positions, height }
     }
+    /// sets the [`Grass`] height and returns itself after
+    pub fn with_height(mut self, height: f32) -> Self {
+        self.height = height;
+        self
+    }
 }
-/// Can be used to easily create grass from the positions.
+/// Can be used to create grass from a slice of positions
+///
 /// The height will be set to the default height
 impl From<&[Vec3]> for Grass {
     fn from(value: &[Vec3]) -> Self {
@@ -79,16 +127,18 @@ impl From<&[Vec3]> for Grass {
         }
     }
 }
-/// A bundle spawning a grass chunk in the world.
+/// A bundle spawning a grass chunk in the world
 ///
-/// It uses explicit positions of all grass blades to generate the them.
+/// It uses explicit positions of all grass blades to generate the them
 /// For an example take a look at the `load_explicit` example
-///
-/// # Note
-/// Consider using the [`WarblersBundle`] instead as it has a couple of advantages over explicit positions.
 #[derive(Bundle)]
 pub struct WarblersExplicitBundle {
-    /// The mesh used to draw the grass blades
+    /// The [`Mesh`] of the grass blades
+    ///
+    /// Defaults to the mesh seen in the examples.
+    /// The mesh may also be changed at runtime.
+    /// You might want to take a look at the
+    /// `grass_mesh` example for that
     pub grass_mesh: Handle<Mesh>,
     /// The explicit positions of the grass blades
     pub grass: Grass,

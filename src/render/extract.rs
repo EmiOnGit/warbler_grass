@@ -9,14 +9,10 @@ use bevy::{
     render::{primitives::Aabb, Extract},
 };
 
-/// Extracts the grass data into the render world.
+/// Extracts the grass data of entities spawned with the [`WarblersBundle`](crate::bundle::WarblersBundle) into the render world
 ///
 /// The extraction only happens on change or creation of the entity,
-/// so it normally doesn't come at a high performance cost.
-///
-/// Note:
-/// 1) Currently, the grass data extracted in the render world doesn't get freed when the grass entity is deleted.
-/// 2) If you are changing your grass data constantly you might run into performance problems rather quickly
+/// so it normally doesn't come at a high performance cost
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass(
     mut commands: Commands,
@@ -30,7 +26,11 @@ pub(crate) fn extract_grass(
                 &GlobalTransform,
                 &Aabb,
             ),
-            Changed<Handle<DitheredBuffer>>,
+            Or<(
+                Changed<Handle<DitheredBuffer>>,
+                Changed<HeightMap>,
+                Changed<WarblerHeight>,
+            )>,
         >,
     >,
     mut grass_cache: ResMut<GrassCache>,
@@ -49,6 +49,10 @@ pub(crate) fn extract_grass(
         ));
     }
 }
+/// Extracts the grass data of entities spawned with the [`WarblersExplicitBundle`](crate::bundle::WarblersExplicitBundle) into the render world
+///
+/// The extraction only happens on change or creation of the entity,
+/// so it normally doesn't come at a high performance cost
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass_positions(
     mut commands: Commands,
@@ -70,7 +74,7 @@ pub(crate) fn extract_grass_positions(
 #[derive(Clone, Component)]
 pub(crate) struct EntityStorage(pub Entity);
 
-/// Extracts all visible grass entities into the render world.
+/// Extracts all visible grass entities into the render world
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_visibility(
     visibility_queue: Extract<

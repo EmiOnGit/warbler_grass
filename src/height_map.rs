@@ -1,5 +1,9 @@
-use bevy::prelude::*;
+//! Contains the implementation of the [`HeightMap`] component
+use bevy::{asset::Handle, ecs::component::Component, reflect::Reflect, render::texture::Image};
+
 /// The height map defining the y position of the grass blades.
+///
+/// Usually, this component is used in the [`WarblersBundle`](crate::bundle::WarblersBundle)
 ///
 /// The maximum height of the height map is controlled by the height of the [`Aabb`](bevy::render::primitives::Aabb)
 /// inserted as [`Component`] and can be changed at runtime.

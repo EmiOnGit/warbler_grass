@@ -1,5 +1,5 @@
-//! Shows how to swap the default grass mesh.
-//! You can use the TAB key to swap between the new mesh and the standard mesh
+//! Shows how to swap out the default grass mesh.
+//! You can use the TAB key to swap between the new mesh and the default grass mesh
 
 use bevy::{prelude::*, render::primitives::Aabb};
 use warbler_grass::{prelude::*, warblers_plugin::GRASS_MESH_HANDLE};
@@ -9,6 +9,8 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(WarblersPlugin)
+        // Just a helper plugin for spawning a camera
+        // As in all examples, you can use the wasd keys for movement and qe for rotation
         .add_plugin(helper::SimpleCamera)
         .add_startup_system(setup_grass)
         .add_system(swap_grass_mesh)
@@ -21,18 +23,17 @@ fn setup_grass(
     asset_server: Res<AssetServer>,
 ) {
     // The interesting part in this example
-    // (The capsules would looks cool in the water!) :)
-    // Normally, the grass mesh should start at y >= 0.
-    // The cupsule is centered however, for your own mesh you might want to make sure it's y>=0
+    // We could use any mesh we want. We should choose a low poly mesh however since we draw a lot of them
     let grass_mesh: Handle<Mesh> = meshes.add(
         shape::Capsule {
-            radius: 0.1,
-            depth: 0.5,
+            radius: 0.3,
+            depth: 2.5,
             ..default()
         }
         .into(),
     );
     // we use a resource to keep track of the handles
+    // so we can swap them later
     let store = GrassMeshStore {
         custom_handle: grass_mesh.clone(),
         default_handle: GRASS_MESH_HANDLE.typed(),
@@ -46,7 +47,7 @@ fn setup_grass(
 
     let density_map = DensityMap {
         density_map,
-        density: 3.,
+        density: 1.,
     };
     // simple add the grass mesh in the bundle, instead of using the default
     commands.spawn(WarblersBundle {

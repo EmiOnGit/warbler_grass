@@ -7,7 +7,7 @@ use super::grass_pipeline::GrassPipeline;
 use crate::bundle::{Grass, WarblerHeight};
 use crate::height_map::HeightMap;
 use crate::render::cache::GrassCache;
-use crate::GrassConfiguration;
+use crate::{GrassConfiguration, GrassNoiseTexture};
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
@@ -91,24 +91,50 @@ pub(crate) fn prepare_explicit_positions_buffer(
 pub(crate) fn prepare_height_buffer(
     mut cache: ResMut<GrassCache>,
     pipeline: Res<GrassPipeline>,
+    fallback_img: Res<FallbackImage>,
+    images: Res<RenderAssets<Image>>,
+
     render_device: Res<RenderDevice>,
-    inserted_grass: Query<(&WarblerHeight, &EntityStorage)>,
+    inserted_grass: Query<(&EntityStorage, &WarblerHeight)>,
+    mut local_height_map_storage: Local<Vec<(EntityStorage, Handle<Image>)>>,
 ) {
-    for (height, EntityStorage(id)) in inserted_grass.iter() {
+    let stored = std::mem::take(&mut *local_height_map_storage);
+    for (entity_storage, heights_texture) in stored.into_iter() {
+        if let Some(chunk) = cache.get_mut(&entity_storage.0) {
+            let layout = pipeline.heights_texture_layout.clone();
+            if let Some(tex) = images.get(&heights_texture) {
+                let bind_group_descriptor = BindGroupDescriptor {
+                    label: Some("grass height map bind group"),
+                    layout: &layout,
+                    entries: &[BindGroupEntry {
+                        binding: 0,
+                        resource: BindingResource::TextureView(&tex.texture_view),
+                    }],
+                };
+
+                let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+                chunk.blade_height_texture = Some(bind_group);
+            } else {
+                local_height_map_storage.push((entity_storage, heights_texture));
+            }
+        }
+    }
+    for (entity_storage, height) in inserted_grass.iter() {
+        let id = &entity_storage.0;
         if let Some(chunk) = cache.get_mut(id) {
             match height.clone() {
                 WarblerHeight::Uniform(height) => {
                     let layout = pipeline.uniform_height_layout.clone();
 
                     let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                        label: "xz vertex buffer".into(),
+                        label: "grass blade height buffer".into(),
                         contents: &height.to_ne_bytes(),
                         usage: BufferUsages::VERTEX
                             | BufferUsages::COPY_DST
                             | BufferUsages::UNIFORM,
                     });
                     let bind_group_descriptor = BindGroupDescriptor {
-                        label: Some("grass height bind group"),
+                        label: Some("grass blade height bind group"),
                         layout: &layout,
                         entries: &[BindGroupEntry {
                             binding: 0,
@@ -122,8 +148,30 @@ pub(crate) fn prepare_height_buffer(
                     let bind_group = render_device.create_bind_group(&bind_group_descriptor);
                     chunk.height_buffer = Some(bind_group);
                 }
-                WarblerHeight::_Texture(_heights_texture) => {
-                    todo!("Not yet supported");
+                WarblerHeight::Texture(heights_texture) => {
+                    let layout = pipeline.heights_texture_layout.clone();
+
+                    let tex = if let Some(tex) = images.get(&heights_texture) {
+                        &tex.texture_view
+                    } else {
+                        // if the texture is not loaded, we will push it locally and try next frame again
+                        local_height_map_storage
+                            .push((entity_storage.clone(), heights_texture.clone()));
+
+                        &fallback_img.texture_view
+                    };
+
+                    let bind_group_descriptor = BindGroupDescriptor {
+                        label: Some("grass height map bind group"),
+                        layout: &layout,
+                        entries: &[BindGroupEntry {
+                            binding: 0,
+                            resource: BindingResource::TextureView(tex),
+                        }],
+                    };
+
+                    let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+                    chunk.blade_height_texture = Some(bind_group);
                 }
             };
         } else {
@@ -231,18 +279,19 @@ pub(crate) fn prepare_height_map_buffer(
         }
     }
 }
-
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn prepare_uniform_buffers(
     pipeline: Res<GrassPipeline>,
     mut cache: ResMut<GrassCache>,
     region_config: Res<GrassConfiguration>,
+    noise_config: Res<GrassNoiseTexture>,
     fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
     images: Res<RenderAssets<Image>>,
     mut last_texture_id: Local<Option<TextureViewId>>,
 ) {
     let texture = &images
-        .get(&region_config.wind_noise_texture)
+        .get(&noise_config.0)
         .unwrap_or(&fallback_img)
         .texture_view;
     if !region_config.is_changed() && Some(texture.id()) == *last_texture_id && !cache.is_changed()

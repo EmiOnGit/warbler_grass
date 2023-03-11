@@ -1,38 +1,59 @@
 use bevy::{
-    ecs::system::{lifetimeless::SRes, SystemParamItem},
+    asset::Assets,
+    ecs::{
+        prelude::*,
+        system::{lifetimeless::SRes, SystemParamItem},
+    },
+    log::warn,
+    math::Vec2,
     math::Vec3Swizzles,
-    prelude::*,
-    reflect::TypeUuid,
+    reflect::{Reflect, TypeUuid},
     render::{
         primitives::Aabb,
         render_asset::{PrepareAssetError, RenderAsset},
         render_resource::{Buffer, BufferInitDescriptor, BufferUsages},
         renderer::RenderDevice,
+        texture::Image,
     },
 };
 use serde::Deserialize;
 
 use crate::{density_map::DensityMap, render::extract::EntityStorage};
 
-// see https://surma.dev/things/ditherpunk/ for a good resource regarding dithering
-const BAYER_DITHER: [[u8; 4]; 4] = [
-    [1, 9, 3, 11],
-    [13, 5, 15, 7],
-    [4, 12, 2, 10],
-    [16, 8, 14, 6],
+// see https://surma.dev/things/ditherpunk/ for a good resource regarding ordered dithering
+const BAYER_DITHER: [[u8; 8]; 8] = [
+    [0, 32, 8, 40, 2, 34, 10, 42],
+    [48, 16, 56, 24, 50, 18, 58, 26],
+    [12, 44, 4, 36, 14, 46, 6, 38],
+    [60, 28, 52, 20, 62, 30, 54, 22],
+    [3, 35, 11, 43, 1, 33, 9, 41],
+    [51, 19, 59, 27, 49, 17, 57, 25],
+    [15, 47, 7, 39, 13, 45, 5, 37],
+    [61, 31, 55, 23, 61, 29, 53, 21],
 ];
-pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Option<DitheredBuffer> {
+pub(crate) fn dither_density_map(
+    image: &Image,
+    density: f32,
+    field_size: Vec2,
+) -> Option<DitheredBuffer> {
+    if density < 0. {
+        warn!("tried to dither a image with density < 0");
+        return None;
+    }
+    if field_size.length() < 0.0001 {
+        return None;
+    }
     let Ok(dynamic_image)  = image.clone().try_into_dynamic() else {
         return None;
     };
     // Capacity is not precise but should be a good estimate
     let mut dither_buffer = Vec::with_capacity(image.size().length() as usize);
     let buffer = dynamic_image.into_luma8();
-    let i_count = (density * field_size.x) as usize;
-    let j_count = (density * field_size.y) as usize;
+    let i_count = (density * field_size.x).abs() as usize;
+    let j_count = (density * field_size.y).abs() as usize;
     for i in 0..i_count {
         for j in 0..j_count {
-            let threshold = BAYER_DITHER[i % 4][j % 4];
+            let threshold = BAYER_DITHER[i % 8][j % 8];
 
             //normalize i,j between 0,1
             let i = i as f32 / i_count as f32;
@@ -42,7 +63,7 @@ pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Opti
             let y = j * buffer.dimensions().1 as f32;
 
             let pixel = buffer.get_pixel(x as u32, y as u32).0[0];
-            if pixel > threshold * 15 {
+            if pixel > threshold * 4 {
                 dither_buffer.push(Vec2::new(i * field_size.x, j * field_size.y));
             }
         }
@@ -51,13 +72,16 @@ pub fn dither_density_map(image: &Image, density: f32, field_size: Vec2) -> Opti
         positions: dither_buffer,
     })
 }
-
+/// A buffer containing the dithered density map
+///
+/// This struct shouldn't be modified by the user
 #[derive(Reflect, Clone, Debug, Deserialize, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
-pub struct DitheredBuffer {
+pub(crate) struct DitheredBuffer {
     pub positions: Vec<Vec2>,
 }
-pub struct GpuDitheredBuffer {
+/// The gpu representation of a [`DitheredBuffer`]
+pub(crate) struct GpuDitheredBuffer {
     pub buffer: Buffer,
     pub instances: usize,
 }
@@ -88,6 +112,8 @@ impl RenderAsset for DitheredBuffer {
         })
     }
 }
+
+/// Updates the [`DitheredBuffer`] of an entity
 #[allow(clippy::type_complexity)]
 pub(crate) fn add_dither_to_density(
     mut commands: Commands,
@@ -104,7 +130,7 @@ pub(crate) fn add_dither_to_density(
         if let Some(image) = images.get(&density_map.density_map) {
             let xz = aabb.half_extents.xz() * 2.;
             let Some(buffer) = dither_density_map(image, density_map.density, xz) else {
-                warn!("Couldn't dither density map. Maybe the image format is not supported");
+                warn!("Couldn't dither density map. Maybe the image format is not supported?");
                 continue
             };
             let handle = dithered.add(buffer);
@@ -112,5 +138,86 @@ pub(crate) fn add_dither_to_density(
         } else {
             storage.push((EntityStorage(e), density_map.clone(), *aabb));
         }
+    }
+}
+#[cfg(test)]
+mod tests {
+    use bevy::math::Vec2;
+    use bevy::prelude::Image;
+    #[test]
+    fn dither_1x1() {
+        let image = Image::default(); // 1x1x1 image all white
+        let dither = super::dither_density_map(&image, 1., Vec2::new(1., 1.));
+        assert!(dither.is_some());
+        assert_eq!(dither.unwrap().positions.len(), 1);
+        let dither = super::dither_density_map(&image, 1., Vec2::new(10., 5.));
+        assert!(dither.is_some());
+        assert!(dither.unwrap().positions.len() == 10 * 5);
+    }
+    #[test]
+    fn dither_density() {
+        let image = Image::default(); // 1x1x1 image all white
+        let dither = super::dither_density_map(&image, 2., Vec2::new(1., 1.));
+        assert_eq!(dither.unwrap().positions.len(), (1 * 2) * (1 * 2));
+        let dither = super::dither_density_map(&image, 2., Vec2::new(10., 5.));
+        assert!(dither.unwrap().positions.len() == (10 * 2) * (5 * 2));
+        let dither = super::dither_density_map(&image, 5., Vec2::new(1., 1.));
+        assert!(dither.unwrap().positions.len() == 5 * 5);
+        let dither = super::dither_density_map(&image, 0.1, Vec2::new(10., 10.));
+        assert!(dither.unwrap().positions.len() == 1);
+
+        // transform the image to be black
+        let dynamic = image.try_into_dynamic().unwrap();
+        let mut luma = dynamic.to_luma8();
+        let pixel = luma.get_pixel_mut(0, 0);
+        pixel.0 = [0];
+        // this image is now black
+        let image = Image::from_dynamic(luma.into(), true);
+        // with a black image we expect 0 grassblades regardless of density
+        let dither = super::dither_density_map(&image, 2., Vec2::new(1., 1.));
+        assert!(dither.unwrap().positions.is_empty());
+        let dither = super::dither_density_map(&image, 20., Vec2::new(1., 1.));
+        assert!(dither.unwrap().positions.is_empty());
+        let dither = super::dither_density_map(&image, 2., Vec2::new(10., 5.));
+        assert!(dither.unwrap().positions.is_empty());
+    }
+    #[test]
+    fn wrong_input() {
+        let image = Image::default(); // 1x1x1 image all white
+                                      // density=0 should return 0 results but still work
+        let dither = super::dither_density_map(&image, 0., Vec2::new(1., 1.));
+        assert!(dither.unwrap().positions.is_empty());
+        // negative density should return None
+        let dither = super::dither_density_map(&image, -1., Vec2::new(1., 1.));
+        assert!(dither.is_none());
+        let dither = super::dither_density_map(&image, 1., Vec2::new(0., 0.));
+        assert!(dither.is_none());
+    }
+    #[test]
+    fn dither_field_size() {
+        let image = Image::default(); // 1x1x1 image all white
+        let dither = super::dither_density_map(&image, 1., Vec2::new(10., 1.));
+        assert!(dither.is_some());
+        let dither = super::dither_density_map(&image, 1., Vec2::new(10., 10.));
+        assert!(dither.is_some());
+        assert!(dither.unwrap().positions.len() == 10 * 10);
+        let dither = super::dither_density_map(&image, 1., Vec2::new(0., 10.));
+        assert!(dither.is_some());
+        assert!(dither.unwrap().positions.is_empty());
+        let dither = super::dither_density_map(&image, 1., Vec2::new(100., 0.));
+        assert!(dither.is_some());
+        assert!(dither.unwrap().positions.is_empty());
+        let dither = super::dither_density_map(&image, 1., Vec2::new(-10., 0.));
+        assert!(dither.is_some());
+        assert!(dither.unwrap().positions.is_empty());
+        let dither = super::dither_density_map(&image, 1., Vec2::new(0., -10.));
+        assert!(dither.is_some());
+        assert!(dither.unwrap().positions.is_empty());
+        let dither = super::dither_density_map(&image, 1., Vec2::new(-10., -10.));
+        assert!(dither.is_some());
+        assert_eq!(dither.unwrap().positions.len(), 100);
+        let dither = super::dither_density_map(&image, 1., Vec2::new(-10., 5.));
+        assert!(dither.is_some());
+        assert_eq!(dither.unwrap().positions.len(), 50);
     }
 }

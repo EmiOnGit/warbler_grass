@@ -1,12 +1,16 @@
-pub use bevy::prelude::*;
+use bevy::prelude::*;
 use bevy::{
     math::{Vec3A, Vec3Swizzles},
     render::primitives::Aabb,
 };
+use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 
-use crate::density_map::DensityMap;
+use crate::{
+    density_map::DensityMap,
+    prelude::{HeightMap, WarblerHeight},
+};
 
-use super::draw_event::DrawEvent;
+use super::{draw_event::DrawEvent, ActiveEditorChunk};
 pub(super) struct RayCastPlugin;
 
 impl Plugin for RayCastPlugin {
@@ -15,26 +19,53 @@ impl Plugin for RayCastPlugin {
             .add_system(update_camera_ray);
     }
 }
-
+/// Indicates the currently selected map in the editor
+/// can be directly choosen from the ui
+#[derive(Resource, Reflect, Default, InspectorOptions, PartialEq)]
+#[reflect(Resource, InspectorOptions)]
+pub enum SelectedMap {
+    HeightMap,
+    #[default]
+    DensityMap,
+    HeightsMap,
+}
+#[allow(clippy::type_complexity)]
 fn check_collision_on_click(
-    grass_chunk: Query<(&Transform, &Aabb, &DensityMap), Without<RayCamera>>,
-    camera_source: Query<(&Transform, &RayCamera)>,
+    mut active_chunk: ResMut<ActiveEditorChunk>,
+    grass_chunk: Query<
+        (
+            Entity,
+            &Transform,
+            &Aabb,
+            &DensityMap,
+            &HeightMap,
+            &WarblerHeight,
+        ),
+        Without<RayCamera>,
+    >,
+    camera_source: Query<&RayCamera>,
     mouse_presses: Res<Input<MouseButton>>,
+    selection: Res<SelectedMap>,
     mut draw_events: EventWriter<DrawEvent>,
 ) {
-    if !mouse_presses.pressed(MouseButton::Left) {
+    if !mouse_presses.pressed(MouseButton::Left)
+        && !mouse_presses.pressed(MouseButton::Middle)
+        && !mouse_presses.pressed(MouseButton::Right)
+    {
         return;
     }
-    let (_camera_transform, raycast_camera) = camera_source.single();
+    let Ok(raycast_camera) = camera_source.get_single() else {
+        return;
+    };
     let click_ray = raycast_camera.ray.as_ref().unwrap();
-    for (chunk_transform, aabb, density_map) in &grass_chunk {
+    for (entity, chunk_transform, aabb, density_map, height_map, heights) in &grass_chunk {
         let aabb_center = aabb.center.as_dvec3().as_vec3() + chunk_transform.translation;
 
-        let grass_plane = Primitive3d::Plane {
-            point: aabb_center,
+        let grass_plane = Plane {
+            origin: aabb_center,
             normal: Vec3::Y,
         };
-        let res = intersects_primitive(&click_ray, grass_plane).unwrap();
+        let res = intersects_primitive(click_ray, grass_plane).unwrap();
         let intersection_point = (res - aabb_center).xz();
         let aabb_extends = aabb.half_extents.as_dvec3().as_vec3().xz().abs();
         if aabb_extends.x > intersection_point.x
@@ -48,12 +79,29 @@ fn check_collision_on_click(
             ) + Vec2::ONE)
                 / 2.;
             // let image = grass.height_map.as_ref().unwrap().height_map.clone();
-            let image = density_map.density_map.clone();
-            draw_events.send(DrawEvent::Draw { positions, image });
+            let image = match *selection {
+                SelectedMap::HeightMap => height_map.height_map.clone(),
+                SelectedMap::DensityMap => density_map.density_map.clone(),
+                SelectedMap::HeightsMap => {
+                    if let WarblerHeight::Texture(image) = heights {
+                        image.clone()
+                    } else {
+                        warn!("No heights texture found. Using density map instead");
+                        density_map.density_map.clone()
+                    }
+                }
+            };
+            active_chunk.0 = Some(entity);
+            if mouse_presses.pressed(MouseButton::Left) {
+                draw_events.send(DrawEvent::Draw { positions, image });
+            }
         }
     }
 }
-
+/// Indicates a camera which can raycast on objects
+/// This is needed for the editor to extract the position of clicks on maps
+///
+/// You need to add this component to your camera to enable editing maps
 #[derive(Component, Default)]
 pub struct RayCamera {
     pub ray: Option<Ray>,
@@ -66,7 +114,9 @@ fn update_camera_ray(
         return;
     };
     let cusor_position = cursor_position.position;
-    let (mut ray, cam, transform) = ray_cam.single_mut();
+    let Ok((mut ray, cam, transform)) = ray_cam.get_single_mut() else {
+        return;
+    };
     let maybe_ray = ray_from_screenspace(cusor_position, cam, transform);
     if let Some(r) = maybe_ray {
         ray.ray = Some(r);
@@ -107,27 +157,23 @@ fn ray_from_screenspace(
     })
 }
 
-pub fn intersects_primitive(ray: &Ray, shape: Primitive3d) -> Option<Vec3> {
-    match shape {
-        Primitive3d::Plane {
-            point: plane_origin,
-            normal: plane_normal,
-        } => {
-            // assuming vectors are all normalized
-            let denominator = plane_normal.dot(ray.direction.into());
-            if denominator.abs() > f32::EPSILON {
-                let point_to_point = plane_origin - Vec3::from(ray.origin);
-                let intersect_dist = plane_normal.dot(point_to_point) / denominator;
-                let intersect_position =
-                    Vec3::from(ray.direction) * intersect_dist + Vec3::from(ray.origin);
-                Some(intersect_position)
-            } else {
-                None
-            }
-        }
+pub fn intersects_primitive(ray: &Ray, plane: Plane) -> Option<Vec3> {
+    let Plane { origin, normal } = plane;
+
+    // assuming vectors are all normalized
+    let denominator = normal.dot(ray.direction.into());
+    if denominator.abs() > f32::EPSILON {
+        let point_to_point = origin - Vec3::from(ray.origin);
+        let intersect_dist = normal.dot(point_to_point) / denominator;
+        let intersect_position =
+            Vec3::from(ray.direction) * intersect_dist + Vec3::from(ray.origin);
+        Some(intersect_position)
+    } else {
+        None
     }
 }
 
-pub enum Primitive3d {
-    Plane { point: Vec3, normal: Vec3 },
+pub struct Plane {
+    origin: Vec3,
+    normal: Vec3,
 }

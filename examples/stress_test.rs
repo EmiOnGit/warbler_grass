@@ -1,53 +1,60 @@
-use bevy::{
-    diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin},
-    prelude::*,
-    render::primitives::Aabb,
-    window::PresentMode,
-};
+//! A stresstest to measure the performance of rendering a single huge chunk
+//! Currently, around 10 million grass blades are loaded
+use bevy::{diagnostic::LogDiagnosticsPlugin, prelude::*, render::primitives::Aabb};
+use warbler_grass::diagnostic::WarblerDiagnosticsPlugin;
 use warbler_grass::prelude::*;
 mod helper;
+
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                present_mode: PresentMode::AutoNoVsync,
-                ..default()
-            }),
-            ..default()
-        }))
+        .add_plugins(DefaultPlugins)
+        // always needed to setup the grass render pipeline
         .add_plugin(WarblersPlugin)
-        .add_plugin(helper::FpsPlugin)
+        // Just a helper plugin for spawning a camera
+        // As in all examples, you can use the wasd keys for movement and qe for rotation
         .add_plugin(helper::SimpleCamera)
+        // creates our grass
         .add_startup_system(setup_grass)
-        .add_startup_system(setup_fps)
-        .add_system(diagnostic_system)
+        // more wind
+        .insert_resource(GrassConfiguration {
+            wind: Vec2::new(2., 2.),
+            ..default()
+        })
+        // Let's also log the amount of blades rendered
+        // Since we spawn all grass in one huge chunk all blades get rendered
+        // as long as one is on the screen (normally you'd devide the area into chunks)
+        .add_plugin(WarblerDiagnosticsPlugin)
+        .add_plugin(LogDiagnosticsPlugin::default())
         .run();
 }
-pub fn setup_fps(mut diagnostics: ResMut<Diagnostics>) {
-    diagnostics.add(Diagnostic::new(FrameTimeDiagnosticsPlugin::FPS, "fps", 200));
-}
-pub fn diagnostic_system(mut diagnostics: ResMut<Diagnostics>, time: Res<Time>) {
-    let delta_seconds = time.raw_delta_seconds_f64();
-    if delta_seconds == 0.0 {
-        return;
-    }
-    diagnostics.add_measurement(FrameTimeDiagnosticsPlugin::FPS, || 1.0 / delta_seconds);
-}
+
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let height_map = asset_server.load("grass_height_map.png");
-
-    let height_map = HeightMap { height_map };
-    let density_map = asset_server.load("grass_density_map.png");
-
-    let density_map = DensityMap {
-        density_map,
-        density: 2.,
+    // load the image used for the height map
+    let height_map_image = asset_server.load("grass_height_map.png");
+    let height_map = HeightMap {
+        height_map: height_map_image,
     };
+
+    // load the image used for the density map
+    let density_map_image = asset_server.load("grass_density_map.png");
+    let density_map = DensityMap {
+        density_map: density_map_image,
+        // The density defines how many blades in a dense area spawns.
+        density: 4.,
+    };
+    // spawn the entity rendering out large grass chunk
     commands.spawn(WarblersBundle {
         density_map,
         height_map,
         height: WarblerHeight::Uniform(5.),
-        aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(2000., 100., 2000.)),
+        // Let's make a large chunk
+        // With our density map we spawn around 10 million blades on this area
+        aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(1000., 0., 1000.)),
+        spatial: SpatialBundle {
+            // translate the chunk so we are in a nice middle place
+            transform: Transform::from_xyz(-480., -5., -480.),
+            ..default()
+        },
         ..default()
     });
 }

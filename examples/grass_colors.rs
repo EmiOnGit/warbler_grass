@@ -5,7 +5,17 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(WarblersPlugin)
+        // Just a helper plugin for spawning a camera
+        // As in all examples, you can use the wasd keys for movement and qe for rotation
         .add_plugin(helper::SimpleCamera)
+        // We can define the color at startup if we want to
+        .insert_resource(GrassConfiguration {
+            // The color of the upper part of the grass blades
+            main_color: Color::WHITE,
+            // The color of the lower part
+            bottom_color: Color::ALICE_BLUE,
+            ..default()
+        })
         .add_startup_system(setup_grass)
         .add_system(change_colors)
         .run();
@@ -27,25 +37,13 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     },));
 }
-
-fn change_colors(
-    input: Res<Input<KeyCode>>,
-    mut config: ResMut<GrassConfiguration>,
-    time: Res<Time>,
-) {
+// we can also change the color over at other times
+// this can be useful if your game has seasons
+fn change_colors(mut config: ResMut<GrassConfiguration>, time: Res<Time>) {
+    // Most likely you'd want to choose other colors
     let r = ((time.raw_elapsed_seconds() / 2.).sin() / 2.) + 0.5;
     let g = 1. - r;
     config.main_color.set_r(r);
     config.main_color.set_g(g);
-    // if the right arrow key is pressed the color gets more blue
-    if input.pressed(KeyCode::Right) {
-        let b = config.main_color.b();
-
-        config.main_color.set_b((b + 0.005).min(1.));
-    }
-    // if the left arrow key is pressed the color gets less blue
-    if input.pressed(KeyCode::Left) {
-        let b = config.main_color.b();
-        config.main_color.set_b((b - 0.005).max(0.));
-    }
+    config.main_color.set_b((g * r).sin());
 }
