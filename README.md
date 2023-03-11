@@ -24,11 +24,9 @@ warbler_grass = "0.3"
 ```
 ### Add grass to your game:
 ```rust
+
 use bevy::{prelude::*, render::primitives::Aabb};
-use warbler_grass::{
-    bundle::{WarblersBundle, WarblerHeight}, map::DensityMap, map::HeightMap,
-    warblers_plugin::WarblersPlugin,
-};
+use warbler_grass::prelude::*;
 mod helper;
 
 fn main() {
@@ -59,6 +57,7 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
         density_map,
         // The height of the blades
         height: WarblerHeight::Uniform(2.),
+         // The aabb defines the area in which the chunk lives in
         aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 10., 100.)),
         ..default()
     });
