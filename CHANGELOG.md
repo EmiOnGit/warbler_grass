@@ -1,10 +1,9 @@
 # Changelog
 
 ## 0.3
-### Breaking Change
+### Change
 * The `GrassSpawner` was removed in favor of the `WarblersBundle` and `WarblersExplicitBundle`
 * The `wind_noise_texture` field of the `GrassConfiguration` resource was moved to the `GrassNoiseTexture` resource
-* The default wind direction was changed from (1,0) to (1,1)
 * The `density_map` and `height_map` modules were combined to the `maps` module
 * Dithering uses a new matrix which changes the positions of your grass blades slightly if you used a density map before
 
@@ -16,6 +15,7 @@ The editor can only be used with the new `editor` feature (you can take a look a
 This is used in the `many_chunks` exampe if you'd like to see how to use it
 * The height of the blades can now be sampled using a texture with the `WarblersHeight::Texture` component
 * A density parameter can now also be specified with the `DensityMap` to directly influence the dithering
+* The default wind direction was changed from (1,0) to (1,1)
 
 ### Fix
 Many bugs have been fixed; to many to count all of them
