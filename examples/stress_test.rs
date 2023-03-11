@@ -6,18 +6,15 @@ use bevy::{
 };
 use warbler_grass::prelude::*;
 mod helper;
+
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                present_mode: PresentMode::AutoNoVsync,
-                ..default()
-            }),
-            ..default()
-        }))
+        .add_plugins(DefaultPlugins)
+        // always needed to setup the grass render pipeline
         .add_plugin(WarblersPlugin)
-        .add_plugin(helper::FpsPlugin)
+        // helper plugin to spawn a camera which is moveable
         .add_plugin(helper::SimpleCamera)
+        // creates our grass
         .add_startup_system(setup_grass)
         // Let's also log the amount of blades rendered
         // Since we spawn all grass in one huge chunk all blades get rendered
@@ -29,14 +26,18 @@ fn main() {
 
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
 
+    // load the image used for the height map
     let height_map_image = asset_server.load("grass_height_map.png");
     let height_map = HeightMap { height_map: height_map_image };
 
+    // load the image used for the density map
     let density_map_image = asset_server.load("grass_density_map.png");
     let density_map = DensityMap {
         density_map: density_map_image,
+        // The density defines how many blades in a dense area spawns.
         density: 4.,
     };
+    // spawn the entity rendering out large grass chunk
     commands.spawn(WarblersBundle {
         density_map,
         height_map,
