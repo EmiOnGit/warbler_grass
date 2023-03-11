@@ -149,24 +149,22 @@ fn ray_from_screenspace(
 }
 
 pub fn intersects_primitive(ray: &Ray, plane: Plane) -> Option<Vec3> {
-    let Plane{origin,normal} = plane;
-   
-            // assuming vectors are all normalized
-            let denominator = normal.dot(ray.direction.into());
-            if denominator.abs() > f32::EPSILON {
-                let point_to_point = origin - Vec3::from(ray.origin);
-                let intersect_dist = normal.dot(point_to_point) / denominator;
-                let intersect_position =
-                    Vec3::from(ray.direction) * intersect_dist + Vec3::from(ray.origin);
-                Some(intersect_position)
-            } else {
-                None
-            }
-        
-    
+    let Plane { origin, normal } = plane;
+
+    // assuming vectors are all normalized
+    let denominator = normal.dot(ray.direction.into());
+    if denominator.abs() > f32::EPSILON {
+        let point_to_point = origin - Vec3::from(ray.origin);
+        let intersect_dist = normal.dot(point_to_point) / denominator;
+        let intersect_position =
+            Vec3::from(ray.direction) * intersect_dist + Vec3::from(ray.origin);
+        Some(intersect_position)
+    } else {
+        None
+    }
 }
 
 pub struct Plane {
-    origin: Vec3, 
+    origin: Vec3,
     normal: Vec3,
 }
