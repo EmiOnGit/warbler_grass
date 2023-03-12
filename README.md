@@ -12,7 +12,7 @@ Currently, the project not ready to be used besides side projects or for learnin
 ![alt text](images/preview.png)
 The preview image comes from [my demo project](https://github.com/EmiOnGit/birdylook) where I use this crate for grass rending
 
-Another cool project is the [foxtrot](https://github.com/janhohenheim/foxtrot) template. Check it out!
+Another cool project using this crate, is the [foxtrot](https://github.com/janhohenheim/foxtrot) template. Check it out!
 ## Usage
 Add `warbler_grass` as dependency to your project
 ```toml
