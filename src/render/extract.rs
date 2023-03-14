@@ -56,10 +56,11 @@ pub(crate) fn extract_grass(
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass_positions(
     mut commands: Commands,
-    grass_spawner: Extract<Query<(Entity, &Grass, &GlobalTransform, &Aabb), Or<(Changed<Grass>, Changed<Aabb>)>>>,
+    grass_spawner: Extract<
+        Query<(Entity, &Grass, &GlobalTransform, &Aabb), Or<(Changed<Grass>, Changed<Aabb>)>>,
+    >,
     mut grass_cache: ResMut<GrassCache>,
 ) {
-
     for (entity, grass, global_transform, aabb) in grass_spawner.iter() {
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.transform = *global_transform;

@@ -24,7 +24,7 @@ use crate::{
         grass_pipeline::GrassPipeline,
         prepare, queue,
     },
-    GrassConfiguration, GrassNoiseTexture, update,
+    update, GrassConfiguration, GrassNoiseTexture,
 };
 
 /// A raw handle which points to the shader used to render the grass.
