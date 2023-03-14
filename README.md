@@ -1,7 +1,8 @@
 [![crates.io](https://img.shields.io/badge/crates.io-v0.3-orange)](https://crates.io/crates/warbler_grass)
 [![docs.io](https://img.shields.io/badge/docs-v0.3-green)](https://docs.rs/warbler_grass/0.3.0/warbler_grass/)
 
-# <img src="branding/warbler_logo.png" width="50"> Warbler Grass 
+# ![Warbler grass](branding/warbler_display.svg)
+
 A `bevy` plugin for ergonomic integration of grass in 3d games.
 
 Currently, bevy version `0.10` is supported
