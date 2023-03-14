@@ -24,6 +24,7 @@ pub mod editor;
 
 mod density_map;
 mod height_map;
+mod update;
 /// Contains the [`HeightMap`] and [`DensityMap`] component
 pub mod maps {
     pub use crate::density_map::*;

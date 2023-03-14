@@ -24,7 +24,7 @@ use crate::{
         grass_pipeline::GrassPipeline,
         prepare, queue,
     },
-    GrassConfiguration, GrassNoiseTexture,
+    GrassConfiguration, GrassNoiseTexture, update,
 };
 
 /// A raw handle which points to the shader used to render the grass.
@@ -57,6 +57,7 @@ impl Plugin for WarblersPlugin {
         meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
 
         app.add_system(add_dither_to_density)
+            .add_system(update::add_aabb_to_explicit)
             .add_asset::<DitheredBuffer>()
             .add_plugin(RenderAssetPlugin::<DitheredBuffer>::default());
         // Init resources
