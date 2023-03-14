@@ -61,7 +61,6 @@ pub(crate) fn extract_grass_positions(
 ) {
 
     for (entity, grass, global_transform, aabb) in grass_spawner.iter() {
-        println!("extract grass");
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.transform = *global_transform;
         commands.spawn((
