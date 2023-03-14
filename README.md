@@ -1,13 +1,13 @@
 [![crates.io](https://img.shields.io/badge/crates.io-v0.3-orange)](https://crates.io/crates/warbler_grass)
 [![docs.io](https://img.shields.io/badge/docs-v0.3-green)](https://docs.rs/warbler_grass/0.3.0/warbler_grass/)
 
-# Warbler Grass
+# Warbler Grass ![warbler logo](branding/warbler_logo.png)
 A `bevy` plugin for ergonomic integration of grass in 3d games.
 
 Currently, bevy version `0.10` is supported
 
 **Don't use this project for serious projects, it is still under heavy development. 
-Currently, the project not ready to be used besides side projects or for learning purposes**
+Currently, the project is not ready to be used besides side projects or for learning purposes**
 
 ![alt text](images/preview.png)
 The preview image comes from [my demo project](https://github.com/EmiOnGit/birdylook) where I use this crate for grass rending
