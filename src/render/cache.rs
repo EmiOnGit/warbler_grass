@@ -21,7 +21,6 @@ pub(crate) struct CachedGrassChunk {
     pub explicit_y_buffer: Option<BindGroup>,
     pub height_buffer: Option<BindGroup>,
     pub blade_height_texture: Option<BindGroup>,
-    pub transform: GlobalTransform,
 }
 
 #[derive(Resource, DerefMut, Deref, Debug, Default)]

@@ -1,4 +1,4 @@
-use super::cache::{EntityCache, GrassCache};
+use super::cache::{CachedGrassChunk, EntityCache, GrassCache};
 use crate::{
     bundle::{Grass, WarblerHeight},
     dithering::DitheredBuffer,
@@ -23,7 +23,6 @@ pub(crate) fn extract_grass(
                 &HeightMap,
                 &Handle<DitheredBuffer>,
                 &WarblerHeight,
-                &GlobalTransform,
                 &Aabb,
             ),
             Or<(
@@ -35,9 +34,8 @@ pub(crate) fn extract_grass(
     >,
     mut grass_cache: ResMut<GrassCache>,
 ) {
-    for (entity, height_map, dithered, height, global_transform, aabb) in grass_spawner.iter() {
+    for (entity, height_map, dithered, height, aabb) in grass_spawner.iter() {
         let cache_value = grass_cache.entry(entity).or_default();
-        cache_value.transform = *global_transform;
         cache_value.dither_handle = Some(dithered.clone());
         commands.spawn((
             EntityStorage(entity),
@@ -45,7 +43,6 @@ pub(crate) fn extract_grass(
             dithered.clone(),
             height.clone(),
             *aabb,
-            *global_transform,
         ));
     }
 }
@@ -56,20 +53,14 @@ pub(crate) fn extract_grass(
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass_positions(
     mut commands: Commands,
-    grass_spawner: Extract<
-        Query<(Entity, &Grass, &GlobalTransform, &Aabb), Or<(Changed<Grass>, Changed<Aabb>)>>,
-    >,
+    grass_spawner: Extract<Query<(Entity, &Grass, &Aabb), Or<(Changed<Grass>, Changed<Aabb>)>>>,
     mut grass_cache: ResMut<GrassCache>,
 ) {
-    for (entity, grass, global_transform, aabb) in grass_spawner.iter() {
-        let cache_value = grass_cache.entry(entity).or_default();
-        cache_value.transform = *global_transform;
-        commands.spawn((
-            EntityStorage(entity),
-            grass.clone(),
-            *aabb,
-            *global_transform,
-        ));
+    for (entity, grass, aabb) in grass_spawner.iter() {
+        if !grass_cache.contains_key(&entity) {
+            grass_cache.insert(entity, CachedGrassChunk::default());
+        }
+        commands.spawn((EntityStorage(entity), grass.clone(), *aabb));
     }
 }
 
