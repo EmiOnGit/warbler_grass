@@ -5,6 +5,7 @@ use bevy::{
     prelude::*,
     reflect::TypeUuid,
     render::{
+        extract_component::ExtractComponentPlugin,
         extract_resource::ExtractResourcePlugin,
         mesh::{Indices, Mesh},
         render_asset::RenderAssetPlugin,
@@ -17,6 +18,7 @@ use bevy::{
 
 use crate::{
     dithering::{add_dither_to_density, DitheredBuffer},
+    height_map::HeightMap,
     render::{
         self,
         cache::{EntityCache, GrassCache},
@@ -67,6 +69,7 @@ impl Plugin for WarblersPlugin {
         // Add extraction of the configuration
         app.add_plugin(ExtractResourcePlugin::<GrassConfiguration>::default());
         app.add_plugin(ExtractResourcePlugin::<GrassNoiseTexture>::default());
+        app.add_plugin(ExtractComponentPlugin::<HeightMap>::extract_visible());
         // Init render app
         app.sub_app_mut(RenderApp)
             .add_render_command::<Opaque3d, render::GrassDrawCall>()

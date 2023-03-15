@@ -2,7 +2,6 @@ use super::cache::{CachedGrassChunk, EntityCache, GrassCache};
 use crate::{
     bundle::{Grass, WarblerHeight},
     dithering::DitheredBuffer,
-    height_map::HeightMap,
 };
 use bevy::{
     prelude::*,
@@ -18,33 +17,27 @@ pub(crate) fn extract_grass(
     mut commands: Commands,
     grass_spawner: Extract<
         Query<
-            (
-                Entity,
-                &HeightMap,
-                &Handle<DitheredBuffer>,
-                &WarblerHeight,
-                &Aabb,
-            ),
-            Or<(
-                Changed<Handle<DitheredBuffer>>,
-                Changed<HeightMap>,
-                Changed<WarblerHeight>,
-            )>,
+            (Entity, &Handle<DitheredBuffer>, &WarblerHeight, &Aabb),
+            Or<(Changed<Handle<DitheredBuffer>>, Changed<WarblerHeight>)>,
         >,
     >,
     mut grass_cache: ResMut<GrassCache>,
 ) {
-    for (entity, height_map, dithered, height, aabb) in grass_spawner.iter() {
+    let mut values = Vec::new();
+    for (entity, dithered, height, aabb) in grass_spawner.iter() {
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.dither_handle = Some(dithered.clone());
-        commands.spawn((
-            EntityStorage(entity),
-            height_map.clone(),
-            dithered.clone(),
-            height.clone(),
-            *aabb,
+        values.push((
+            entity,
+            (
+                EntityStorage(entity),
+                dithered.clone(),
+                height.clone(),
+                *aabb,
+            ),
         ));
     }
+    commands.insert_or_spawn_batch(values);
 }
 /// Extracts the grass data of entities spawned with the [`WarblersExplicitBundle`](crate::bundle::WarblersExplicitBundle) into the render world
 ///
@@ -56,12 +49,15 @@ pub(crate) fn extract_grass_positions(
     grass_spawner: Extract<Query<(Entity, &Grass, &Aabb), Or<(Changed<Grass>, Changed<Aabb>)>>>,
     mut grass_cache: ResMut<GrassCache>,
 ) {
+    let mut values = Vec::new();
+
     for (entity, grass, aabb) in grass_spawner.iter() {
         if !grass_cache.contains_key(&entity) {
             grass_cache.insert(entity, CachedGrassChunk::default());
         }
-        commands.spawn((EntityStorage(entity), grass.clone(), *aabb));
+        values.push((entity, (EntityStorage(entity), grass.clone(), *aabb)));
     }
+    commands.insert_or_spawn_batch(values);
 }
 
 #[derive(Clone, Component)]
