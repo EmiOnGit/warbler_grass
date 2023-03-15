@@ -2,6 +2,7 @@ use std::mem;
 use std::num::{NonZeroU32, NonZeroU64};
 use std::ops::Mul;
 
+use super::extract::EntityStorage;
 use super::grass_pipeline::GrassPipeline;
 use crate::bundle::{Grass, WarblerHeight};
 use crate::height_map::HeightMap;
@@ -26,10 +27,10 @@ pub(crate) fn prepare_explicit_positions_buffer(
     pipeline: Res<GrassPipeline>,
     render_device: Res<RenderDevice>,
     render_queue: Res<RenderQueue>,
-    mut inserted_grass: Query<(Entity, &mut Grass)>,
+    mut inserted_grass: Query<(&mut Grass, &EntityStorage)>,
 ) {
-    for (id, grass) in inserted_grass.iter_mut() {
-        if let Some(chunk) = cache.get_mut(&id) {
+    for (grass, EntityStorage(id)) in inserted_grass.iter_mut() {
+        if let Some(chunk) = cache.get_mut(id) {
             chunk.explicit_count = grass.positions.len() as u32;
             let (xz, mut y): (Vec<Vec2>, Vec<f32>) =
                 grass.positions.iter().map(|v| (v.xz(), v.y)).unzip();
@@ -94,15 +95,14 @@ pub(crate) fn prepare_height_buffer(
     images: Res<RenderAssets<Image>>,
 
     render_device: Res<RenderDevice>,
-    inserted_grass: Query<(Entity, &WarblerHeight)>,
-    mut local_height_map_storage: Local<Vec<(Entity, Handle<Image>)>>,
+    inserted_grass: Query<(&EntityStorage, &WarblerHeight)>,
+    mut local_height_map_storage: Local<Vec<(EntityStorage, Handle<Image>)>>,
 ) {
-    let mut has_loaded = Vec::new();
-    for (entity, heights_texture) in local_height_map_storage.iter() {
-        if let Some(chunk) = cache.get_mut(entity) {
+    let stored = std::mem::take(&mut *local_height_map_storage);
+    for (entity_storage, heights_texture) in stored.into_iter() {
+        if let Some(chunk) = cache.get_mut(&entity_storage.0) {
             let layout = pipeline.heights_texture_layout.clone();
             if let Some(tex) = images.get(&heights_texture) {
-                has_loaded.push(*entity);
                 let bind_group_descriptor = BindGroupDescriptor {
                     label: Some("grass height map bind group"),
                     layout: &layout,
@@ -114,15 +114,14 @@ pub(crate) fn prepare_height_buffer(
 
                 let bind_group = render_device.create_bind_group(&bind_group_descriptor);
                 chunk.blade_height_texture = Some(bind_group);
+            } else {
+                local_height_map_storage.push((entity_storage, heights_texture));
             }
-        } else {
-            warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
         }
     }
-    local_height_map_storage.retain(|(e,_)| !has_loaded.contains(e));
-
-    for (entity, height) in inserted_grass.iter() {
-        if let Some(chunk) = cache.get_mut(&entity) {
+    for (entity_storage, height) in inserted_grass.iter() {
+        let id = &entity_storage.0;
+        if let Some(chunk) = cache.get_mut(id) {
             match height.clone() {
                 WarblerHeight::Uniform(height) => {
                     let layout = pipeline.uniform_height_layout.clone();
@@ -157,7 +156,7 @@ pub(crate) fn prepare_height_buffer(
                     } else {
                         // if the texture is not loaded, we will push it locally and try next frame again
                         local_height_map_storage
-                            .push((entity, heights_texture.clone()));
+                            .push((entity_storage.clone(), heights_texture.clone()));
 
                         &fallback_img.texture_view
                     };
@@ -189,13 +188,13 @@ pub(crate) fn prepare_height_map_buffer(
     pipeline: Res<GrassPipeline>,
     fallback_img: Res<FallbackImage>,
     images: Res<RenderAssets<Image>>,
-    inserted_grass: Query<(Entity, &HeightMap,&Aabb)>,
-    mut local_height_map_storage: Local<Vec<(Entity, Handle<Image>, Aabb)>>,
+    inserted_grass: Query<(&HeightMap, &EntityStorage, &Aabb)>,
+    mut local_height_map_storage: Local<Vec<(EntityStorage, Handle<Image>, Aabb)>>,
 ) {
     let mut has_loaded = Vec::new();
     let layout = pipeline.height_map_layout.clone();
 
-    for (e, handle, aabb) in local_height_map_storage.iter() {
+    for (EntityStorage(e), handle, aabb) in local_height_map_storage.iter() {
         if let Some(tex) = images.get(handle) {
             has_loaded.push(*e);
             let height_map_texture = &tex.texture_view;
@@ -231,15 +230,16 @@ pub(crate) fn prepare_height_map_buffer(
             }
         }
     }
-    local_height_map_storage.retain(|(e,_,_)| !has_loaded.contains(e));
+    local_height_map_storage.retain(|map| !has_loaded.contains(&map.0 .0));
 
-    for (entity, height_map, aabb) in inserted_grass.iter() {
+    for (height_map, entity_store, aabb) in inserted_grass.iter() {
+        let id = entity_store.0;
         let height_map_texture = if let Some(tex) = images.get(&height_map.height_map) {
             &tex.texture_view
         } else {
             // if the texture is not loaded, we will push it locally and try next frame again
             local_height_map_storage.push((
-                entity,
+                entity_store.clone(),
                 height_map.height_map.clone(),
                 *aabb,
             ));
@@ -272,7 +272,7 @@ pub(crate) fn prepare_height_map_buffer(
         };
 
         let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-        if let Some(chunk) = cache.get_mut(&entity) {
+        if let Some(chunk) = cache.get_mut(&id) {
             chunk.height_map = Some(bind_group);
         } else {
             warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
