@@ -97,11 +97,12 @@ pub(crate) fn prepare_height_buffer(
     inserted_grass: Query<(Entity, &WarblerHeight)>,
     mut local_height_map_storage: Local<Vec<(Entity, Handle<Image>)>>,
 ) {
-    let stored = std::mem::take(&mut *local_height_map_storage);
-    for (entity, heights_texture) in stored.into_iter() {
-        if let Some(chunk) = cache.get_mut(&entity) {
+    let mut has_loaded = Vec::new();
+    for (entity, heights_texture) in local_height_map_storage.iter() {
+        if let Some(chunk) = cache.get_mut(entity) {
             let layout = pipeline.heights_texture_layout.clone();
             if let Some(tex) = images.get(&heights_texture) {
+                has_loaded.push(*entity);
                 let bind_group_descriptor = BindGroupDescriptor {
                     label: Some("grass height map bind group"),
                     layout: &layout,
@@ -113,11 +114,13 @@ pub(crate) fn prepare_height_buffer(
 
                 let bind_group = render_device.create_bind_group(&bind_group_descriptor);
                 chunk.blade_height_texture = Some(bind_group);
-            } else {
-                local_height_map_storage.push((entity, heights_texture));
             }
+        } else {
+            warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
         }
     }
+    local_height_map_storage.retain(|(e,_)| !has_loaded.contains(e));
+
     for (entity, height) in inserted_grass.iter() {
         if let Some(chunk) = cache.get_mut(&entity) {
             match height.clone() {
