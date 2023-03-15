@@ -26,7 +26,7 @@ use crate::{
         grass_pipeline::GrassPipeline,
         prepare, queue,
     },
-    update, GrassConfiguration, GrassNoiseTexture,
+    update, GrassConfiguration, GrassNoiseTexture, prelude::WarblerHeight,
 };
 
 /// A raw handle which points to the shader used to render the grass.
@@ -69,7 +69,8 @@ impl Plugin for WarblersPlugin {
         // Add extraction of the configuration
         app.add_plugin(ExtractResourcePlugin::<GrassConfiguration>::default());
         app.add_plugin(ExtractResourcePlugin::<GrassNoiseTexture>::default());
-        app.add_plugin(ExtractComponentPlugin::<HeightMap>::extract_visible());
+        app.add_plugin(ExtractComponentPlugin::<HeightMap>::default());
+        app.add_plugin(ExtractComponentPlugin::<WarblerHeight>::default());
         // Init render app
         app.sub_app_mut(RenderApp)
             .add_render_command::<Opaque3d, render::GrassDrawCall>()

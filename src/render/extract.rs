@@ -1,6 +1,6 @@
 use super::cache::{CachedGrassChunk, EntityCache, GrassCache};
 use crate::{
-    bundle::{Grass, WarblerHeight},
+    bundle::Grass,
     dithering::DitheredBuffer,
 };
 use bevy::{
@@ -17,14 +17,14 @@ pub(crate) fn extract_grass(
     mut commands: Commands,
     grass_spawner: Extract<
         Query<
-            (Entity, &Handle<DitheredBuffer>, &WarblerHeight, &Aabb),
-            Or<(Changed<Handle<DitheredBuffer>>, Changed<WarblerHeight>)>,
+            (Entity, &Handle<DitheredBuffer>, &Aabb),
+            Changed<Handle<DitheredBuffer>>,
         >,
     >,
     mut grass_cache: ResMut<GrassCache>,
 ) {
     let mut values = Vec::new();
-    for (entity, dithered, height, aabb) in grass_spawner.iter() {
+    for (entity, dithered, aabb) in grass_spawner.iter() {
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.dither_handle = Some(dithered.clone());
         values.push((
@@ -32,7 +32,6 @@ pub(crate) fn extract_grass(
             (
                 EntityStorage(entity),
                 dithered.clone(),
-                height.clone(),
                 *aabb,
             ),
         ));

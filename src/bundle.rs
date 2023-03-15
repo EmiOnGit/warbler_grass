@@ -1,10 +1,10 @@
 use bevy::{
     asset::Handle,
-    ecs::{bundle::Bundle, component::Component},
+    ecs::{bundle::Bundle, component::Component, query::QueryItem},
     math::Vec3,
     render::{
         mesh::Mesh, prelude::SpatialBundle, primitives::Aabb, texture::Image,
-        texture::DEFAULT_IMAGE_HANDLE,
+        texture::DEFAULT_IMAGE_HANDLE, extract_component::ExtractComponent,
     },
 };
 
@@ -61,6 +61,20 @@ pub enum WarblerHeight {
     ///
     /// The [`Image`] will be scaled over the plane defined by the [`Aabb`]
     Texture(Handle<Image>),
+}
+impl ExtractComponent for WarblerHeight {
+    type Query = &'static Self;
+
+    type Filter = ();
+
+    type Out = Self;
+
+    fn extract_component(item: QueryItem<'_, Self::Query>) -> Option<Self::Out> {
+        match item {
+            WarblerHeight::Uniform(_) => Some(item.clone()),
+            WarblerHeight::Texture(handle) => Some(WarblerHeight::Texture(handle.clone_weak())),
+        }
+    }
 }
 
 /// Used to define the positions of all the grass blades explicitly
