@@ -1,4 +1,10 @@
 # Changelog
+## 0.3.1
+This version shouldn't need any work on the user side.
+
+All changes were intern or bug fixes (see #54, #56, #52)
+
+Besides that, I installed inkscape and tried to paint a logo.. which is now the officially on the `warbler_grass` github repo ! :D
 
 ## 0.3
 ### Change
