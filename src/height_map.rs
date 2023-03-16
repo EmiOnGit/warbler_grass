@@ -1,5 +1,10 @@
 //! Contains the implementation of the [`HeightMap`] component
-use bevy::{asset::Handle, ecs::component::Component, reflect::Reflect, render::texture::Image};
+use bevy::{
+    asset::Handle,
+    ecs::{component::Component, query::QueryItem},
+    reflect::Reflect,
+    render::{extract_component::ExtractComponent, texture::Image},
+};
 
 /// The height map defining the y position of the grass blades.
 ///
@@ -19,5 +24,18 @@ pub struct HeightMap {
 impl From<Handle<Image>> for HeightMap {
     fn from(value: Handle<Image>) -> Self {
         HeightMap { height_map: value }
+    }
+}
+impl ExtractComponent for HeightMap {
+    type Query = &'static Self;
+
+    type Filter = ();
+
+    type Out = Self;
+
+    fn extract_component(item: QueryItem<'_, Self::Query>) -> Option<Self::Out> {
+        Some(HeightMap {
+            height_map: item.height_map.clone_weak(),
+        })
     }
 }

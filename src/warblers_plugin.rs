@@ -5,6 +5,7 @@ use bevy::{
     prelude::*,
     reflect::TypeUuid,
     render::{
+        extract_component::ExtractComponentPlugin,
         extract_resource::ExtractResourcePlugin,
         mesh::{Indices, Mesh},
         render_asset::RenderAssetPlugin,
@@ -17,9 +18,11 @@ use bevy::{
 
 use crate::{
     dithering::{add_dither_to_density, DitheredBuffer},
+    height_map::HeightMap,
+    prelude::WarblerHeight,
     render::{
         self,
-        cache::{EntityCache, GrassCache},
+        cache::{ExplicitGrassCache, UniformBuffer},
         extract,
         grass_pipeline::GrassPipeline,
         prepare, queue,
@@ -67,18 +70,20 @@ impl Plugin for WarblersPlugin {
         // Add extraction of the configuration
         app.add_plugin(ExtractResourcePlugin::<GrassConfiguration>::default());
         app.add_plugin(ExtractResourcePlugin::<GrassNoiseTexture>::default());
+        app.add_plugin(ExtractComponentPlugin::<HeightMap>::default());
+        app.add_plugin(ExtractComponentPlugin::<WarblerHeight>::default());
         // Init render app
         app.sub_app_mut(RenderApp)
             .add_render_command::<Opaque3d, render::GrassDrawCall>()
             .init_resource::<FallbackImage>()
             .init_resource::<GrassPipeline>()
-            .init_resource::<GrassCache>()
-            .init_resource::<EntityCache>()
+            .init_resource::<UniformBuffer>()
+            .init_resource::<ExplicitGrassCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_systems(
                 (
                     extract::extract_grass,
-                    extract::extract_visibility,
+                    extract::extract_aabb,
                     extract::extract_grass_positions,
                 )
                     .in_schedule(ExtractSchedule),

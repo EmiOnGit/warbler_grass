@@ -13,7 +13,7 @@ fn main() {
             // The color of the upper part of the grass blades
             main_color: Color::WHITE,
             // The color of the lower part
-            bottom_color: Color::ALICE_BLUE,
+            bottom_color: Color::BLACK,
             ..default()
         })
         .add_startup_system(setup_grass)

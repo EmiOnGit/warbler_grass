@@ -11,27 +11,27 @@ use bevy::{
     },
 };
 
-use crate::dithering::DitheredBuffer;
+use crate::{dithering::DitheredBuffer, height_map::HeightMap, prelude::WarblerHeight};
 
-use super::cache::GrassCache;
+use super::{
+    cache::{ExplicitGrassCache, UniformBuffer},
+    prepare::BindGroupBuffer,
+};
 pub(crate) struct SetUniformBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
-    type Param = SRes<GrassCache>;
+    type Param = SRes<UniformBuffer>;
     type ViewWorldQuery = ();
     type ItemWorldQuery = ();
 
     fn render<'w>(
-        item: &P,
+        _item: &P,
         _view: (),
         _entity: (),
         cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
-            return RenderCommandResult::Failure;
-        };
-        pass.set_bind_group(I, chunk.uniform_bindgroup.as_ref().unwrap(), &[]);
+        pass.set_bind_group(I, cache.into_inner().ref_unwrap(), &[]);
 
         RenderCommandResult::Success
     }
@@ -39,57 +39,43 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
 pub(crate) struct SetYBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
-    type Param = SRes<GrassCache>;
+    type Param = ();
     type ViewWorldQuery = ();
-    type ItemWorldQuery = ();
+    type ItemWorldQuery = Option<Read<BindGroupBuffer<HeightMap>>>;
 
     fn render<'w>(
-        item: &P,
+        _item: &P,
         _view: (),
-        _entity: (),
-        cache: SystemParamItem<'w, '_, Self::Param>,
+        bind_group: Option<&'w BindGroupBuffer<HeightMap>>,
+        _cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
+        let Some(bind_group) = bind_group else {
+            println!("couldn't find bind group buffer height map");
             return RenderCommandResult::Failure;
+
         };
-        if let Some(height_map) = chunk.height_map.as_ref() {
-            pass.set_bind_group(I, height_map, &[]);
-            return RenderCommandResult::Success;
-        }
-        if let Some(y_buffer) = chunk.explicit_y_buffer.as_ref() {
-            pass.set_bind_group(I, y_buffer, &[]);
-            return RenderCommandResult::Success;
-        }
-        RenderCommandResult::Failure
+        pass.set_bind_group(I, &bind_group.bind_group, &[]);
+        return RenderCommandResult::Success;
     }
 }
 pub(crate) struct SetHeightBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
-    type Param = SRes<GrassCache>;
+    type Param = ();
     type ViewWorldQuery = ();
-    type ItemWorldQuery = ();
+    type ItemWorldQuery = Read<BindGroupBuffer<WarblerHeight>>;
 
     fn render<'w>(
-        item: &P,
+        _item: &P,
         _view: (),
-        _entity: (),
-        cache: SystemParamItem<'w, '_, Self::Param>,
+        height: &'w BindGroupBuffer<WarblerHeight>,
+        _param: (),
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
-            return RenderCommandResult::Failure;
-        };
-        if let Some(height_buffer) = chunk.height_buffer.as_ref() {
-            pass.set_bind_group(I, height_buffer, &[]);
-            return RenderCommandResult::Success;
-        }
-        if let Some(height_buffer) = chunk.blade_height_texture.as_ref() {
-            pass.set_bind_group(I, height_buffer, &[]);
-            return RenderCommandResult::Success;
-        }
-        RenderCommandResult::Failure
+        pass.set_bind_group(I, &height.bind_group, &[]);
+
+        RenderCommandResult::Success
     }
 }
 pub(crate) struct SetVertexBuffer;
@@ -97,17 +83,20 @@ pub(crate) struct SetVertexBuffer;
 impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
     type Param = (
         SRes<RenderAssets<Mesh>>,
-        SRes<GrassCache>,
+        SRes<ExplicitGrassCache>,
         SRes<RenderAssets<DitheredBuffer>>,
     );
     type ViewWorldQuery = ();
-    type ItemWorldQuery = Read<Handle<Mesh>>;
+    type ItemWorldQuery = (Read<Handle<Mesh>>, Option<Read<Handle<DitheredBuffer>>>);
 
     #[inline]
     fn render<'w>(
         item: &P,
         _view: (),
-        mesh_handle: &'w Handle<bevy::prelude::Mesh>,
+        (mesh_handle, dither_handle): (
+            &'w Handle<bevy::prelude::Mesh>,
+            Option<&'w Handle<DitheredBuffer>>,
+        ),
         (meshes, cache, dither): SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
@@ -115,13 +104,11 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
             Some(gpu_mesh) => gpu_mesh,
             None => return RenderCommandResult::Failure,
         };
-        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
-            return RenderCommandResult::Failure;
-        };
+
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
         let blade_count;
 
-        if let Some(dither_handle) = chunk.dither_handle.as_ref() {
+        if let Some(dither_handle) = dither_handle {
             if let Some(gpu_dither) = dither.into_inner().get(dither_handle) {
                 blade_count = gpu_dither.instances as u32;
                 if blade_count == 0 {
@@ -132,6 +119,9 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
                 return RenderCommandResult::Failure;
             }
         } else {
+            let Some(chunk) = cache.into_inner().get(&item.entity()) else {
+                return RenderCommandResult::Failure;
+            };
             blade_count = chunk.explicit_count;
             let Some(xz_buffer) = chunk.explicit_xz_buffer.as_ref() else {
                 return RenderCommandResult::Failure;
