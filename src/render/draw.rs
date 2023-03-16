@@ -11,9 +11,9 @@ use bevy::{
     },
 };
 
-use crate::dithering::DitheredBuffer;
+use crate::{dithering::DitheredBuffer, prelude::WarblerHeight, bundle};
 
-use super::cache::GrassCache;
+use super::{cache::GrassCache, prepare::BindGroupBuffer};
 pub(crate) struct SetUniformBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
@@ -67,29 +67,22 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
 pub(crate) struct SetHeightBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
-    type Param = SRes<GrassCache>;
+    type Param = ();
     type ViewWorldQuery = ();
-    type ItemWorldQuery = ();
+    type ItemWorldQuery = Read<BindGroupBuffer::<WarblerHeight>>;
 
     fn render<'w>(
-        item: &P,
+        _item: &P,
         _view: (),
-        _entity: (),
-        cache: SystemParamItem<'w, '_, Self::Param>,
+        height: &'w BindGroupBuffer<WarblerHeight>,
+        _param: (),
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
-            return RenderCommandResult::Failure;
-        };
-        if let Some(height_buffer) = chunk.height_buffer.as_ref() {
-            pass.set_bind_group(I, height_buffer, &[]);
-            return RenderCommandResult::Success;
-        }
-        if let Some(height_buffer) = chunk.blade_height_texture.as_ref() {
-            pass.set_bind_group(I, height_buffer, &[]);
-            return RenderCommandResult::Success;
-        }
-        RenderCommandResult::Failure
+
+        pass.set_bind_group(I,&height.bind_group, &[]);
+
+   
+        RenderCommandResult::Success
     }
 }
 pub(crate) struct SetVertexBuffer;
