@@ -87,13 +87,16 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
         SRes<RenderAssets<DitheredBuffer>>,
     );
     type ViewWorldQuery = ();
-    type ItemWorldQuery = Read<Handle<Mesh>>;
+    type ItemWorldQuery = (Read<Handle<Mesh>>, Option<Read<Handle<DitheredBuffer>>>);
 
     #[inline]
     fn render<'w>(
         item: &P,
         _view: (),
-        mesh_handle: &'w Handle<bevy::prelude::Mesh>,
+        (mesh_handle, dither_handle): (
+            &'w Handle<bevy::prelude::Mesh>,
+            Option<&'w Handle<DitheredBuffer>>,
+        ),
         (meshes, cache, dither): SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
@@ -107,7 +110,7 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
         let blade_count;
 
-        if let Some(dither_handle) = chunk.dither_handle.as_ref() {
+        if let Some(dither_handle) = dither_handle {
             if let Some(gpu_dither) = dither.into_inner().get(dither_handle) {
                 blade_count = gpu_dither.instances as u32;
                 if blade_count == 0 {

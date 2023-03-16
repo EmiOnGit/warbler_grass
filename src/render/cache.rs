@@ -4,8 +4,6 @@ use bevy::{
     utils::HashMap,
 };
 
-use crate::dithering::DitheredBuffer;
-
 #[derive(Resource, DerefMut, Deref, Debug, Default)]
 pub(crate) struct GrassCache {
     pub data: HashMap<Entity, CachedGrassChunk>,
@@ -15,7 +13,6 @@ pub(crate) struct GrassCache {
 pub(crate) struct CachedGrassChunk {
     pub explicit_xz_buffer: Option<Buffer>,
     pub explicit_count: u32,
-    pub dither_handle: Option<Handle<DitheredBuffer>>,
 }
 #[derive(Resource, Default)]
 pub(crate) struct UniformBuffer(pub Option<BindGroup>);

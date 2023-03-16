@@ -12,15 +12,10 @@ use bevy::{
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass(
     mut commands: Commands,
-    grass_spawner: Extract<
-        Query<(Entity, &Handle<DitheredBuffer>, &Aabb), Changed<Handle<DitheredBuffer>>>,
-    >,
-    mut grass_cache: ResMut<GrassCache>,
+    grass_spawner: Extract<Query<(Entity, &Handle<DitheredBuffer>, &Aabb)>>,
 ) {
     let mut values = Vec::new();
     for (entity, dithered, aabb) in grass_spawner.iter() {
-        let cache_value = grass_cache.entry(entity).or_default();
-        cache_value.dither_handle = Some(dithered.clone());
         values.push((entity, (dithered.clone(), *aabb)));
     }
     commands.insert_or_spawn_batch(values);
