@@ -72,46 +72,46 @@ You can find them in the [`example folder`](https://github.com/EmiOnGit/warbler_
 ### Load grass
 The basic example. If you just want to take a look how using this crate might look like, look no further
 ```shell
-cargo run --example load_grass --features="bevy/bevy_winit bevy/bevy_x11"
+cargo run --example load_grass"
 ```
 ### Editor
 A simple editor to modify and save the maps such as the density map of the grass
 Note that you also need the editor feature of this crate, which is not enabled by default
 ```shell
-cargo run --example editor --features="bevy/bevy_winit bevy/bevy_x11 editor"
+cargo run --example editor --features="editor"
 ```
 ### Grass colors
 You don't like the default grass color or you game has multiple seasons? 
 Take a look how you can change the color of the grass
 ```shell
-cargo run --example grass_colors --features="bevy/bevy_winit bevy/bevy_x11"
+cargo run --example grass_colors
 ```
 
 ### Grass mesh
 You don't like the default mesh of the grass? Don't worry you can use swap the mesh easily.
 Note that you can press `TAB` to change the mesh in the demo
 ```shell
-cargo run --example grass_mesh --features="bevy/bevy_winit bevy/bevy_x11"
+cargo run --example grass_mesh
 ```
 ### Load explicit
 You don't want to work with all the weird maps. All you want to do is define explicit positions for the grass blades to spawn in?
 You can definitly also do that
 ```shell
-cargo run --example load_explicit --features="bevy/bevy_winit bevy/bevy_x11"
+cargo run --example load_explicit
 ```
 ### Many chunks
 You'd like to see what this crate can do? Run this demo to see many chunks loaded at once.
 This example is also great to demonstrate the frustum culling of the meshes
 ```shell
 # I'd run this demo in release mode first to see how your hardware can keep up
-cargo run -r --example many_chunks --features="bevy/bevy_winit bevy/bevy_x11"
+cargo run -r --example many_chunks
 ```
 ### Stress test
 This is not much of a example. It is used to limit test the crate.
 Of course you can also load it and see what happens.
 ```shell
 # I'd run this demo in release mode first to see how your hardware can keep up
-cargo run -r --example stress_test --features="bevy/bevy_winit bevy/bevy_x11"
+cargo run -r --example stress_test
 ```
 
 ## Contributing
