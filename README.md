@@ -72,7 +72,7 @@ You can find them in the [`example folder`](https://github.com/EmiOnGit/warbler_
 ### Load grass
 The basic example. If you just want to take a look how using this crate might look like, look no further
 ```shell
-cargo run --example load_grass"
+cargo run --example load_grass
 ```
 ### Editor
 A simple editor to modify and save the maps such as the density map of the grass
