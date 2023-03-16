@@ -83,6 +83,7 @@ impl Plugin for WarblersPlugin {
                 (
                     extract::extract_grass,
                     extract::extract_visibility,
+                    extract::extract_aabb,
                     extract::extract_grass_positions,
                 )
                     .in_schedule(ExtractSchedule),

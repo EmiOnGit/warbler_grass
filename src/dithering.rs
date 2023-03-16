@@ -18,7 +18,7 @@ use bevy::{
 };
 use serde::Deserialize;
 
-use crate::{density_map::DensityMap, render::extract::EntityStorage};
+use crate::{density_map::DensityMap};
 
 // see https://surma.dev/things/ditherpunk/ for a good resource regarding ordered dithering
 const BAYER_DITHER: [[u8; 8]; 8] = [
@@ -120,12 +120,12 @@ pub(crate) fn add_dither_to_density(
     grasses: Query<(Entity, &DensityMap, &Aabb), Or<(Changed<DensityMap>, Changed<Aabb>)>>,
     images: Res<Assets<Image>>,
     mut dithered: ResMut<Assets<DitheredBuffer>>,
-    mut storage: Local<Vec<(EntityStorage, DensityMap, Aabb)>>,
+    mut storage: Local<Vec<(Entity, DensityMap, Aabb)>>,
 ) {
     let stored = std::mem::take(&mut *storage);
     for (e, density_map, aabb) in grasses
         .iter()
-        .chain(stored.iter().map(|(e, map, aabb)| (e.0, map, aabb)))
+        .chain(stored.iter().map(|(e, map, aabb)| (*e, map, aabb)))
     {
         if let Some(image) = images.get(&density_map.density_map) {
             let xz = aabb.half_extents.xz() * 2.;
@@ -136,7 +136,7 @@ pub(crate) fn add_dither_to_density(
             let handle = dithered.add(buffer);
             commands.entity(e).insert(handle);
         } else {
-            storage.push((EntityStorage(e), density_map.clone(), *aabb));
+            storage.push((e, density_map.clone(), *aabb));
         }
     }
 }

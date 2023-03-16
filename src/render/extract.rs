@@ -1,7 +1,7 @@
 use super::cache::{CachedGrassChunk, EntityCache, GrassCache};
 use crate::{
     bundle::Grass,
-    dithering::DitheredBuffer,
+    dithering::DitheredBuffer, height_map::HeightMap,
 };
 use bevy::{
     prelude::*,
@@ -30,7 +30,6 @@ pub(crate) fn extract_grass(
         values.push((
             entity,
             (
-                EntityStorage(entity),
                 dithered.clone(),
                 *aabb,
             ),
@@ -45,7 +44,9 @@ pub(crate) fn extract_grass(
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass_positions(
     mut commands: Commands,
-    grass_spawner: Extract<Query<(Entity, &Grass, &Aabb), Or<(Changed<Grass>, Changed<Aabb>)>>>,
+    grass_spawner: Extract<Query<(Entity, &Grass, &Aabb)
+    // , Or<(Changed<Grass>, Changed<Aabb>)>
+    >>,
     mut grass_cache: ResMut<GrassCache>,
 ) {
     let mut values = Vec::new();
@@ -54,13 +55,11 @@ pub(crate) fn extract_grass_positions(
         if !grass_cache.contains_key(&entity) {
             grass_cache.insert(entity, CachedGrassChunk::default());
         }
-        values.push((entity, (EntityStorage(entity), grass.clone(), *aabb)));
+        values.push((entity, (grass.clone(), *aabb)));
     }
     commands.insert_or_spawn_batch(values);
 }
 
-#[derive(Clone, Component)]
-pub(crate) struct EntityStorage(pub Entity);
 
 /// Extracts all visible grass entities into the render world
 #[allow(clippy::type_complexity)]
@@ -80,4 +79,18 @@ pub(crate) fn extract_visibility(
         .iter()
         .filter_map(|(e, visibility)| visibility.is_visible().then_some(e))
         .collect();
+}
+pub(crate) fn extract_aabb(
+    mut commands: Commands,
+
+    aabbs: Extract<
+    Query<(Entity, &Aabb), With<HeightMap>>
+    >
+) {
+
+    let mut values = Vec::new();
+    for (e,aabb) in aabbs.iter() {
+        values.push((e, *aabb));
+    }
+    commands.insert_or_spawn_batch(values);
 }

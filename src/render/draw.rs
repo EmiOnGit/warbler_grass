@@ -11,7 +11,7 @@ use bevy::{
     },
 };
 
-use crate::{dithering::DitheredBuffer, prelude::WarblerHeight, bundle};
+use crate::{dithering::DitheredBuffer, prelude::WarblerHeight, height_map::HeightMap};
 
 use super::{cache::GrassCache, prepare::BindGroupBuffer};
 pub(crate) struct SetUniformBindGroup<const I: usize>;
@@ -39,29 +39,38 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
 pub(crate) struct SetYBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
-    type Param = SRes<GrassCache>;
+    type Param = ();
     type ViewWorldQuery = ();
-    type ItemWorldQuery = ();
+    type ItemWorldQuery = Option<Read<BindGroupBuffer::<HeightMap>>>;
 
     fn render<'w>(
-        item: &P,
+        _item: &P,
         _view: (),
-        _entity: (),
-        cache: SystemParamItem<'w, '_, Self::Param>,
+        bind_group: Option<&'w BindGroupBuffer<HeightMap>>,
+        _cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
+        // let Some(chunk) = cache.into_inner().get(&item.entity()) else {
+        //     return RenderCommandResult::Failure;
+        // };
+        // if let Some(height_map) = chunk.height_map.as_ref() {
+        //     pass.set_bind_group(I, height_map, &[]);
+        //     return RenderCommandResult::Success;
+        // }
+        // if let Some(y_buffer) = chunk.explicit_y_buffer.as_ref() {
+        //     pass.set_bind_group(I, y_buffer, &[]);
+        //     return RenderCommandResult::Success;
+        // }
+        // RenderCommandResult::Failure
+        let Some(bind_group) = bind_group else {
+            println!("couldn't find bind group buffer height map");
             return RenderCommandResult::Failure;
+
         };
-        if let Some(height_map) = chunk.height_map.as_ref() {
-            pass.set_bind_group(I, height_map, &[]);
-            return RenderCommandResult::Success;
-        }
-        if let Some(y_buffer) = chunk.explicit_y_buffer.as_ref() {
-            pass.set_bind_group(I, y_buffer, &[]);
-            return RenderCommandResult::Success;
-        }
-        RenderCommandResult::Failure
+        pass.set_bind_group(I, &bind_group.bind_group, &[]);
+        return RenderCommandResult::Success;
+
+
     }
 }
 pub(crate) struct SetHeightBindGroup<const I: usize>;

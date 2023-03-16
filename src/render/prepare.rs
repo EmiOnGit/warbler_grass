@@ -3,7 +3,6 @@ use std::mem;
 use std::num::{NonZeroU32, NonZeroU64};
 use std::ops::Mul;
 
-use super::extract::EntityStorage;
 use super::grass_pipeline::GrassPipeline;
 use crate::bundle::{Grass, WarblerHeight};
 use crate::height_map::HeightMap;
@@ -11,7 +10,6 @@ use crate::render::cache::GrassCache;
 use crate::{GrassConfiguration, GrassNoiseTexture};
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
-use bevy::prelude::system_adapter::new;
 use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::{
@@ -37,14 +35,15 @@ impl <T>BindGroupBuffer<T> {
     }
 }
 pub(crate) fn prepare_explicit_positions_buffer(
+    mut commands: Commands,
     mut cache: ResMut<GrassCache>,
     pipeline: Res<GrassPipeline>,
     render_device: Res<RenderDevice>,
     render_queue: Res<RenderQueue>,
-    mut inserted_grass: Query<(&mut Grass, &EntityStorage)>,
+    mut inserted_grass: Query<(Entity, &mut Grass)>,
 ) {
-    for (grass, EntityStorage(id)) in inserted_grass.iter_mut() {
-        if let Some(chunk) = cache.get_mut(id) {
+    for (entity, grass) in inserted_grass.iter_mut() {
+        if let Some(chunk) = cache.get_mut(&entity) {
             chunk.explicit_count = grass.positions.len() as u32;
             let (xz, mut y): (Vec<Vec2>, Vec<f32>) =
                 grass.positions.iter().map(|v| (v.xz(), v.y)).unzip();
@@ -72,7 +71,9 @@ pub(crate) fn prepare_explicit_positions_buffer(
                 }],
             };
             let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-            chunk.explicit_y_buffer = Some(bind_group);
+            commands.entity(entity).insert(BindGroupBuffer::<HeightMap>::new(bind_group));
+
+
             let layout = pipeline.uniform_height_layout.clone();
 
             let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -93,7 +94,8 @@ pub(crate) fn prepare_explicit_positions_buffer(
                 }],
             };
             let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-            chunk.height_buffer = Some(bind_group);
+            commands.entity(entity).insert(BindGroupBuffer::<WarblerHeight>::new(bind_group))
+                .insert(UniformHeightFlag);
         } else {
             warn!(
                 "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"
@@ -101,7 +103,8 @@ pub(crate) fn prepare_explicit_positions_buffer(
         }
     }
 }
-
+#[derive(Component)]
+pub(crate) struct UniformHeightFlag;
 pub(crate) fn prepare_height_buffer(
     mut commands: Commands,
     pipeline: Res<GrassPipeline>,
@@ -112,7 +115,6 @@ pub(crate) fn prepare_height_buffer(
     inserted_grass: Query<(Entity, &WarblerHeight)>,
 ) {
     for (entity, height) in inserted_grass.iter() {
-        let id = &entity;
             match height.clone() {
                 WarblerHeight::Uniform(height) => {
                     let layout = pipeline.uniform_height_layout.clone();
@@ -137,10 +139,12 @@ pub(crate) fn prepare_height_buffer(
                         }],
                     };
                     let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-                    commands.entity(entity).insert(BindGroupBuffer::<WarblerHeight>::new(bind_group));
+                    commands.entity(entity).insert(BindGroupBuffer::<WarblerHeight>::new(bind_group))
+                    .insert(UniformHeightFlag);
 
                 }
                 WarblerHeight::Texture(heights_texture) => {
+
                     let layout = pipeline.heights_texture_layout.clone();
 
                     let tex = if let Some(tex) = images.get(&heights_texture) {
@@ -167,18 +171,16 @@ pub(crate) fn prepare_height_buffer(
 
 pub(crate) fn prepare_height_map_buffer(
     mut commands: Commands,
-    mut cache: ResMut<GrassCache>,
     render_device: Res<RenderDevice>,
     pipeline: Res<GrassPipeline>,
     fallback_img: Res<FallbackImage>,
     images: Res<RenderAssets<Image>>,
-    inserted_grass: Query<(&HeightMap, &EntityStorage, &Aabb)>,
+    inserted_grass: Query<(Entity, &HeightMap, &Aabb)>,
 ) {
     let layout = pipeline.height_map_layout.clone();
 
     
-    for (height_map, entity_store, aabb) in inserted_grass.iter() {
-        let id = entity_store.0;
+    for (entity, height_map, aabb) in inserted_grass.iter() {
         let height_map_texture = if let Some(tex) = images.get(&height_map.height_map) {
             &tex.texture_view
         } else {
@@ -212,11 +214,8 @@ pub(crate) fn prepare_height_map_buffer(
         };
 
         let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-        if let Some(chunk) = cache.get_mut(&id) {
-            chunk.height_map = Some(bind_group);
-        } else {
-            warn!("Tried to prepare a buffer for a grass chunk which wasn't registered before");
-        }
+        commands.entity(entity).insert(BindGroupBuffer::<HeightMap>::new(bind_group));
+        
     }
 }
 #[allow(clippy::too_many_arguments)]

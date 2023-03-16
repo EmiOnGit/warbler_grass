@@ -9,6 +9,7 @@ use bevy::render::view::ExtractedView;
 use super::cache::GrassCache;
 use super::grass_pipeline::{GrassPipeline, GrassRenderKey};
 use super::GrassDrawCall;
+use super::prepare::UniformHeightFlag;
 
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn queue_grass_buffers(
@@ -19,7 +20,7 @@ pub(crate) fn queue_grass_buffers(
     pipeline_cache: Res<PipelineCache>,
     grass_cacher: Res<GrassCache>,
     meshes: Res<RenderAssets<Mesh>>,
-    material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>)>,
+    material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>, Option<&UniformHeightFlag>)>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
 ) {
     let draw_custom = opaque_3d_draw_functions
@@ -32,16 +33,16 @@ pub(crate) fn queue_grass_buffers(
     for (view, mut opaque_phase) in &mut views {
         let view_key = msaa_key | MeshPipelineKey::from_hdr(view.hdr);
         let rangefinder = view.rangefinder3d();
-        for (entity, mesh_uniform, mesh_handle) in material_meshes
+        for (entity, mesh_uniform, mesh_handle, has_uniform_height) in material_meshes
             .iter()
-            .filter(|(e, _, _)| grass_cacher.contains_key(e))
+            .filter(|(e, _, _, _)| grass_cacher.contains_key(e))
         {
             if let Some(mesh) = meshes.get(mesh_handle) {
                 let mesh_key =
                     view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);
                 let mut grass_key = GrassRenderKey::from(mesh_key);
                 grass_key.is_explicit = grass_cacher[&entity].explicit_xz_buffer.is_some();
-                grass_key.uniform_height = grass_cacher[&entity].blade_height_texture.is_none();
+                grass_key.uniform_height = has_uniform_height.is_some();
                 let pipeline = pipelines
                     .specialize(&pipeline_cache, &grass_pipeline, grass_key, &mesh.layout)
                     .unwrap();
