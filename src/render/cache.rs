@@ -5,12 +5,12 @@ use bevy::{
 };
 
 #[derive(Resource, DerefMut, Deref, Debug, Default)]
-pub(crate) struct GrassCache {
-    pub data: HashMap<Entity, CachedGrassChunk>,
+pub(crate) struct ExplicitGrassCache {
+    pub data: HashMap<Entity, CachedExplicitGrassChunk>,
 }
 
 #[derive(Debug, Default)]
-pub(crate) struct CachedGrassChunk {
+pub(crate) struct CachedExplicitGrassChunk {
     pub explicit_xz_buffer: Option<Buffer>,
     pub explicit_count: u32,
 }

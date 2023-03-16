@@ -7,7 +7,7 @@ use super::cache::UniformBuffer;
 use super::grass_pipeline::GrassPipeline;
 use crate::bundle::{Grass, WarblerHeight};
 use crate::height_map::HeightMap;
-use crate::render::cache::GrassCache;
+use crate::render::cache::ExplicitGrassCache;
 use crate::{GrassConfiguration, GrassNoiseTexture};
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
@@ -37,7 +37,7 @@ impl<T> BindGroupBuffer<T> {
 }
 pub(crate) fn prepare_explicit_positions_buffer(
     mut commands: Commands,
-    mut cache: ResMut<GrassCache>,
+    mut cache: ResMut<ExplicitGrassCache>,
     pipeline: Res<GrassPipeline>,
     render_device: Res<RenderDevice>,
     render_queue: Res<RenderQueue>,

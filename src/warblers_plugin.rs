@@ -22,7 +22,7 @@ use crate::{
     prelude::WarblerHeight,
     render::{
         self,
-        cache::{GrassCache, UniformBuffer},
+        cache::{ExplicitGrassCache, UniformBuffer},
         extract,
         grass_pipeline::GrassPipeline,
         prepare, queue,
@@ -78,7 +78,7 @@ impl Plugin for WarblersPlugin {
             .init_resource::<FallbackImage>()
             .init_resource::<GrassPipeline>()
             .init_resource::<UniformBuffer>()
-            .init_resource::<GrassCache>()
+            .init_resource::<ExplicitGrassCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_systems(
                 (

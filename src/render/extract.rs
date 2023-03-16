@@ -1,4 +1,4 @@
-use super::cache::{CachedGrassChunk, GrassCache};
+use super::cache::{CachedExplicitGrassChunk, ExplicitGrassCache};
 use crate::{bundle::Grass, dithering::DitheredBuffer, height_map::HeightMap};
 use bevy::{
     prelude::*,
@@ -28,13 +28,13 @@ pub(crate) fn extract_grass(
 pub(crate) fn extract_grass_positions(
     mut commands: Commands,
     grass_spawner: Extract<Query<(Entity, &Grass, &Aabb)>>,
-    mut grass_cache: ResMut<GrassCache>,
+    mut grass_cache: ResMut<ExplicitGrassCache>,
 ) {
     let mut values = Vec::new();
 
     for (entity, grass, aabb) in grass_spawner.iter() {
         if !grass_cache.contains_key(&entity) {
-            grass_cache.insert(entity, CachedGrassChunk::default());
+            grass_cache.insert(entity, CachedExplicitGrassChunk::default());
         }
         values.push((entity, (grass.clone(), *aabb)));
     }

@@ -14,7 +14,7 @@ use bevy::{
 use crate::{dithering::DitheredBuffer, height_map::HeightMap, prelude::WarblerHeight};
 
 use super::{
-    cache::{GrassCache, UniformBuffer},
+    cache::{ExplicitGrassCache, UniformBuffer},
     prepare::BindGroupBuffer,
 };
 pub(crate) struct SetUniformBindGroup<const I: usize>;
@@ -83,7 +83,7 @@ pub(crate) struct SetVertexBuffer;
 impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
     type Param = (
         SRes<RenderAssets<Mesh>>,
-        SRes<GrassCache>,
+        SRes<ExplicitGrassCache>,
         SRes<RenderAssets<DitheredBuffer>>,
     );
     type ViewWorldQuery = ();
@@ -104,9 +104,7 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
             Some(gpu_mesh) => gpu_mesh,
             None => return RenderCommandResult::Failure,
         };
-        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
-            return RenderCommandResult::Failure;
-        };
+        
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
         let blade_count;
 
@@ -121,6 +119,9 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
                 return RenderCommandResult::Failure;
             }
         } else {
+            let Some(chunk) = cache.into_inner().get(&item.entity()) else {
+                return RenderCommandResult::Failure;
+            };
             blade_count = chunk.explicit_count;
             let Some(xz_buffer) = chunk.explicit_xz_buffer.as_ref() else {
                 return RenderCommandResult::Failure;
