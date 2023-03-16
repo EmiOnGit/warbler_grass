@@ -51,7 +51,6 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
         let Some(bind_group) = bind_group else {
-            println!("couldn't find bind group buffer height map");
             return RenderCommandResult::Failure;
 
         };
