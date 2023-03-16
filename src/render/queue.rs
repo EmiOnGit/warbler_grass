@@ -6,6 +6,9 @@ use bevy::render::render_phase::{DrawFunctions, RenderPhase};
 use bevy::render::render_resource::{PipelineCache, SpecializedMeshPipelines};
 use bevy::render::view::ExtractedView;
 
+use crate::dithering::DitheredBuffer;
+use crate::prelude::Grass;
+
 use super::cache::ExplicitGrassCache;
 use super::grass_pipeline::{GrassPipeline, GrassRenderKey};
 use super::prepare::UniformHeightFlag;
@@ -25,7 +28,7 @@ pub(crate) fn queue_grass_buffers(
         &MeshUniform,
         &Handle<Mesh>,
         Option<&UniformHeightFlag>,
-    )>,
+    ), Or<(With<Grass>, With<Handle<DitheredBuffer>>)>>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
 ) {
     let draw_custom = opaque_3d_draw_functions
