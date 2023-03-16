@@ -13,7 +13,10 @@ use bevy::{
 
 use crate::{dithering::DitheredBuffer, height_map::HeightMap, prelude::WarblerHeight};
 
-use super::{cache::{GrassCache, UniformBuffer}, prepare::BindGroupBuffer};
+use super::{
+    cache::{GrassCache, UniformBuffer},
+    prepare::BindGroupBuffer,
+};
 pub(crate) struct SetUniformBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
