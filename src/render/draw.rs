@@ -13,25 +13,22 @@ use bevy::{
 
 use crate::{dithering::DitheredBuffer, height_map::HeightMap, prelude::WarblerHeight};
 
-use super::{cache::GrassCache, prepare::BindGroupBuffer};
+use super::{cache::{GrassCache, UniformBuffer}, prepare::BindGroupBuffer};
 pub(crate) struct SetUniformBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
-    type Param = SRes<GrassCache>;
+    type Param = SRes<UniformBuffer>;
     type ViewWorldQuery = ();
     type ItemWorldQuery = ();
 
     fn render<'w>(
-        item: &P,
+        _item: &P,
         _view: (),
         _entity: (),
         cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        let Some(chunk) = cache.into_inner().get(&item.entity()) else {
-            return RenderCommandResult::Failure;
-        };
-        pass.set_bind_group(I, chunk.uniform_bindgroup.as_ref().unwrap(), &[]);
+        pass.set_bind_group(I, cache.into_inner().ref_unwrap(), &[]);
 
         RenderCommandResult::Success
     }
@@ -50,18 +47,6 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
         _cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        // let Some(chunk) = cache.into_inner().get(&item.entity()) else {
-        //     return RenderCommandResult::Failure;
-        // };
-        // if let Some(height_map) = chunk.height_map.as_ref() {
-        //     pass.set_bind_group(I, height_map, &[]);
-        //     return RenderCommandResult::Success;
-        // }
-        // if let Some(y_buffer) = chunk.explicit_y_buffer.as_ref() {
-        //     pass.set_bind_group(I, y_buffer, &[]);
-        //     return RenderCommandResult::Success;
-        // }
-        // RenderCommandResult::Failure
         let Some(bind_group) = bind_group else {
             println!("couldn't find bind group buffer height map");
             return RenderCommandResult::Failure;

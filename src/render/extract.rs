@@ -32,11 +32,7 @@ pub(crate) fn extract_grass(
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass_positions(
     mut commands: Commands,
-    grass_spawner: Extract<
-        Query<
-            (Entity, &Grass, &Aabb), // , Or<(Changed<Grass>, Changed<Aabb>)>
-        >,
-    >,
+    grass_spawner: Extract<Query<(Entity, &Grass, &Aabb)>>,
     mut grass_cache: ResMut<GrassCache>,
 ) {
     let mut values = Vec::new();

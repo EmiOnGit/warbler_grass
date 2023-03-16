@@ -3,6 +3,7 @@ use std::mem;
 use std::num::{NonZeroU32, NonZeroU64};
 use std::ops::Mul;
 
+use super::cache::UniformBuffer;
 use super::grass_pipeline::GrassPipeline;
 use crate::bundle::{Grass, WarblerHeight};
 use crate::height_map::HeightMap;
@@ -223,11 +224,11 @@ pub(crate) fn prepare_height_map_buffer(
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn prepare_uniform_buffers(
     pipeline: Res<GrassPipeline>,
-    mut cache: ResMut<GrassCache>,
     region_config: Res<GrassConfiguration>,
     noise_config: Res<GrassNoiseTexture>,
     fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
+    mut uniform_buffer: ResMut<UniformBuffer>,
     images: Res<RenderAssets<Image>>,
     mut last_texture_id: Local<Option<TextureViewId>>,
 ) {
@@ -267,10 +268,7 @@ pub(crate) fn prepare_uniform_buffers(
         ],
     };
     let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-
-    for instance_data in cache.values_mut() {
-        instance_data.uniform_bindgroup = Some(bind_group.clone());
-    }
+    uniform_buffer.set(bind_group);
 }
 
 #[derive(Debug, Clone, Copy, Pod, Zeroable)]

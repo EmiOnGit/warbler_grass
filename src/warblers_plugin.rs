@@ -20,7 +20,13 @@ use crate::{
     dithering::{add_dither_to_density, DitheredBuffer},
     height_map::HeightMap,
     prelude::WarblerHeight,
-    render::{self, cache::GrassCache, extract, grass_pipeline::GrassPipeline, prepare, queue},
+    render::{
+        self,
+        cache::{GrassCache, UniformBuffer},
+        extract,
+        grass_pipeline::GrassPipeline,
+        prepare, queue,
+    },
     update, GrassConfiguration, GrassNoiseTexture,
 };
 
@@ -71,6 +77,7 @@ impl Plugin for WarblersPlugin {
             .add_render_command::<Opaque3d, render::GrassDrawCall>()
             .init_resource::<FallbackImage>()
             .init_resource::<GrassPipeline>()
+            .init_resource::<UniformBuffer>()
             .init_resource::<GrassCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_systems(
