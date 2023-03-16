@@ -26,15 +26,17 @@ version = "0.10.0"
 default-features = false
 features = [ "bevy_core_pipeline", "bevy_render", "bevy_asset", "bevy_pbr" , "png"]
 
+[dev-dependencies]
+bevy = {version = "0.10", default-features = false, features = ["bevy_winit","x11"] }
+
 [[example]]
 name = "load_explicit"
 path = "examples/load_explicit.rs"
-required-features = ["bevy/bevy_winit","bevy/x11"]
 
 [[example]]
 name = "editor"
 path = "examples/editor.rs"
-required-features = ["bevy/bevy_winit","bevy/x11", "editor"]
+required-features = ["editor"]
 
 [[example]]
 name = "load_grass"
@@ -44,19 +46,15 @@ required-features = ["bevy/bevy_winit","bevy/x11"]
 [[example]]
 name = "many_chunks"
 path = "examples/many_chunks.rs"
-required-features = ["bevy/bevy_winit","bevy/x11"]
 
 [[example]]
 name = "grass_colors"
 path = "examples/grass_colors.rs"
-required-features = ["bevy/bevy_winit","bevy/x11"]
 
 [[example]]
 name = "stress_test"
 path = "examples/stress_test.rs"
-required-features = ["bevy/bevy_winit","bevy/x11"]
 
 [[example]]
 name = "grass_mesh"
 path = "examples/grass_mesh.rs"
-required-features = ["bevy/bevy_winit","bevy/x11"]
