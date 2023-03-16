@@ -23,12 +23,15 @@ pub(crate) fn queue_grass_buffers(
     pipeline_cache: Res<PipelineCache>,
     grass_cacher: Res<ExplicitGrassCache>,
     meshes: Res<RenderAssets<Mesh>>,
-    material_meshes: Query<(
-        Entity,
-        &MeshUniform,
-        &Handle<Mesh>,
-        Option<&UniformHeightFlag>,
-    ), Or<(With<Grass>, With<Handle<DitheredBuffer>>)>>,
+    material_meshes: Query<
+        (
+            Entity,
+            &MeshUniform,
+            &Handle<Mesh>,
+            Option<&UniformHeightFlag>,
+        ),
+        Or<(With<Grass>, With<Handle<DitheredBuffer>>)>,
+    >,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
 ) {
     let draw_custom = opaque_3d_draw_functions
@@ -41,9 +44,7 @@ pub(crate) fn queue_grass_buffers(
     for (view, mut opaque_phase) in &mut views {
         let view_key = msaa_key | MeshPipelineKey::from_hdr(view.hdr);
         let rangefinder = view.rangefinder3d();
-        for (entity, mesh_uniform, mesh_handle, has_uniform_height) in material_meshes
-            .iter()
-        {
+        for (entity, mesh_uniform, mesh_handle, has_uniform_height) in material_meshes.iter() {
             if let Some(mesh) = meshes.get(mesh_handle) {
                 let mesh_key =
                     view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);

@@ -104,7 +104,7 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
             Some(gpu_mesh) => gpu_mesh,
             None => return RenderCommandResult::Failure,
         };
-        
+
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
         let blade_count;
 
