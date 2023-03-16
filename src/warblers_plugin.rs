@@ -19,14 +19,9 @@ use bevy::{
 use crate::{
     dithering::{add_dither_to_density, DitheredBuffer},
     height_map::HeightMap,
-    render::{
-        self,
-        cache::{EntityCache, GrassCache},
-        extract,
-        grass_pipeline::GrassPipeline,
-        prepare, queue,
-    },
-    update, GrassConfiguration, GrassNoiseTexture, prelude::WarblerHeight,
+    prelude::WarblerHeight,
+    render::{self, cache::GrassCache, extract, grass_pipeline::GrassPipeline, prepare, queue},
+    update, GrassConfiguration, GrassNoiseTexture,
 };
 
 /// A raw handle which points to the shader used to render the grass.
@@ -77,12 +72,10 @@ impl Plugin for WarblersPlugin {
             .init_resource::<FallbackImage>()
             .init_resource::<GrassPipeline>()
             .init_resource::<GrassCache>()
-            .init_resource::<EntityCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_systems(
                 (
                     extract::extract_grass,
-                    extract::extract_visibility,
                     extract::extract_aabb,
                     extract::extract_grass_positions,
                 )

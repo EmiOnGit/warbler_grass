@@ -13,24 +13,24 @@ use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::{
-    BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor,
-    BufferUsages, Extent3d, ImageCopyTexture, ImageDataLayout, Origin3d, TextureAspect,
-    TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureView,
-    TextureViewDescriptor, TextureViewDimension, TextureViewId, BindGroup,
+    BindGroup, BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding,
+    BufferInitDescriptor, BufferUsages, Extent3d, ImageCopyTexture, ImageDataLayout, Origin3d,
+    TextureAspect, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureView,
+    TextureViewDescriptor, TextureViewDimension, TextureViewId,
 };
 use bevy::render::renderer::{RenderDevice, RenderQueue};
 use bevy::render::texture::FallbackImage;
 use bytemuck::{Pod, Zeroable};
 #[derive(Component)]
-pub struct BindGroupBuffer<T> {
+pub(crate) struct BindGroupBuffer<T> {
     pub bind_group: BindGroup,
-    _inner: PhantomData<T>
+    _inner: PhantomData<T>,
 }
-impl <T>BindGroupBuffer<T> {
-    pub fn new(bind_group: BindGroup) -> Self{
+impl<T> BindGroupBuffer<T> {
+    pub fn new(bind_group: BindGroup) -> Self {
         BindGroupBuffer {
             bind_group,
-            _inner: PhantomData::default()
+            _inner: PhantomData::default(),
         }
     }
 }
@@ -71,8 +71,9 @@ pub(crate) fn prepare_explicit_positions_buffer(
                 }],
             };
             let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-            commands.entity(entity).insert(BindGroupBuffer::<HeightMap>::new(bind_group));
-
+            commands
+                .entity(entity)
+                .insert(BindGroupBuffer::<HeightMap>::new(bind_group));
 
             let layout = pipeline.uniform_height_layout.clone();
 
@@ -94,7 +95,9 @@ pub(crate) fn prepare_explicit_positions_buffer(
                 }],
             };
             let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-            commands.entity(entity).insert(BindGroupBuffer::<WarblerHeight>::new(bind_group))
+            commands
+                .entity(entity)
+                .insert(BindGroupBuffer::<WarblerHeight>::new(bind_group))
                 .insert(UniformHeightFlag);
         } else {
             warn!(
@@ -115,57 +118,57 @@ pub(crate) fn prepare_height_buffer(
     inserted_grass: Query<(Entity, &WarblerHeight)>,
 ) {
     for (entity, height) in inserted_grass.iter() {
-            match height.clone() {
-                WarblerHeight::Uniform(height) => {
-                    let layout = pipeline.uniform_height_layout.clone();
+        match height.clone() {
+            WarblerHeight::Uniform(height) => {
+                let layout = pipeline.uniform_height_layout.clone();
 
-                    let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                        label: "grass blade height buffer".into(),
-                        contents: &height.to_ne_bytes(),
-                        usage: BufferUsages::VERTEX
-                            | BufferUsages::COPY_DST
-                            | BufferUsages::UNIFORM,
-                    });
-                    let bind_group_descriptor = BindGroupDescriptor {
-                        label: Some("grass blade height bind group"),
-                        layout: &layout,
-                        entries: &[BindGroupEntry {
-                            binding: 0,
-                            resource: BindingResource::Buffer(BufferBinding {
-                                buffer: &buffer,
-                                offset: 0,
-                                size: NonZeroU64::new(4),
-                            }),
-                        }],
-                    };
-                    let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-                    commands.entity(entity).insert(BindGroupBuffer::<WarblerHeight>::new(bind_group))
+                let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+                    label: "grass blade height buffer".into(),
+                    contents: &height.to_ne_bytes(),
+                    usage: BufferUsages::VERTEX | BufferUsages::COPY_DST | BufferUsages::UNIFORM,
+                });
+                let bind_group_descriptor = BindGroupDescriptor {
+                    label: Some("grass blade height bind group"),
+                    layout: &layout,
+                    entries: &[BindGroupEntry {
+                        binding: 0,
+                        resource: BindingResource::Buffer(BufferBinding {
+                            buffer: &buffer,
+                            offset: 0,
+                            size: NonZeroU64::new(4),
+                        }),
+                    }],
+                };
+                let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+                commands
+                    .entity(entity)
+                    .insert(BindGroupBuffer::<WarblerHeight>::new(bind_group))
                     .insert(UniformHeightFlag);
+            }
+            WarblerHeight::Texture(heights_texture) => {
+                let layout = pipeline.heights_texture_layout.clone();
 
-                }
-                WarblerHeight::Texture(heights_texture) => {
+                let tex = if let Some(tex) = images.get(&heights_texture) {
+                    &tex.texture_view
+                } else {
+                    &fallback_img.texture_view
+                };
 
-                    let layout = pipeline.heights_texture_layout.clone();
+                let bind_group_descriptor = BindGroupDescriptor {
+                    label: Some("grass height map bind group"),
+                    layout: &layout,
+                    entries: &[BindGroupEntry {
+                        binding: 0,
+                        resource: BindingResource::TextureView(tex),
+                    }],
+                };
 
-                    let tex = if let Some(tex) = images.get(&heights_texture) {
-                        &tex.texture_view
-                    } else {
-                        &fallback_img.texture_view
-                    };
-
-                    let bind_group_descriptor = BindGroupDescriptor {
-                        label: Some("grass height map bind group"),
-                        layout: &layout,
-                        entries: &[BindGroupEntry {
-                            binding: 0,
-                            resource: BindingResource::TextureView(tex),
-                        }],
-                    };
-
-                    let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-                    commands.entity(entity).insert(BindGroupBuffer::<WarblerHeight>::new(bind_group));
-                }
-            };
+                let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+                commands
+                    .entity(entity)
+                    .insert(BindGroupBuffer::<WarblerHeight>::new(bind_group));
+            }
+        };
     }
 }
 
@@ -179,12 +182,10 @@ pub(crate) fn prepare_height_map_buffer(
 ) {
     let layout = pipeline.height_map_layout.clone();
 
-    
     for (entity, height_map, aabb) in inserted_grass.iter() {
         let height_map_texture = if let Some(tex) = images.get(&height_map.height_map) {
             &tex.texture_view
         } else {
-            
             &fallback_img.texture_view
         };
 
@@ -214,8 +215,9 @@ pub(crate) fn prepare_height_map_buffer(
         };
 
         let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-        commands.entity(entity).insert(BindGroupBuffer::<HeightMap>::new(bind_group));
-        
+        commands
+            .entity(entity)
+            .insert(BindGroupBuffer::<HeightMap>::new(bind_group));
     }
 }
 #[allow(clippy::too_many_arguments)]
@@ -233,8 +235,7 @@ pub(crate) fn prepare_uniform_buffers(
         .get(&noise_config.0)
         .unwrap_or(&fallback_img)
         .texture_view;
-    if !region_config.is_changed() && Some(texture.id()) == *last_texture_id
-    {
+    if !region_config.is_changed() && Some(texture.id()) == *last_texture_id {
         return;
     }
     *last_texture_id = Some(texture.id());

@@ -8,8 +8,8 @@ use bevy::render::view::ExtractedView;
 
 use super::cache::GrassCache;
 use super::grass_pipeline::{GrassPipeline, GrassRenderKey};
-use super::GrassDrawCall;
 use super::prepare::UniformHeightFlag;
+use super::GrassDrawCall;
 
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn queue_grass_buffers(
@@ -20,7 +20,12 @@ pub(crate) fn queue_grass_buffers(
     pipeline_cache: Res<PipelineCache>,
     grass_cacher: Res<GrassCache>,
     meshes: Res<RenderAssets<Mesh>>,
-    material_meshes: Query<(Entity, &MeshUniform, &Handle<Mesh>, Option<&UniformHeightFlag>)>,
+    material_meshes: Query<(
+        Entity,
+        &MeshUniform,
+        &Handle<Mesh>,
+        Option<&UniformHeightFlag>,
+    )>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
 ) {
     let draw_custom = opaque_3d_draw_functions

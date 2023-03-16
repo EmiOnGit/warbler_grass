@@ -3,8 +3,8 @@ use bevy::{
     ecs::{bundle::Bundle, component::Component, query::QueryItem},
     math::Vec3,
     render::{
-        mesh::Mesh, prelude::SpatialBundle, primitives::Aabb, texture::Image,
-        texture::DEFAULT_IMAGE_HANDLE, extract_component::ExtractComponent,
+        extract_component::ExtractComponent, mesh::Mesh, prelude::SpatialBundle, primitives::Aabb,
+        texture::Image, texture::DEFAULT_IMAGE_HANDLE,
     },
 };
 

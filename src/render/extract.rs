@@ -1,8 +1,5 @@
-use super::cache::{CachedGrassChunk, EntityCache, GrassCache};
-use crate::{
-    bundle::Grass,
-    dithering::DitheredBuffer, height_map::HeightMap,
-};
+use super::cache::{CachedGrassChunk, GrassCache};
+use crate::{bundle::Grass, dithering::DitheredBuffer, height_map::HeightMap};
 use bevy::{
     prelude::*,
     render::{primitives::Aabb, Extract},
@@ -16,10 +13,7 @@ use bevy::{
 pub(crate) fn extract_grass(
     mut commands: Commands,
     grass_spawner: Extract<
-        Query<
-            (Entity, &Handle<DitheredBuffer>, &Aabb),
-            Changed<Handle<DitheredBuffer>>,
-        >,
+        Query<(Entity, &Handle<DitheredBuffer>, &Aabb), Changed<Handle<DitheredBuffer>>>,
     >,
     mut grass_cache: ResMut<GrassCache>,
 ) {
@@ -27,13 +21,7 @@ pub(crate) fn extract_grass(
     for (entity, dithered, aabb) in grass_spawner.iter() {
         let cache_value = grass_cache.entry(entity).or_default();
         cache_value.dither_handle = Some(dithered.clone());
-        values.push((
-            entity,
-            (
-                dithered.clone(),
-                *aabb,
-            ),
-        ));
+        values.push((entity, (dithered.clone(), *aabb)));
     }
     commands.insert_or_spawn_batch(values);
 }
@@ -44,9 +32,11 @@ pub(crate) fn extract_grass(
 #[allow(clippy::type_complexity)]
 pub(crate) fn extract_grass_positions(
     mut commands: Commands,
-    grass_spawner: Extract<Query<(Entity, &Grass, &Aabb)
-    // , Or<(Changed<Grass>, Changed<Aabb>)>
-    >>,
+    grass_spawner: Extract<
+        Query<
+            (Entity, &Grass, &Aabb), // , Or<(Changed<Grass>, Changed<Aabb>)>
+        >,
+    >,
     mut grass_cache: ResMut<GrassCache>,
 ) {
     let mut values = Vec::new();
@@ -60,36 +50,12 @@ pub(crate) fn extract_grass_positions(
     commands.insert_or_spawn_batch(values);
 }
 
-
-/// Extracts all visible grass entities into the render world
-#[allow(clippy::type_complexity)]
-pub(crate) fn extract_visibility(
-    visibility_queue: Extract<
-        Query<
-            (Entity, &ComputedVisibility),
-            (
-                Or<(With<Handle<DitheredBuffer>>, With<Grass>)>,
-                With<Transform>,
-            ),
-        >,
-    >,
-    mut entity_cache: ResMut<EntityCache>,
-) {
-    entity_cache.entities = visibility_queue
-        .iter()
-        .filter_map(|(e, visibility)| visibility.is_visible().then_some(e))
-        .collect();
-}
 pub(crate) fn extract_aabb(
     mut commands: Commands,
-
-    aabbs: Extract<
-    Query<(Entity, &Aabb), With<HeightMap>>
-    >
+    aabbs: Extract<Query<(Entity, &Aabb), With<HeightMap>>>,
 ) {
-
     let mut values = Vec::new();
-    for (e,aabb) in aabbs.iter() {
+    for (e, aabb) in aabbs.iter() {
         values.push((e, *aabb));
     }
     commands.insert_or_spawn_batch(values);

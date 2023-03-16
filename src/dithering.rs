@@ -18,7 +18,7 @@ use bevy::{
 };
 use serde::Deserialize;
 
-use crate::{density_map::DensityMap};
+use crate::density_map::DensityMap;
 
 // see https://surma.dev/things/ditherpunk/ for a good resource regarding ordered dithering
 const BAYER_DITHER: [[u8; 8]; 8] = [

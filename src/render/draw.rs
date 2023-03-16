@@ -11,7 +11,7 @@ use bevy::{
     },
 };
 
-use crate::{dithering::DitheredBuffer, prelude::WarblerHeight, height_map::HeightMap};
+use crate::{dithering::DitheredBuffer, height_map::HeightMap, prelude::WarblerHeight};
 
 use super::{cache::GrassCache, prepare::BindGroupBuffer};
 pub(crate) struct SetUniformBindGroup<const I: usize>;
@@ -41,7 +41,7 @@ pub(crate) struct SetYBindGroup<const I: usize>;
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
     type Param = ();
     type ViewWorldQuery = ();
-    type ItemWorldQuery = Option<Read<BindGroupBuffer::<HeightMap>>>;
+    type ItemWorldQuery = Option<Read<BindGroupBuffer<HeightMap>>>;
 
     fn render<'w>(
         _item: &P,
@@ -69,8 +69,6 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
         };
         pass.set_bind_group(I, &bind_group.bind_group, &[]);
         return RenderCommandResult::Success;
-
-
     }
 }
 pub(crate) struct SetHeightBindGroup<const I: usize>;
@@ -78,7 +76,7 @@ pub(crate) struct SetHeightBindGroup<const I: usize>;
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
     type Param = ();
     type ViewWorldQuery = ();
-    type ItemWorldQuery = Read<BindGroupBuffer::<WarblerHeight>>;
+    type ItemWorldQuery = Read<BindGroupBuffer<WarblerHeight>>;
 
     fn render<'w>(
         _item: &P,
@@ -87,10 +85,8 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
         _param: (),
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
+        pass.set_bind_group(I, &height.bind_group, &[]);
 
-        pass.set_bind_group(I,&height.bind_group, &[]);
-
-   
         RenderCommandResult::Success
     }
 }
