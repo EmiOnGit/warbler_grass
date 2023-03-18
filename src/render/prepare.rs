@@ -80,7 +80,7 @@ pub(crate) fn prepare_explicit_positions_buffer(
 
             let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
                 label: "height buffer".into(),
-                contents: &grass.height.to_ne_bytes(),
+                contents: bytemuck::bytes_of(&ShaderHeightUniform::from(grass.height)),
                 usage: BufferUsages::VERTEX | BufferUsages::COPY_DST | BufferUsages::UNIFORM,
             });
             let bind_group_descriptor = BindGroupDescriptor {
@@ -91,7 +91,7 @@ pub(crate) fn prepare_explicit_positions_buffer(
                     resource: BindingResource::Buffer(BufferBinding {
                         buffer: &buffer,
                         offset: 0,
-                        size: NonZeroU64::new(4),
+                        size: NonZeroU64::new(mem::size_of::<ShaderHeightUniform>() as u64),
                     }),
                 }],
             };
@@ -125,7 +125,7 @@ pub(crate) fn prepare_height_buffer(
 
                 let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
                     label: "grass blade height buffer".into(),
-                    contents: &height.to_ne_bytes(),
+                    contents: bytemuck::bytes_of(&ShaderHeightUniform::from(height)),
                     usage: BufferUsages::VERTEX | BufferUsages::COPY_DST | BufferUsages::UNIFORM,
                 });
                 let bind_group_descriptor = BindGroupDescriptor {
@@ -136,7 +136,7 @@ pub(crate) fn prepare_height_buffer(
                         resource: BindingResource::Buffer(BufferBinding {
                             buffer: &buffer,
                             offset: 0,
-                            size: NonZeroU64::new(4),
+                            size: NonZeroU64::new(mem::size_of::<ShaderHeightUniform>() as u64),
                         }),
                     }],
                 };
@@ -192,7 +192,7 @@ pub(crate) fn prepare_height_map_buffer(
 
         let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("aabb buffer"),
-            contents: bytemuck::bytes_of(&Vec3::from(aabb.half_extents.mul(2.))),
+            contents: bytemuck::bytes_of(&ShaderAabb::from(Vec3::from(aabb.half_extents.mul(2.)))),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
 
@@ -288,6 +288,40 @@ impl From<&GrassConfiguration> for ShaderRegionConfiguration {
             bottom_color: config.bottom_color.into(),
             wind: config.wind,
             _wasm_padding: Vec2::ZERO,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Pod, Zeroable)]
+#[repr(C)]
+struct ShaderAabb {
+    vect: Vec3,
+    /// Wasm requires shader uniforms to be aligned to 16 bytes
+    _wasm_padding: f32,
+}
+
+impl From<Vec3> for ShaderAabb {
+    fn from(vect: Vec3) -> Self {
+        Self {
+            vect,
+            _wasm_padding: 0.,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Pod, Zeroable)]
+#[repr(C)]
+struct ShaderHeightUniform {
+    height: f32,
+    /// Wasm requires shader uniforms to be aligned to 16 bytes
+    _wasm_padding: Vec3,
+}
+
+impl From<f32> for ShaderHeightUniform {
+    fn from(height: f32) -> Self {
+        Self {
+            height,
+            _wasm_padding: Vec3::ZERO,
         }
     }
 }
