@@ -292,7 +292,6 @@ impl From<&GrassConfiguration> for ShaderRegionConfiguration {
     }
 }
 
-
 #[derive(Debug, Clone, Copy, Pod, Zeroable)]
 #[repr(C)]
 struct ShaderAabb {
@@ -326,7 +325,6 @@ impl From<f32> for ShaderHeightUniform {
         }
     }
 }
-
 
 fn prepare_texture_from_data<T: Default + Clone + bytemuck::Pod>(
     data: &mut Vec<T>,
