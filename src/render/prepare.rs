@@ -91,7 +91,7 @@ pub(crate) fn prepare_explicit_positions_buffer(
                     resource: BindingResource::Buffer(BufferBinding {
                         buffer: &buffer,
                         offset: 0,
-                        size: NonZeroU64::new(4),
+                        size: NonZeroU64::new(mem::size_of::<ShaderHeightUniform>() as u64),
                     }),
                 }],
             };
@@ -136,7 +136,7 @@ pub(crate) fn prepare_height_buffer(
                         resource: BindingResource::Buffer(BufferBinding {
                             buffer: &buffer,
                             offset: 0,
-                            size: NonZeroU64::new(4),
+                            size: NonZeroU64::new(mem::size_of::<ShaderHeightUniform>() as u64),
                         }),
                     }],
                 };
