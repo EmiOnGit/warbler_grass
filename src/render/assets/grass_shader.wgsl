@@ -41,9 +41,7 @@ var noise_texture: texture_2d<f32>;
 #else
     struct ShaderHeightUniform {
         height: f32,
-        _wasm_padding1: f32,
-        _wasm_padding2: f32,
-        _wasm_padding3: f32,
+        _wasm_padding: vec2<f32>,
     }
     @group(4) @binding(0)
     var<uniform> height_uniform: ShaderHeightUniform;
