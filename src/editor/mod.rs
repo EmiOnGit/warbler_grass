@@ -17,11 +17,6 @@ use bevy_inspector_egui::{
 pub mod brush;
 pub mod draw_event;
 mod hot_reloading;
-/// # CREDIT
-/// A big part of the raycasting logic was stolen
-/// from the [bevy_mod_raycast](https://github.com/aevyrie/bevy_mod_raycast) crate.
-///
-/// Since I only use a tiny part, which isn't the focus of the crate, I 'ported' it into this module.
 pub mod ray_cast;
 pub mod save;
 pub mod tools;
@@ -31,11 +26,14 @@ pub mod ui;
 ///
 /// such as a simple gui, save functionality, live editing of maps
 /// and simple ray casting.
-pub struct EditorPlugin;
+#[derive(Default)]
+pub struct EditorPlugin {
+    pub scale_factor: f64,
+}
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         let egui_settings = EguiSettings {
-            scale_factor: 1.2,
+            scale_factor: self.scale_factor,
             ..Default::default()
         };
 

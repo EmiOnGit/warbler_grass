@@ -1,3 +1,10 @@
+use super::{
+    brush::{Airbrush, BrushBehavior, Stencil},
+    ray_cast::SelectedMap,
+    save::ImageSaver,
+    tools::{Eraser, Filler},
+    ActiveEditorChunk,
+};
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_inspector_egui::{
     bevy_egui::EguiContext,
@@ -6,18 +13,13 @@ use bevy_inspector_egui::{
     prelude::*,
 };
 
-use super::{
-    brush::{Airbrush, BrushBehavior, Stencil},
-    ray_cast::SelectedMap,
-    save::ImageSaver,
-    tools::{Eraser, Filler},
-};
-
+use bevy_inspector_egui::bevy_inspector;
 pub fn run_ui(world: &mut World) {
     let mut egui_context = world
         .query_filtered::<&mut EguiContext, With<PrimaryWindow>>()
         .single(world)
         .clone();
+
     let section_distance = 30.;
     egui::Window::new("Editor").show(egui_context.get_mut(), |ui| {
         ui.label(
@@ -60,6 +62,16 @@ pub fn run_ui(world: &mut World) {
                     saver.path = rfd::FileDialog::new().save_file();
                     saver.set_changed();
                 }
+            }
+            ui.add_space(section_distance);
+        });
+    });
+    egui::Window::new("Active Chunk Entity").show(egui_context.get_mut(), |ui| {
+        ui.separator();
+        ui.push_id(3, |ui| {
+            let active_chunk_entity = world.get_resource::<ActiveEditorChunk>().unwrap().0;
+            if let Some(active_chunk_entity) = active_chunk_entity {
+                bevy_inspector::ui_for_entity(world, active_chunk_entity, ui);
             }
             ui.add_space(section_distance);
         });

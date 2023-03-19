@@ -16,7 +16,6 @@ use bevy::{
         texture::Image,
     },
 };
-use serde::Deserialize;
 
 use crate::density_map::DensityMap;
 
@@ -75,7 +74,7 @@ pub(crate) fn dither_density_map(
 /// A buffer containing the dithered density map
 ///
 /// This struct shouldn't be modified by the user
-#[derive(Reflect, Clone, Debug, Deserialize, TypeUuid)]
+#[derive(Reflect, Clone, Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
 pub(crate) struct DitheredBuffer {
     pub positions: Vec<Vec2>,
