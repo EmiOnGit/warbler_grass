@@ -1,6 +1,6 @@
 # <img src="branding/warbler_display.svg" width="500">
-[![crates.io](https://img.shields.io/badge/crates.io-v0.3.1-orange)](https://crates.io/crates/warbler_grass)
-[![docs.io](https://img.shields.io/badge/docs-v0.3.1-green)](https://docs.rs/warbler_grass/0.3.1/warbler_grass/)
+[![crates.io](https://img.shields.io/badge/crates.io-v0.3.2-orange)](https://crates.io/crates/warbler_grass)
+[![docs.io](https://img.shields.io/badge/docs-v0.3.2-green)](https://docs.rs/warbler_grass/0.3.2/warbler_grass/)
 
 A `bevy` plugin for ergonomic integration of grass in 3d games.
 
