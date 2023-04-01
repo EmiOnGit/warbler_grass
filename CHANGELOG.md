@@ -1,4 +1,11 @@
 # Changelog
+## 0.3.2
+This release mainly includes proper support for wasm builds,
+as well as simplifications in the code and better documentation.
+Also the performance should be slightly better for the editor.
+
+No migration should be needed but to update the version
+
 ## 0.3.1
 This version shouldn't need any work on the user side.
 
