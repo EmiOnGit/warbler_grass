@@ -4,7 +4,8 @@
 
 A `bevy` plugin for ergonomic integration of grass in 3d games.
 
-Currently, bevy version `0.10` is supported
+Currently, bevy version `0.10` is supported.
+Wasm builds are also supported!
 
 **Don't use this project for serious projects, it is still under heavy development. 
 Currently, the project is not ready to be used besides side projects or for learning purposes**
