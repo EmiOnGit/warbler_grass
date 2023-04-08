@@ -26,6 +26,7 @@ pub struct GrassPipeline {
     pub explicit_height_layout: BindGroupLayout,
     pub uniform_height_layout: BindGroupLayout,
     pub explicit_xz_layout: BindGroupLayout,
+    pub color_layout: BindGroupLayout,
 }
 
 impl FromWorld for GrassPipeline {
@@ -164,7 +165,7 @@ impl FromWorld for GrassPipeline {
             });
         let uniform_height_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warblersneeds configuration layout"),
+                label: Some("warbler_grasss configuration layout"),
                 entries: &[BindGroupLayoutEntry {
                     binding: 0,
                     visibility: ShaderStages::VERTEX,
@@ -176,6 +177,19 @@ impl FromWorld for GrassPipeline {
                     count: None,
                 }],
             });
+        let color_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+            label: Some("warbler_grass color layout"),
+            entries: &[BindGroupLayoutEntry {
+                binding: 0,
+                visibility: ShaderStages::VERTEX,
+                ty: BindingType::Buffer {
+                    ty: BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
+        });
         let shader = GRASS_SHADER_HANDLE.typed::<Shader>();
         let mesh_pipeline = world.resource::<MeshPipeline>();
         GrassPipeline {
@@ -189,6 +203,7 @@ impl FromWorld for GrassPipeline {
             explicit_xz_layout,
             explicit_y_layout,
             height_map_layout,
+            color_layout,
         }
     }
 }
@@ -203,6 +218,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
         let mut descriptor = self.mesh_pipeline.specialize(key.mesh_key, layout)?;
         descriptor.label = Some("Grass Render Pipeline".into());
         descriptor.layout.push(self.region_layout.clone());
+        descriptor.layout.push(self.color_layout.clone());
         descriptor.vertex.buffers.push(VertexBufferLayout {
             array_stride: std::mem::size_of::<Vec2>() as u64,
             step_mode: VertexStepMode::Instance,

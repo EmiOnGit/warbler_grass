@@ -7,6 +7,7 @@ use super::cache::UniformBuffer;
 use super::grass_pipeline::GrassPipeline;
 use crate::bundle::{Grass, WarblerHeight};
 use crate::height_map::HeightMap;
+use crate::prelude::GrassColor;
 use crate::render::cache::ExplicitGrassCache;
 use crate::{GrassConfiguration, GrassNoiseTexture};
 use bevy::math::Vec3Swizzles;
@@ -109,6 +110,7 @@ pub(crate) fn prepare_explicit_positions_buffer(
 }
 #[derive(Component)]
 pub(crate) struct UniformHeightFlag;
+
 pub(crate) fn prepare_height_buffer(
     mut commands: Commands,
     pipeline: Res<GrassPipeline>,
@@ -170,6 +172,38 @@ pub(crate) fn prepare_height_buffer(
                     .insert(BindGroupBuffer::<WarblerHeight>::new(bind_group));
             }
         };
+    }
+}
+pub(crate) fn prepare_grass_color(
+    mut commands: Commands,
+    pipeline: Res<GrassPipeline>,
+    render_device: Res<RenderDevice>,
+    inserted_grass: Query<(Entity, &GrassColor)>,
+) {
+    for (entity, color) in inserted_grass.iter() {
+        let layout = pipeline.color_layout.clone();
+
+        let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            label: "grass color buffer".into(),
+            contents: bytemuck::bytes_of(&ShaderColorUniform::from(color)),
+            usage: BufferUsages::VERTEX | BufferUsages::COPY_DST | BufferUsages::UNIFORM,
+        });
+        let bind_group_descriptor = BindGroupDescriptor {
+            label: Some("grass color bind group"),
+            layout: &layout,
+            entries: &[BindGroupEntry {
+                binding: 0,
+                resource: BindingResource::Buffer(BufferBinding {
+                    buffer: &buffer,
+                    offset: 0,
+                    size: NonZeroU64::new(mem::size_of::<ShaderColorUniform>() as u64),
+                }),
+            }],
+        };
+        let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+        commands
+            .entity(entity)
+            .insert(BindGroupBuffer::<GrassColor>::new(bind_group));
     }
 }
 
@@ -274,8 +308,6 @@ pub(crate) fn prepare_uniform_buffers(
 #[derive(Debug, Clone, Copy, Pod, Zeroable)]
 #[repr(C)]
 struct ShaderRegionConfiguration {
-    main_color: Vec4,
-    bottom_color: Vec4,
     wind: Vec2,
     /// Wasm requires shader uniforms to be aligned to 16 bytes
     _wasm_padding: Vec2,
@@ -284,8 +316,6 @@ struct ShaderRegionConfiguration {
 impl From<&GrassConfiguration> for ShaderRegionConfiguration {
     fn from(config: &GrassConfiguration) -> Self {
         Self {
-            main_color: config.main_color.into(),
-            bottom_color: config.bottom_color.into(),
             wind: config.wind,
             _wasm_padding: Vec2::ZERO,
         }
@@ -309,6 +339,20 @@ impl From<Vec3> for ShaderAabb {
     }
 }
 
+#[derive(Debug, Clone, Copy, Pod, Zeroable)]
+#[repr(C)]
+struct ShaderColorUniform {
+    main_color: Vec4,
+    bottom_color: Vec4,
+}
+impl From<&GrassColor> for ShaderColorUniform {
+    fn from(config: &GrassColor) -> Self {
+        Self {
+            main_color: config.main_color.into(),
+            bottom_color: config.bottom_color.into(),
+        }
+    }
+}
 #[derive(Debug, Clone, Copy, Pod, Zeroable)]
 #[repr(C)]
 struct ShaderHeightUniform {

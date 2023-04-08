@@ -14,8 +14,8 @@ fn main() {
         .add_system(helper::camera_movement)
         // enable the editor by adding the plugin
         .add_plugin(editor::EditorPlugin {
-            // You can choose the scale factor for the ui or use the default 
-            scale_factor: 1.1
+            // You can choose the scale factor for the ui or use the default
+            scale_factor: 1.1,
         })
         .add_system(refresh_texture_view)
         .add_startup_system(setup_grass)

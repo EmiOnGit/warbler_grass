@@ -11,7 +11,11 @@ use bevy::{
     },
 };
 
-use crate::{dithering::DitheredBuffer, height_map::HeightMap, prelude::WarblerHeight};
+use crate::{
+    dithering::DitheredBuffer,
+    height_map::HeightMap,
+    prelude::{GrassColor, WarblerHeight},
+};
 
 use super::{
     cache::{ExplicitGrassCache, UniformBuffer},
@@ -56,6 +60,25 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
         };
         pass.set_bind_group(I, &bind_group.bind_group, &[]);
         return RenderCommandResult::Success;
+    }
+}
+pub(crate) struct SetColorBindGroup<const I: usize>;
+
+impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetColorBindGroup<I> {
+    type Param = ();
+    type ViewWorldQuery = ();
+    type ItemWorldQuery = Read<BindGroupBuffer<GrassColor>>;
+
+    fn render<'w>(
+        _item: &P,
+        _view: (),
+        color: &'w BindGroupBuffer<GrassColor>,
+        _param: (),
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        pass.set_bind_group(I, &color.bind_group, &[]);
+
+        RenderCommandResult::Success
     }
 }
 pub(crate) struct SetHeightBindGroup<const I: usize>;

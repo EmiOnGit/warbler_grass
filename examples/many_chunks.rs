@@ -36,6 +36,12 @@ fn setup_grass_chunks(mut commands: Commands, asset_server: Res<AssetServer>) {
             0.,
             (chunk % chunk_width as i32) as f32 * chunk_height * 1.05,
         );
+        // we can define the color of the grass on a chunk basis
+        let color = Color::rgb(
+            ((chunk / chunk_width as i32) as f32 / 400. * chunk_width) + 0.5,
+            ((chunk % chunk_width as i32) as f32 / chunk_width) + 0.5,
+            0.,
+        );
         commands.spawn(WarblersBundle {
             // we could use seperate density maps for each one
             density_map: density_map.clone(),
@@ -44,6 +50,10 @@ fn setup_grass_chunks(mut commands: Commands, asset_server: Res<AssetServer>) {
             height: WarblerHeight::Texture(density_map_handle.clone()),
             // the aabb defined the dimensions of the box the chunk lives in
             aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(chunk_width, 2., chunk_height)),
+            grass_color: GrassColor {
+                main_color: color.clone(),
+                bottom_color: color * 0.4,
+            },
 
             spatial: SpatialBundle {
                 transform: Transform::from_translation(offset),
