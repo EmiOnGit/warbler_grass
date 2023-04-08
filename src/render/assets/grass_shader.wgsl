@@ -2,8 +2,6 @@
 #import bevy_pbr::mesh_view_bindings
 
 struct ShaderRegionConfiguration {
-    main_color: vec4<f32>,
-    bottom_color: vec4<f32>,
     wind: vec2<f32>,
     _wasm_padding: vec2<f32>,
 };
@@ -11,6 +9,10 @@ struct Vertex {
     @location(0) vertex_position: vec3<f32>,
     @location(3) xz_position: vec2<f32>,
 }
+    struct Color {
+        main_color: vec4<f32>,
+        bottom_color: vec4<f32>,
+    }
 @group(1) @binding(0)
 var<uniform> mesh: Mesh;
 
@@ -20,11 +22,13 @@ var<uniform> config: ShaderRegionConfiguration;
 @group(2) @binding(1)
 var noise_texture: texture_2d<f32>;
 
+@group(3) @binding(0)
+var<uniform> color: Color;
 #ifdef EXPLICIT
-    @group(3) @binding(0)
+    @group(4) @binding(0)
     var y_positions: texture_2d<f32>;
 #else
-    @group(3) @binding(0)
+    @group(4) @binding(0)
     var height_map: texture_2d<f32>;
 
     struct ShaderAabb {
@@ -32,18 +36,18 @@ var noise_texture: texture_2d<f32>;
         _wasm_padding: f32,
     }
 
-    @group(3) @binding(1)
+    @group(4) @binding(1)
     var<uniform> aabb: ShaderAabb;
 #endif
 #ifdef HEIGHT_TEXTURE
- @group(4) @binding(0)
+ @group(5) @binding(0)
     var heights: texture_2d<f32>;
 #else
     struct ShaderHeightUniform {
         height: f32,
         _wasm_padding: vec2<f32>,
     }
-    @group(4) @binding(0)
+    @group(5) @binding(0)
     var<uniform> height_uniform: ShaderHeightUniform;
 #endif
 #import bevy_pbr::mesh_functions
@@ -136,7 +140,7 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
 
     // ---COLOR---
     let lambda = clamp(vertex.vertex_position.y, 0.,1.);
-    out.color = mix(config.bottom_color, config.main_color, lambda);
+    out.color = mix(color.bottom_color, color.main_color, lambda);
     return out;
 }
 

@@ -32,6 +32,8 @@ pub struct WarblersBundle {
     pub density_map: DensityMap,
     /// An [`WarblerHeight`] component
     pub height: WarblerHeight,
+    /// An [`GrassColor`] component
+    pub grass_color: GrassColor,
     /// An [`Aabb`] component
     ///
     /// Note that the Aabb is used to define the world dimensions of the [`DensityMap`] and [`HeightMap`].
@@ -46,6 +48,7 @@ impl Default for WarblersBundle {
             height_map: DEFAULT_IMAGE_HANDLE.typed().into(),
             density_map: DEFAULT_IMAGE_HANDLE.typed().into(),
             height: WarblerHeight::Uniform(1.),
+            grass_color: GrassColor::default(),
             aabb: Default::default(),
             spatial: Default::default(),
         }
@@ -64,7 +67,7 @@ pub enum WarblerHeight {
     Texture(Handle<Image>),
 }
 /// Defines the color of the grass blades
-#[derive(Component, Clone)]
+#[derive(Component, Clone, ExtractComponent)]
 pub struct GrassColor {
     /// The main [Color] of the grass used in your game
     pub main_color: Color,
@@ -175,6 +178,8 @@ pub struct WarblersExplicitBundle {
     pub grass_mesh: Handle<Mesh>,
     /// The explicit positions of the grass blades
     pub grass: Grass,
+    /// The color of the grass
+    pub grass_color: GrassColor,
     #[bundle]
     pub spatial: SpatialBundle,
 }
@@ -183,6 +188,7 @@ impl Default for WarblersExplicitBundle {
     fn default() -> Self {
         Self {
             grass_mesh: GRASS_MESH_HANDLE.typed(),
+            grass_color: GrassColor::default(),
             grass: Grass::default(),
             spatial: Default::default(),
         }

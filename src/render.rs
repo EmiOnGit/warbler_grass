@@ -3,7 +3,9 @@ use bevy::{
     render::render_phase::SetItemPipeline,
 };
 
-use self::draw::{SetHeightBindGroup, SetUniformBindGroup, SetVertexBuffer, SetYBindGroup};
+use self::draw::{
+    SetColorBindGroup, SetHeightBindGroup, SetUniformBindGroup, SetVertexBuffer, SetYBindGroup,
+};
 
 pub(crate) mod cache;
 mod draw;
@@ -23,10 +25,11 @@ pub(crate) type GrassDrawCall = (
     SetMeshBindGroup<1>,
     // Binds the [`GrassConfiguration`](crate::GrassConfiguration)
     SetUniformBindGroup<2>,
+    SetColorBindGroup<3>,
     // Bind group for the y position lookup of the blades
-    SetYBindGroup<3>,
+    SetYBindGroup<4>,
     // Binds the height of all the grass blades
-    SetHeightBindGroup<4>,
+    SetHeightBindGroup<5>,
     // Binds the xz position of the grass instances to the vertex buffer
     SetVertexBuffer,
 );
