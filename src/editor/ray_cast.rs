@@ -1,8 +1,5 @@
 use bevy::prelude::*;
-use bevy::{
-    math::Vec3Swizzles,
-    render::primitives::Aabb,
-};
+use bevy::{math::Vec3Swizzles, render::primitives::Aabb};
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 
 use crate::{
@@ -48,8 +45,7 @@ fn check_collision_on_click(
     selection: Res<SelectedMap>,
     mut draw_events: EventWriter<DrawEvent>,
 ) {
-    if !mouse_presses.pressed(MouseButton::Left)
-    {
+    if !mouse_presses.pressed(MouseButton::Left) {
         return;
     }
     let Ok(raycast_camera) = camera_source.get_single() else {
@@ -63,7 +59,7 @@ fn check_collision_on_click(
             continue;
         };
         let res = click_ray.get_point(intersection_distance);
-        
+
         let intersection_point = (res - aabb_center).xz();
         let aabb_extends = aabb.half_extents.as_dvec3().as_vec3().xz().abs();
         if aabb_extends.x > intersection_point.x
@@ -121,5 +117,3 @@ fn update_camera_ray(
         warn!("couldn't extract ray");
     }
 }
-
-

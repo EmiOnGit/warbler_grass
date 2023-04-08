@@ -10,7 +10,7 @@ use bevy::{
     reflect::Reflect,
     render::{
         extract_resource::ExtractResource,
-        prelude::{Color, Image},
+        prelude::Image,
         texture::{CompressedImageFormats, ImageType},
     },
 };
@@ -46,12 +46,6 @@ pub mod prelude {
 #[derive(Resource, Clone, Reflect, ExtractResource)]
 #[reflect(Resource)]
 pub struct GrassConfiguration {
-    /// The main [Color] of the grass used in your game
-    pub main_color: Color,
-    /// The bottom [Color] of the grass
-    ///
-    /// Normally, a darker variant of the main color is choosen to reflect the natural behavior of light
-    pub bottom_color: Color,
     /// The direction and strength of wind.
     ///
     /// The direction of the wind is on the x,z plane.
@@ -67,8 +61,6 @@ pub struct GrassConfiguration {
 impl Default for GrassConfiguration {
     fn default() -> Self {
         GrassConfiguration {
-            main_color: Color::rgb(0.2, 0.5, 0.0),
-            bottom_color: Color::rgb(0.1, 0.1, 0.0),
             wind: Vec2::new(1.0, 1.0),
         }
     }

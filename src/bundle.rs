@@ -2,6 +2,7 @@ use bevy::{
     asset::Handle,
     ecs::{bundle::Bundle, component::Component, query::QueryItem},
     math::Vec3,
+    prelude::Color,
     render::{
         extract_component::ExtractComponent, mesh::Mesh, prelude::SpatialBundle, primitives::Aabb,
         texture::Image, texture::DEFAULT_IMAGE_HANDLE,
@@ -61,6 +62,24 @@ pub enum WarblerHeight {
     ///
     /// The [`Image`] will be scaled over the plane defined by the [`Aabb`]
     Texture(Handle<Image>),
+}
+/// Defines the color of the grass blades
+#[derive(Component, Clone)]
+pub struct GrassColor {
+    /// The main [Color] of the grass used in your game
+    pub main_color: Color,
+    /// The bottom [Color] of the grass
+    ///
+    /// Normally, a darker variant of the main color is choosen to reflect the natural behavior of light
+    pub bottom_color: Color,
+}
+impl Default for GrassColor {
+    fn default() -> Self {
+        GrassColor {
+            main_color: Color::rgb(0.2, 0.5, 0.0),
+            bottom_color: Color::rgb(0.1, 0.1, 0.0),
+        }
+    }
 }
 impl ExtractComponent for WarblerHeight {
     type Query = &'static Self;
