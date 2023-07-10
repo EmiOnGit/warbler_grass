@@ -10,6 +10,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             WarblersPlugin,
+            // enable the editor by adding the plugin
             editor::EditorPlugin {
                 // You can choose the scale factor for the ui or use the default
                 scale_factor: 1.1,
@@ -21,7 +22,6 @@ fn main() {
             (
                 refresh_texture_view,
                 // As in all examples, you can use the wasd keys for movement and qe for rotation
-                // enable the editor by adding the plugin
                 helper::camera_movement,
             ),
         )
