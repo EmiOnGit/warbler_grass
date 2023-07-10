@@ -12,7 +12,7 @@ use bevy::{
         render_phase::AddRenderCommand,
         render_resource::{PrimitiveTopology, Shader, SpecializedMeshPipelines},
         texture::FallbackImage,
-        RenderApp, RenderSet,
+        Render, RenderApp, RenderSet,
     },
 };
 
@@ -59,37 +59,38 @@ impl Plugin for WarblersPlugin {
         let mut meshes = app.world.resource_mut::<Assets<Mesh>>();
         meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
 
-        app.add_system(add_dither_to_density)
-            .add_system(update::add_aabb_to_explicit)
-            .add_asset::<DitheredBuffer>()
-            .add_plugin(RenderAssetPlugin::<DitheredBuffer>::default());
+        app.add_systems(
+            Update,
+            (add_dither_to_density, update::add_aabb_to_explicit),
+        )
+        .add_asset::<DitheredBuffer>()
+        .add_plugins(RenderAssetPlugin::<DitheredBuffer>::default());
         // Init resources
         app.init_resource::<GrassConfiguration>()
             .register_type::<GrassConfiguration>()
             .init_resource::<GrassNoiseTexture>();
         // Add extraction of the configuration
-        app.add_plugin(ExtractResourcePlugin::<GrassConfiguration>::default());
-        app.add_plugin(ExtractResourcePlugin::<GrassNoiseTexture>::default());
-        app.add_plugin(ExtractComponentPlugin::<HeightMap>::default());
-        app.add_plugin(ExtractComponentPlugin::<WarblerHeight>::default());
-        app.add_plugin(ExtractComponentPlugin::<GrassColor>::default());
+        app.add_plugins((
+            ExtractResourcePlugin::<GrassConfiguration>::default(),
+            ExtractResourcePlugin::<GrassNoiseTexture>::default(),
+            ExtractComponentPlugin::<HeightMap>::default(),
+            ExtractComponentPlugin::<WarblerHeight>::default(),
+            ExtractComponentPlugin::<GrassColor>::default(),
+        ));
         // Init render app
         app.sub_app_mut(RenderApp)
             .add_render_command::<Opaque3d, render::GrassDrawCall>()
-            .init_resource::<FallbackImage>()
-            .init_resource::<GrassPipeline>()
-            .init_resource::<UniformBuffer>()
-            .init_resource::<ExplicitGrassCache>()
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_systems(
+                ExtractSchedule,
                 (
                     extract::extract_grass,
                     extract::extract_aabb,
                     extract::extract_grass_positions,
-                )
-                    .in_schedule(ExtractSchedule),
+                ),
             )
             .add_systems(
+                Render,
                 (
                     prepare::prepare_uniform_buffers,
                     prepare::prepare_explicit_positions_buffer,
@@ -99,7 +100,17 @@ impl Plugin for WarblersPlugin {
                 )
                     .in_set(RenderSet::Prepare),
             )
-            .add_system(queue::queue_grass_buffers.in_set(RenderSet::Queue));
+            .add_systems(Render, queue::queue_grass_buffers.in_set(RenderSet::Queue));
+    }
+
+    fn finish(&self, app: &mut App) {
+        let Ok(render_app) = app.get_sub_app_mut(RenderApp) else { return };
+
+        render_app
+            .init_resource::<FallbackImage>()
+            .init_resource::<GrassPipeline>()
+            .init_resource::<UniformBuffer>()
+            .init_resource::<ExplicitGrassCache>();
     }
 }
 

@@ -7,18 +7,24 @@ mod helper;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(WarblersPlugin)
-        .add_startup_system(setup_camera)
-        // As in all examples, you can use the wasd keys for movement and qe for rotation
-        .add_system(helper::camera_movement)
-        // enable the editor by adding the plugin
-        .add_plugin(editor::EditorPlugin {
-            // You can choose the scale factor for the ui or use the default
-            scale_factor: 1.1,
-        })
-        .add_system(refresh_texture_view)
-        .add_startup_system(setup_grass)
+        .add_plugins((
+            DefaultPlugins,
+            WarblersPlugin,
+            editor::EditorPlugin {
+                // You can choose the scale factor for the ui or use the default
+                scale_factor: 1.1,
+            },
+        ))
+        .add_systems(Startup, (setup_camera, setup_grass))
+        .add_systems(
+            Update,
+            (
+                refresh_texture_view,
+                // As in all examples, you can use the wasd keys for movement and qe for rotation
+                // enable the editor by adding the plugin
+                helper::camera_movement,
+            ),
+        )
         .run();
 }
 #[derive(Component)]

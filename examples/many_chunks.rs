@@ -6,15 +6,18 @@ use warbler_grass::{diagnostic::WarblerDiagnosticsPlugin, prelude::*};
 mod helper;
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(WarblersPlugin)
-        // Just a helper plugin for spawning a camera
-        // As in all examples, you can use the wasd keys for movement and qe for rotation
-        .add_plugin(helper::SimpleCamera)
-        // Let's also log the amount of blades rendered
-        .add_plugin(WarblerDiagnosticsPlugin)
-        .add_plugin(LogDiagnosticsPlugin::default())
-        .add_startup_system(setup_grass_chunks)
+        .add_plugins((
+            DefaultPlugins,
+            // This plugin is needed to initialize everything for the grass render pipeline
+            WarblersPlugin,
+            // Just a helper plugin for spawning a camera
+            // As in all examples, you can use the wasd keys for movement and qe for rotation
+            helper::SimpleCamera,
+            // Let's also log the amount of blades rendered
+            WarblerDiagnosticsPlugin,
+            LogDiagnosticsPlugin::default(),
+        ))
+        .add_systems(Startup, setup_grass_chunks)
         .run();
 }
 fn setup_grass_chunks(mut commands: Commands, asset_server: Res<AssetServer>) {

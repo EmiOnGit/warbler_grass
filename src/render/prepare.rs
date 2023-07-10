@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 use std::mem;
-use std::num::{NonZeroU32, NonZeroU64};
+use std::num::NonZeroU64;
 use std::ops::Mul;
 
 use super::cache::UniformBuffer;
@@ -154,7 +154,7 @@ pub(crate) fn prepare_height_buffer(
                 let tex = if let Some(tex) = images.get(&heights_texture) {
                     &tex.texture_view
                 } else {
-                    &fallback_img.texture_view
+                    &fallback_img.d2.texture_view
                 };
 
                 let bind_group_descriptor = BindGroupDescriptor {
@@ -221,7 +221,7 @@ pub(crate) fn prepare_height_map_buffer(
         let height_map_texture = if let Some(tex) = images.get(&height_map.height_map) {
             &tex.texture_view
         } else {
-            &fallback_img.texture_view
+            &fallback_img.d2.texture_view
         };
 
         let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -268,7 +268,7 @@ pub(crate) fn prepare_uniform_buffers(
 ) {
     let texture = &images
         .get(&noise_config.0)
-        .unwrap_or(&fallback_img)
+        .unwrap_or(&fallback_img.d2)
         .texture_view;
     if !region_config.is_changed() && Some(texture.id()) == *last_texture_id {
         return;
@@ -413,8 +413,8 @@ fn prepare_texture_from_data<T: Default + Clone + bytemuck::Pod>(
         data_slice,
         ImageDataLayout {
             offset: 0,
-            bytes_per_row: NonZeroU32::new(t_size as u32 * texture_size.width),
-            rows_per_image: NonZeroU32::new(texture_size.height),
+            bytes_per_row: Some(t_size as u32 * texture_size.width),
+            rows_per_image: Some(texture_size.height),
         },
         texture_size,
     );
@@ -425,9 +425,9 @@ fn prepare_texture_from_data<T: Default + Clone + bytemuck::Pod>(
             dimension: Some(TextureViewDimension::D2),
             aspect: TextureAspect::All,
             base_mip_level: 0,
-            mip_level_count: NonZeroU32::new(1),
+            mip_level_count: Some(1),
             base_array_layer: 0,
-            array_layer_count: NonZeroU32::new(1),
+            array_layer_count: Some(1),
         })
         .into()
 }
