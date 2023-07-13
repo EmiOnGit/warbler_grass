@@ -160,8 +160,8 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
                 pass.set_index_buffer(buffer.slice(..), 0, *index_format);
                 pass.draw_indexed(0..*count, 0, 0..blade_count);
             }
-            GpuBufferInfo::NonIndexed { vertex_count } => {
-                pass.draw(0..*vertex_count, 0..blade_count);
+            GpuBufferInfo::NonIndexed => {
+                pass.draw(0..gpu_mesh.vertex_count, 0..blade_count);
             }
         }
         RenderCommandResult::Success

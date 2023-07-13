@@ -1,5 +1,6 @@
-#import bevy_pbr::mesh_types
-#import bevy_pbr::mesh_view_bindings
+#import bevy_pbr::mesh_functions mesh_position_local_to_clip
+#import bevy_pbr::mesh_types Mesh
+#import bevy_pbr::mesh_view_bindings globals
 
 struct ShaderRegionConfiguration {
     wind: vec2<f32>,
@@ -50,7 +51,6 @@ var<uniform> color: Color;
     @group(5) @binding(0)
     var<uniform> height_uniform: ShaderHeightUniform;
 #endif
-#import bevy_pbr::mesh_functions
 
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,

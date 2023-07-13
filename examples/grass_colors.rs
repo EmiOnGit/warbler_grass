@@ -3,13 +3,16 @@ use warbler_grass::prelude::*;
 mod helper;
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(WarblersPlugin)
-        // Just a helper plugin for spawning a camera
-        // As in all examples, you can use the wasd keys for movement and qe for rotation
-        .add_plugin(helper::SimpleCamera)
-        .add_startup_system(setup_grass)
-        .add_system(change_colors)
+        .add_plugins((
+            DefaultPlugins,
+            // This plugin is needed to initialize everything for the grass render pipeline
+            WarblersPlugin,
+            // Just a helper plugin for spawning a camera
+            // As in all examples, you can use the wasd keys for movement and qe for rotation
+            helper::SimpleCamera,
+        ))
+        .add_systems(Startup, setup_grass)
+        .add_systems(Update, change_colors)
         .run();
 }
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {

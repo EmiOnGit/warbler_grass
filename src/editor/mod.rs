@@ -1,4 +1,4 @@
-use bevy::prelude::{Entity, Plugin, Resource};
+use bevy::prelude::{Entity, Plugin, Resource, Update};
 
 use self::{
     brush::{Airbrush, Stencil},
@@ -37,10 +37,12 @@ impl Plugin for EditorPlugin {
             ..Default::default()
         };
 
-        app.add_plugin(RayCastPlugin)
-            .insert_resource(egui_settings)
-            .add_plugin(DefaultInspectorConfigPlugin)
-            .add_plugin(bevy_egui::EguiPlugin)
+        app.insert_resource(egui_settings)
+            .add_plugins((
+                RayCastPlugin,
+                DefaultInspectorConfigPlugin,
+                bevy_egui::EguiPlugin,
+            ))
             .init_resource::<ActiveTool>()
             .init_resource::<ImageSaver>()
             .init_resource::<ActiveEditorChunk>()
@@ -52,10 +54,10 @@ impl Plugin for EditorPlugin {
             .register_type::<ActiveTool>()
             .register_type::<SelectedMap>()
             .add_event::<DrawEvent>()
-            .add_system(run_ui)
-            .add_system(draw_map)
-            .add_system(check_for_save_files)
-            .add_system(notify_image_change);
+            .add_systems(
+                Update,
+                (run_ui, draw_map, check_for_save_files, notify_image_change),
+            );
     }
 }
 /// Marker component for the entity that is currently edited

@@ -1,6 +1,6 @@
 use bevy::{
-    diagnostic::{Diagnostic, DiagnosticId, Diagnostics},
-    prelude::{Assets, ComputedVisibility, Handle, Plugin, Query, Res, ResMut},
+    diagnostic::{Diagnostic, DiagnosticId, Diagnostics, RegisterDiagnostic},
+    prelude::{Assets, ComputedVisibility, Handle, Plugin, Query, Res, Update},
 };
 
 use crate::{dithering::DitheredBuffer, prelude::Grass};
@@ -25,8 +25,12 @@ use crate::{dithering::DitheredBuffer, prelude::Grass};
 pub struct WarblerDiagnosticsPlugin;
 impl Plugin for WarblerDiagnosticsPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_startup_system(Self::setup_blade_count)
-            .add_system(Self::measure_blades);
+        app.register_diagnostic(
+            // Adds the [`Diagnostic`] responsable for logging the blade count to the [`Diagnostics`]
+            Diagnostic::new(Self::GRASS_BLADE_COUNT, "grass blade count", 20)
+                .with_suffix(" blades"),
+        )
+        .add_systems(Update, Self::measure_blades);
     }
 }
 impl WarblerDiagnosticsPlugin {
@@ -34,20 +38,12 @@ impl WarblerDiagnosticsPlugin {
     pub const GRASS_BLADE_COUNT: DiagnosticId =
         DiagnosticId::from_u128(11920430925311532474622109399490581929);
 
-    /// Adds the [`Diagnostic`] responsable for logging the blade count to the [`Diagnostics`]
-    fn setup_blade_count(mut diagnostics: ResMut<Diagnostics>) {
-        diagnostics.add(
-            Diagnostic::new(Self::GRASS_BLADE_COUNT, "grass blade count", 20)
-                .with_suffix(" blades"),
-        );
-    }
-
     /// Calculates the amount of blades that are drawn this frame and logs them
     fn measure_blades(
         blades: Query<(&Handle<DitheredBuffer>, &ComputedVisibility)>,
         explicit_blades: Query<(&Grass, &ComputedVisibility)>,
         dither: Res<Assets<DitheredBuffer>>,
-        mut diagnostics: ResMut<Diagnostics>,
+        mut diagnostics: Diagnostics,
     ) {
         // entities spawned with the WarblersBundle
         let count: u32 = blades

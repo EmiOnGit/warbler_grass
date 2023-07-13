@@ -4,8 +4,8 @@ use bevy::prelude::*;
 pub struct SimpleCamera;
 impl Plugin for SimpleCamera {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup_camera)
-            .add_system(camera_movement);
+        app.add_systems(Startup, setup_camera)
+            .add_systems(Update, camera_movement);
     }
 }
 fn setup_camera(mut commands: Commands) {

@@ -38,7 +38,6 @@ pub struct WarblersBundle {
     ///
     /// Note that the Aabb is used to define the world dimensions of the [`DensityMap`] and [`HeightMap`].
     pub aabb: Aabb,
-    #[bundle]
     pub spatial: SpatialBundle,
 }
 impl Default for WarblersBundle {
@@ -180,7 +179,6 @@ pub struct WarblersExplicitBundle {
     pub grass: Grass,
     /// The color of the grass
     pub grass_color: GrassColor,
-    #[bundle]
     pub spatial: SpatialBundle,
 }
 

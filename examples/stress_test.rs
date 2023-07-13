@@ -7,24 +7,26 @@ mod helper;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        // always needed to setup the grass render pipeline
-        .add_plugin(WarblersPlugin)
-        // Just a helper plugin for spawning a camera
-        // As in all examples, you can use the wasd keys for movement and qe for rotation
-        .add_plugin(helper::SimpleCamera)
+        .add_plugins((
+            DefaultPlugins,
+            // This plugin is needed to initialize everything for the grass render pipeline
+            WarblersPlugin,
+            // Just a helper plugin for spawning a camera
+            // As in all examples, you can use the wasd keys for movement and qe for rotation
+            helper::SimpleCamera,
+            // Let's also log the amount of blades rendered
+            // Since we spawn all grass in one huge chunk all blades get rendered
+            // as long as one is on the screen (normally you'd devide the area into chunks)
+            WarblerDiagnosticsPlugin,
+            LogDiagnosticsPlugin::default(),
+        ))
         // creates our grass
-        .add_startup_system(setup_grass)
+        .add_systems(Startup, setup_grass)
         // more wind
         .insert_resource(GrassConfiguration {
             wind: Vec2::new(2., 2.),
             ..default()
         })
-        // Let's also log the amount of blades rendered
-        // Since we spawn all grass in one huge chunk all blades get rendered
-        // as long as one is on the screen (normally you'd devide the area into chunks)
-        .add_plugin(WarblerDiagnosticsPlugin)
-        .add_plugin(LogDiagnosticsPlugin::default())
         .run();
 }
 
