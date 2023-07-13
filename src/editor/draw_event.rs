@@ -1,4 +1,4 @@
-use bevy::prelude::{Assets, EventReader, Handle, Image, ResMut, Vec2, Event};
+use bevy::prelude::{Assets, Event, EventReader, Handle, Image, ResMut, Vec2};
 
 use super::{
     tools::{Eraser, Filler},
