@@ -1,4 +1,4 @@
-use bevy::prelude::{Assets, EventReader, Handle, Image, ResMut, Vec2};
+use bevy::prelude::{Assets, EventReader, Handle, Image, ResMut, Vec2, Event};
 
 use super::{
     tools::{Eraser, Filler},
@@ -30,6 +30,8 @@ pub fn draw_map(
         }
     }
 }
+
+#[derive(Event)]
 pub enum DrawEvent {
     Draw {
         positions: Vec2,

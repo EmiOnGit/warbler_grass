@@ -12,8 +12,7 @@ pub(super) struct RayCastPlugin;
 
 impl Plugin for RayCastPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(check_collision_on_click)
-            .add_system(update_camera_ray);
+        app.add_systems(Update, (check_collision_on_click, update_camera_ray));
     }
 }
 /// Indicates the currently selected map in the editor

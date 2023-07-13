@@ -4,7 +4,7 @@ pub trait BrushBehavior: Sync + Send {
     /// position should be between 0 and 1
     fn draw(&self, image: &mut Image, position: Vec2, brush_size: u32, strength: f32);
 }
-#[derive(Reflect, FromReflect, Clone, Default)]
+#[derive(Reflect, Clone, Default)]
 #[reflect(Default)]
 pub struct Stencil;
 
@@ -27,7 +27,7 @@ impl BrushBehavior for Stencil {
     }
 }
 
-#[derive(Reflect, FromReflect, Clone, Default)]
+#[derive(Reflect, Clone, Default)]
 #[reflect(Default)]
 pub struct Airbrush;
 impl BrushBehavior for Airbrush {

@@ -105,7 +105,7 @@ impl ActiveTool {
 
 /// The brush which can be used to draw on a
 /// Can be configured in the editor ui
-#[derive(InspectorOptions, Reflect, FromReflect, Clone)]
+#[derive(InspectorOptions, Reflect, Clone)]
 #[reflect(InspectorOptions, Default)]
 pub struct Brush {
     /// Each [`BrushType`] has a implementation on how to draw
@@ -132,7 +132,7 @@ impl Default for Brush {
 }
 /// The currently implemented Brushes.
 /// They can be choosen from the ui in the editor
-#[derive(Reflect, FromReflect, InspectorOptions, Clone)]
+#[derive(Reflect, InspectorOptions, Clone)]
 #[reflect(InspectorOptions, Default)]
 pub enum BrushType {
     Stencil(Stencil),
