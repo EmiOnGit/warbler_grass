@@ -1,6 +1,6 @@
 # <img src="branding/warbler_display.svg" width="500">
-[![crates.io](https://img.shields.io/badge/crates.io-v0.3.2-orange)](https://crates.io/crates/warbler_grass)
-[![docs.io](https://img.shields.io/badge/docs-v0.3.2-green)](https://docs.rs/warbler_grass/0.3.2/warbler_grass/)
+[![crates.io](https://img.shields.io/badge/crates.io-v0.4-orange)](https://crates.io/crates/warbler_grass)
+[![docs.io](https://img.shields.io/badge/docs-v0.4-green)](https://docs.rs/warbler_grass/0.4/warbler_grass/)
 
 A `bevy` plugin for ergonomic integration of grass in 3d games.
 
@@ -19,7 +19,7 @@ Another cool project using this crate is the [foxtrot](https://github.com/janhoh
 Add `warbler_grass` as dependency to your project
 ```toml
 [dependencies]
-warbler_grass = "0.3.1"
+warbler_grass = "0.4"
 ```
 ### Add grass to your game:
 ```rust

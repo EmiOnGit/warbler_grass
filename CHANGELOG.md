@@ -1,4 +1,8 @@
 # Changelog
+## 0.4
+* Support for bevy 0.11
+* The color of the grass is now a `Component`, meaning it can be configured on a `Chunk` basis.
+
 ## 0.3.2
 This release mainly includes proper support for wasm builds,
 as well as simplifications in the code and better documentation.
