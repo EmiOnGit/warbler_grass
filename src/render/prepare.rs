@@ -6,7 +6,7 @@ use std::ops::Mul;
 use super::cache::UniformBuffer;
 use super::grass_pipeline::GrassPipeline;
 use crate::bundle::WarblerHeight;
-use crate::height_map::HeightMap;
+use crate::y_map::YMap;
 use crate::prelude::GrassColor;
 use crate::{GrassConfiguration, GrassNoiseTexture};
 use bevy::prelude::*;
@@ -137,12 +137,12 @@ pub(crate) fn prepare_height_map_buffer(
     pipeline: Res<GrassPipeline>,
     fallback_img: Res<FallbackImage>,
     images: Res<RenderAssets<Image>>,
-    inserted_grass: Query<(Entity, &HeightMap, &Aabb)>,
+    inserted_grass: Query<(Entity, &YMap, &Aabb)>,
 ) {
     let layout = pipeline.height_map_layout.clone();
 
     for (entity, height_map, aabb) in inserted_grass.iter() {
-        let height_map_texture = if let Some(tex) = images.get(&height_map.height_map) {
+        let height_map_texture = if let Some(tex) = images.get(&height_map.y_map) {
             &tex.texture_view
         } else {
             &fallback_img.d2.texture_view
@@ -176,7 +176,7 @@ pub(crate) fn prepare_height_map_buffer(
         let bind_group = render_device.create_bind_group(&bind_group_descriptor);
         commands
             .entity(entity)
-            .insert(BindGroupBuffer::<HeightMap>::new(bind_group));
+            .insert(BindGroupBuffer::<YMap>::new(bind_group));
     }
 }
 #[allow(clippy::too_many_arguments)]

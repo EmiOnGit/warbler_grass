@@ -13,7 +13,7 @@ use bevy::{
 
 use crate::{
     dithering::DitheredBuffer,
-    height_map::HeightMap,
+    y_map::YMap,
     prelude::{GrassColor, WarblerHeight},
 };
 
@@ -42,12 +42,12 @@ pub(crate) struct SetYBindGroup<const I: usize>;
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
     type Param = ();
     type ViewWorldQuery = ();
-    type ItemWorldQuery = Option<Read<BindGroupBuffer<HeightMap>>>;
+    type ItemWorldQuery = Option<Read<BindGroupBuffer<YMap>>>;
 
     fn render<'w>(
         _item: &P,
         _view: (),
-        bind_group: Option<&'w BindGroupBuffer<HeightMap>>,
+        bind_group: Option<&'w BindGroupBuffer<YMap>>,
         _cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {

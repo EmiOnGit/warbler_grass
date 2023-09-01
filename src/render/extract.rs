@@ -1,4 +1,4 @@
-use crate::{dithering::DitheredBuffer, height_map::HeightMap};
+use crate::{dithering::DitheredBuffer, y_map::YMap};
 use bevy::{
     prelude::*,
     render::{primitives::Aabb, Extract},
@@ -22,7 +22,7 @@ pub(crate) fn extract_grass(
 
 pub(crate) fn extract_aabb(
     mut commands: Commands,
-    aabbs: Extract<Query<(Entity, &Aabb), With<HeightMap>>>,
+    aabbs: Extract<Query<(Entity, &Aabb), With<YMap>>>,
 ) {
     let mut values = Vec::new();
     for (e, aabb) in aabbs.iter() {
