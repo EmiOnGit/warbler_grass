@@ -10,7 +10,7 @@ pub struct Stencil;
 
 impl BrushBehavior for Stencil {
     fn draw(&self, image: &mut Image, position: Vec2, brush_size: u32, strength: f32) {
-        let Ok(dynamic_image)  = image.clone().try_into_dynamic() else {
+        let Ok(dynamic_image) = image.clone().try_into_dynamic() else {
             warn!("couldn't convert image");
             return;
         };
@@ -32,7 +32,7 @@ impl BrushBehavior for Stencil {
 pub struct Airbrush;
 impl BrushBehavior for Airbrush {
     fn draw(&self, image: &mut Image, position: Vec2, brush_size: u32, strength: f32) {
-        let Ok(dynamic_image)  = image.clone().try_into_dynamic() else {
+        let Ok(dynamic_image) = image.clone().try_into_dynamic() else {
             warn!("couldn't convert image");
             return;
         };

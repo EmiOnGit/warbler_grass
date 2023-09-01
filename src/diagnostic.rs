@@ -53,10 +53,6 @@ impl WarblerDiagnosticsPlugin {
             .map(|buffer| buffer.positions.len() as u32)
             .sum();
 
-        
-
-        diagnostics.add_measurement(Self::GRASS_BLADE_COUNT, || {
-            count as f64
-        });
+        diagnostics.add_measurement(Self::GRASS_BLADE_COUNT, || count as f64);
     }
 }

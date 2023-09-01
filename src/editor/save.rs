@@ -47,7 +47,7 @@ pub fn check_for_save_files(
             };
             let Some(image) = images.get(image_handle) else {
                 info!("Image was not yet loaded. Saving failed");
-                return
+                return;
             };
             match saver.save(image) {
                 Ok(_) => info!("Successfully saved image to {:?}", saver.path),

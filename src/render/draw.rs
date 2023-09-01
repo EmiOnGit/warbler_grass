@@ -17,10 +17,7 @@ use crate::{
     prelude::{GrassColor, WarblerHeight},
 };
 
-use super::{
-    cache::UniformBuffer,
-    prepare::BindGroupBuffer,
-};
+use super::{cache::UniformBuffer, prepare::BindGroupBuffer};
 pub(crate) struct SetUniformBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
@@ -56,7 +53,6 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
     ) -> RenderCommandResult {
         let Some(bind_group) = bind_group else {
             return RenderCommandResult::Failure;
-
         };
         pass.set_bind_group(I, &bind_group.bind_group, &[]);
         return RenderCommandResult::Success;
@@ -103,10 +99,7 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
 pub(crate) struct SetVertexBuffer;
 
 impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
-    type Param = (
-        SRes<RenderAssets<Mesh>>,
-        SRes<RenderAssets<DitheredBuffer>>,
-    );
+    type Param = (SRes<RenderAssets<Mesh>>, SRes<RenderAssets<DitheredBuffer>>);
     type ViewWorldQuery = ();
     type ItemWorldQuery = (Read<Handle<Mesh>>, Option<Read<Handle<DitheredBuffer>>>);
 
@@ -118,7 +111,7 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
             &'w Handle<bevy::prelude::Mesh>,
             Option<&'w Handle<DitheredBuffer>>,
         ),
-        (meshes,  dither): SystemParamItem<'w, '_, Self::Param>,
+        (meshes, dither): SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
         let gpu_mesh = match meshes.into_inner().get(mesh_handle) {

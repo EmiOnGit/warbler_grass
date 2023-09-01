@@ -1,7 +1,4 @@
-use bevy::{
-    prelude::*,
-    render::render_resource::BindGroup,
-};
+use bevy::{prelude::*, render::render_resource::BindGroup};
 
 #[derive(Resource, Default)]
 pub(crate) struct UniformBuffer(pub Option<BindGroup>);
