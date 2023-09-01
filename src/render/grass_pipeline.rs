@@ -22,7 +22,6 @@ pub struct GrassPipeline {
     pub height_map_layout: BindGroupLayout,
     pub density_map_layout: BindGroupLayout,
     pub heights_texture_layout: BindGroupLayout,
-    pub explicit_height_layout: BindGroupLayout,
     pub uniform_height_layout: BindGroupLayout,
     pub color_layout: BindGroupLayout,
 }
@@ -57,11 +56,11 @@ impl FromWorld for GrassPipeline {
                 },
             ],
         });
-        let height_map_layout =
+        let y_map_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warbler_grass height map layout"),
+                label: Some("warbler_grass y map layout"),
                 entries: &[
-                    // height_map
+                    // y_texture
                     BindGroupLayoutEntry {
                         binding: 0,
                         visibility: ShaderStages::VERTEX,
@@ -102,20 +101,7 @@ impl FromWorld for GrassPipeline {
                     },
                 ],
             });
-        let explicit_height_layout =
-            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warbler_grass explicit height layout"),
-                entries: &[BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: ShaderStages::VERTEX,
-                    ty: BindingType::Texture {
-                        sample_type: TextureSampleType::Float { filterable: false },
-                        view_dimension: TextureViewDimension::D2,
-                        multisampled: false,
-                    },
-                    count: None,
-                }],
-            });
+        
         let heights_texture_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
                 label: Some("warbler_grass height texture layout"),
@@ -163,11 +149,10 @@ impl FromWorld for GrassPipeline {
             shader,
             mesh_pipeline: mesh_pipeline.clone(),
             region_layout,
-            explicit_height_layout,
             uniform_height_layout,
             heights_texture_layout,
             density_map_layout,
-            height_map_layout,
+            height_map_layout: y_map_layout,
             color_layout,
         }
     }
@@ -201,7 +186,6 @@ impl SpecializedMeshPipeline for GrassPipeline {
             descriptor.layout.push(self.uniform_height_layout.clone());
         } else {
             vertex.shader_defs.push("HEIGHT_TEXTURE".into());
-
             descriptor.layout.push(self.heights_texture_layout.clone());
         }
 
