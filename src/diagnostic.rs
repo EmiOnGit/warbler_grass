@@ -33,7 +33,7 @@ impl Plugin for WarblerDiagnosticsPlugin {
 impl WarblerDiagnosticsPlugin {
     /// A id for the [`Diagnostic`] of the blade count.
     pub const GRASS_BLADE_COUNT: DiagnosticId =
-        DiagnosticId::from_u128(11920430925311532474622109399490581929);
+        DiagnosticId::from_u128(11_920_430_925_311_532_474_622_109_399_490_581_929);
 
     /// Calculates the amount of blades that are drawn this frame and logs them
     fn measure_blades(

@@ -26,14 +26,14 @@ use crate::{
 
 /// A raw handle which points to the shader used to render the grass.
 pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
-    HandleUntyped::weak_from_u64(Shader::TYPE_UUID, 2263343952151597127);
+    HandleUntyped::weak_from_u64(Shader::TYPE_UUID, 2_263_343_952_151_597_127);
 
 /// A raw handle to the default mesh used for grass.
 ///
 /// The [`WarblersPlugin`] adds the corresponding mesh to the world.
 /// So you should only convert the raw handle when the plugin is used
 pub const GRASS_MESH_HANDLE: HandleUntyped =
-    HandleUntyped::weak_from_u64(Mesh::TYPE_UUID, 9357128457583957921);
+    HandleUntyped::weak_from_u64(Mesh::TYPE_UUID, 9_357_128_457_583_957_921);
 
 /// Adds the render pipeline for drawing grass to an [`App`]
 ///

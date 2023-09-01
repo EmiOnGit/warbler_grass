@@ -42,8 +42,8 @@ impl Default for WarblersBundle {
             density_map: DEFAULT_IMAGE_HANDLE.typed().into(),
             height: WarblerHeight::Uniform(1.),
             grass_color: GrassColor::default(),
-            aabb: Default::default(),
-            spatial: Default::default(),
+            aabb: Aabb::default(),
+            spatial: SpatialBundle::default(),
         }
     }
 }

@@ -28,7 +28,7 @@ impl<T> BindGroupBuffer<T> {
     pub fn new(bind_group: BindGroup) -> Self {
         BindGroupBuffer {
             bind_group,
-            _inner: PhantomData::default(),
+            _inner: PhantomData,
         }
     }
 }
