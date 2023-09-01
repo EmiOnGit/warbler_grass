@@ -1,6 +1,6 @@
 # <img src="branding/warbler_display.svg" width="500">
-[![crates.io](https://img.shields.io/badge/crates.io-v0.3.2-orange)](https://crates.io/crates/warbler_grass)
-[![docs.io](https://img.shields.io/badge/docs-v0.3.2-green)](https://docs.rs/warbler_grass/0.3.2/warbler_grass/)
+[![crates.io](https://img.shields.io/badge/crates.io-v0.4-orange)](https://crates.io/crates/warbler_grass)
+[![docs.io](https://img.shields.io/badge/docs-v0.4-green)](https://docs.rs/warbler_grass/0.4/warbler_grass/)
 
 A `bevy` plugin for ergonomic integration of grass in 3d games.
 
@@ -19,7 +19,7 @@ Another cool project using this crate is the [foxtrot](https://github.com/janhoh
 Add `warbler_grass` as dependency to your project
 ```toml
 [dependencies]
-warbler_grass = "0.3.1"
+warbler_grass = "0.4"
 ```
 ### Add grass to your game:
 ```rust
@@ -93,12 +93,6 @@ You don't like the default mesh of the grass? Don't worry you can use swap the m
 Note that you can press `TAB` to change the mesh in the demo
 ```shell
 cargo run --example grass_mesh
-```
-### Load explicit
-You don't want to work with all the weird maps. All you want to do is define explicit positions for the grass blades to spawn in?
-You can definitly also do that
-```shell
-cargo run --example load_explicit
 ```
 ### Many chunks
 You'd like to see what this crate can do? Run this demo to see many chunks loaded at once.

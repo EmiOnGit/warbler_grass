@@ -17,10 +17,7 @@ use crate::{
     prelude::{GrassColor, WarblerHeight},
 };
 
-use super::{
-    cache::{ExplicitGrassCache, UniformBuffer},
-    prepare::BindGroupBuffer,
-};
+use super::{cache::UniformBuffer, prepare::BindGroupBuffer};
 pub(crate) struct SetUniformBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
@@ -56,7 +53,6 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
     ) -> RenderCommandResult {
         let Some(bind_group) = bind_group else {
             return RenderCommandResult::Failure;
-
         };
         pass.set_bind_group(I, &bind_group.bind_group, &[]);
         return RenderCommandResult::Success;
@@ -103,23 +99,19 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
 pub(crate) struct SetVertexBuffer;
 
 impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
-    type Param = (
-        SRes<RenderAssets<Mesh>>,
-        SRes<ExplicitGrassCache>,
-        SRes<RenderAssets<DitheredBuffer>>,
-    );
+    type Param = (SRes<RenderAssets<Mesh>>, SRes<RenderAssets<DitheredBuffer>>);
     type ViewWorldQuery = ();
     type ItemWorldQuery = (Read<Handle<Mesh>>, Option<Read<Handle<DitheredBuffer>>>);
 
     #[inline]
     fn render<'w>(
-        item: &P,
+        _item: &P,
         _view: (),
         (mesh_handle, dither_handle): (
             &'w Handle<bevy::prelude::Mesh>,
             Option<&'w Handle<DitheredBuffer>>,
         ),
-        (meshes, cache, dither): SystemParamItem<'w, '_, Self::Param>,
+        (meshes, dither): SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
         let gpu_mesh = match meshes.into_inner().get(mesh_handle) {
@@ -141,14 +133,7 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
                 return RenderCommandResult::Failure;
             }
         } else {
-            let Some(chunk) = cache.into_inner().get(&item.entity()) else {
-                return RenderCommandResult::Failure;
-            };
-            blade_count = chunk.explicit_count;
-            let Some(xz_buffer) = chunk.explicit_xz_buffer.as_ref() else {
-                return RenderCommandResult::Failure;
-            };
-            pass.set_vertex_buffer(1, xz_buffer.slice(..));
+            return RenderCommandResult::Failure;
         }
 
         match &gpu_mesh.buffer_info {

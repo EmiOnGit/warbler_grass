@@ -3,7 +3,7 @@ use bevy::{
     prelude::{Assets, ComputedVisibility, Handle, Plugin, Query, Res, Update},
 };
 
-use crate::{dithering::DitheredBuffer, prelude::Grass};
+use crate::dithering::DitheredBuffer;
 
 /// A [`Plugin`] that logs the blades drawn in each frame.
 ///
@@ -41,7 +41,6 @@ impl WarblerDiagnosticsPlugin {
     /// Calculates the amount of blades that are drawn this frame and logs them
     fn measure_blades(
         blades: Query<(&Handle<DitheredBuffer>, &ComputedVisibility)>,
-        explicit_blades: Query<(&Grass, &ComputedVisibility)>,
         dither: Res<Assets<DitheredBuffer>>,
         mut diagnostics: Diagnostics,
     ) {
@@ -54,15 +53,6 @@ impl WarblerDiagnosticsPlugin {
             .map(|buffer| buffer.positions.len() as u32)
             .sum();
 
-        // entities spawned with the WarblersExplicitBundle
-        let count_explicit: u32 = explicit_blades
-            .iter()
-            .filter(|(_grass, visible)| visible.is_visible())
-            .map(|(grass, _visible)| grass.positions.len() as u32)
-            .sum();
-
-        diagnostics.add_measurement(Self::GRASS_BLADE_COUNT, || {
-            count as f64 + count_explicit as f64
-        });
+        diagnostics.add_measurement(Self::GRASS_BLADE_COUNT, || count as f64);
     }
 }

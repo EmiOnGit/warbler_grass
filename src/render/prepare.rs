@@ -5,22 +5,18 @@ use std::ops::Mul;
 
 use super::cache::UniformBuffer;
 use super::grass_pipeline::GrassPipeline;
-use crate::bundle::{Grass, WarblerHeight};
+use crate::bundle::WarblerHeight;
 use crate::height_map::HeightMap;
 use crate::prelude::GrassColor;
-use crate::render::cache::ExplicitGrassCache;
 use crate::{GrassConfiguration, GrassNoiseTexture};
-use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::{
     BindGroup, BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding,
-    BufferInitDescriptor, BufferUsages, Extent3d, ImageCopyTexture, ImageDataLayout, Origin3d,
-    TextureAspect, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureView,
-    TextureViewDescriptor, TextureViewDimension, TextureViewId,
+    BufferInitDescriptor, BufferUsages, TextureViewId,
 };
-use bevy::render::renderer::{RenderDevice, RenderQueue};
+use bevy::render::renderer::RenderDevice;
 use bevy::render::texture::FallbackImage;
 use bytemuck::{Pod, Zeroable};
 #[derive(Component)]
@@ -33,78 +29,6 @@ impl<T> BindGroupBuffer<T> {
         BindGroupBuffer {
             bind_group,
             _inner: PhantomData::default(),
-        }
-    }
-}
-pub(crate) fn prepare_explicit_positions_buffer(
-    mut commands: Commands,
-    mut cache: ResMut<ExplicitGrassCache>,
-    pipeline: Res<GrassPipeline>,
-    render_device: Res<RenderDevice>,
-    render_queue: Res<RenderQueue>,
-    mut inserted_grass: Query<(Entity, &mut Grass)>,
-) {
-    for (entity, grass) in inserted_grass.iter_mut() {
-        if let Some(chunk) = cache.get_mut(&entity) {
-            chunk.explicit_count = grass.positions.len() as u32;
-            let (xz, mut y): (Vec<Vec2>, Vec<f32>) =
-                grass.positions.iter().map(|v| (v.xz(), v.y)).unzip();
-            let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                label: "xz vertex buffer".into(),
-                contents: bytemuck::cast_slice(xz.as_slice()),
-                usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
-            });
-
-            chunk.explicit_xz_buffer = Some(buffer);
-
-            let view = prepare_texture_from_data(
-                &mut y,
-                &render_device,
-                &render_queue,
-                TextureFormat::R32Float,
-            );
-            let layout = pipeline.explicit_y_layout.clone();
-            let bind_group_descriptor = BindGroupDescriptor {
-                label: Some("grass explicit y positions bind group"),
-                layout: &layout,
-                entries: &[BindGroupEntry {
-                    binding: 0,
-                    resource: BindingResource::TextureView(&view),
-                }],
-            };
-            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-            commands
-                .entity(entity)
-                .insert(BindGroupBuffer::<HeightMap>::new(bind_group));
-
-            let layout = pipeline.uniform_height_layout.clone();
-
-            let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-                label: "height buffer".into(),
-                contents: bytemuck::bytes_of(&ShaderHeightUniform::from(grass.height)),
-                usage: BufferUsages::VERTEX | BufferUsages::COPY_DST | BufferUsages::UNIFORM,
-            });
-            let bind_group_descriptor = BindGroupDescriptor {
-                label: Some("grass height bind group"),
-                layout: &layout,
-                entries: &[BindGroupEntry {
-                    binding: 0,
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &buffer,
-                        offset: 0,
-                        size: NonZeroU64::new(mem::size_of::<ShaderHeightUniform>() as u64),
-                    }),
-                }],
-            };
-            let bind_group = render_device.create_bind_group(&bind_group_descriptor);
-            commands
-                .entity(entity)
-                .insert(BindGroupBuffer::<WarblerHeight>::new(bind_group))
-                .insert(UniformHeightFlag);
-        } else {
-            warn!(
-                "Tried to prepare a entity buffer for a grass chunk which wasn't registered before"
-            );
         }
     }
 }
@@ -368,66 +292,4 @@ impl From<f32> for ShaderHeightUniform {
             _wasm_padding: Vec3::ZERO,
         }
     }
-}
-
-fn prepare_texture_from_data<T: Default + Clone + bytemuck::Pod>(
-    data: &mut Vec<T>,
-    render_device: &RenderDevice,
-    render_queue: &RenderQueue,
-    format: TextureFormat,
-) -> TextureView {
-    let device = render_device.wgpu_device();
-
-    // the dimensions of the texture are choosen to be nxn for the tiniest n which can contain the data
-    let sqrt = (data.len() as f32).sqrt() as u32 + 1;
-    let fill_data = vec![T::default(); (sqrt * sqrt) as usize - data.len()];
-    data.extend(fill_data);
-    let texture_size = Extent3d {
-        width: sqrt,
-        height: sqrt,
-        depth_or_array_layers: 1,
-    };
-    // wgpu expects a byte array
-    let data_slice = bytemuck::cast_slice(data.as_slice());
-    // the texture is empty per default
-    let texture = device.create_texture(&TextureDescriptor {
-        size: texture_size,
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: TextureDimension::D2,
-        format,
-        usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
-        label: None,
-        view_formats: &[],
-    });
-    let t_size = mem::size_of::<T>();
-
-    // write data to texture
-    render_queue.write_texture(
-        ImageCopyTexture {
-            texture: &texture,
-            mip_level: 0,
-            origin: Origin3d::ZERO,
-            aspect: TextureAspect::All,
-        },
-        data_slice,
-        ImageDataLayout {
-            offset: 0,
-            bytes_per_row: Some(t_size as u32 * texture_size.width),
-            rows_per_image: Some(texture_size.height),
-        },
-        texture_size,
-    );
-    texture
-        .create_view(&TextureViewDescriptor {
-            label: None,
-            format: Some(format),
-            dimension: Some(TextureViewDimension::D2),
-            aspect: TextureAspect::All,
-            base_mip_level: 0,
-            mip_level_count: Some(1),
-            base_array_layer: 0,
-            array_layer_count: Some(1),
-        })
-        .into()
 }

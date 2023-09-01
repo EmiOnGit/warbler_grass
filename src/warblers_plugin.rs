@@ -20,14 +20,8 @@ use crate::{
     dithering::{add_dither_to_density, DitheredBuffer},
     height_map::HeightMap,
     prelude::{GrassColor, WarblerHeight},
-    render::{
-        self,
-        cache::{ExplicitGrassCache, UniformBuffer},
-        extract,
-        grass_pipeline::GrassPipeline,
-        prepare, queue,
-    },
-    update, GrassConfiguration, GrassNoiseTexture,
+    render::{self, cache::UniformBuffer, extract, grass_pipeline::GrassPipeline, prepare, queue},
+    GrassConfiguration, GrassNoiseTexture,
 };
 
 /// A raw handle which points to the shader used to render the grass.
@@ -59,12 +53,9 @@ impl Plugin for WarblersPlugin {
         let mut meshes = app.world.resource_mut::<Assets<Mesh>>();
         meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
 
-        app.add_systems(
-            Update,
-            (add_dither_to_density, update::add_aabb_to_explicit),
-        )
-        .add_asset::<DitheredBuffer>()
-        .add_plugins(RenderAssetPlugin::<DitheredBuffer>::default());
+        app.add_systems(Update, add_dither_to_density)
+            .add_asset::<DitheredBuffer>()
+            .add_plugins(RenderAssetPlugin::<DitheredBuffer>::default());
         // Init resources
         app.init_resource::<GrassConfiguration>()
             .register_type::<GrassConfiguration>()
@@ -83,17 +74,12 @@ impl Plugin for WarblersPlugin {
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_systems(
                 ExtractSchedule,
-                (
-                    extract::extract_grass,
-                    extract::extract_aabb,
-                    extract::extract_grass_positions,
-                ),
+                (extract::extract_grass, extract::extract_aabb),
             )
             .add_systems(
                 Render,
                 (
                     prepare::prepare_uniform_buffers,
-                    prepare::prepare_explicit_positions_buffer,
                     prepare::prepare_height_buffer,
                     prepare::prepare_grass_color,
                     prepare::prepare_height_map_buffer,
@@ -104,13 +90,14 @@ impl Plugin for WarblersPlugin {
     }
 
     fn finish(&self, app: &mut App) {
-        let Ok(render_app) = app.get_sub_app_mut(RenderApp) else { return };
+        let Ok(render_app) = app.get_sub_app_mut(RenderApp) else {
+            return;
+        };
 
         render_app
             .init_resource::<FallbackImage>()
             .init_resource::<GrassPipeline>()
-            .init_resource::<UniformBuffer>()
-            .init_resource::<ExplicitGrassCache>();
+            .init_resource::<UniformBuffer>();
     }
 }
 

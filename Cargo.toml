@@ -29,10 +29,6 @@ features = [ "bevy_core_pipeline", "bevy_render", "bevy_asset", "bevy_pbr" , "pn
 bevy = { version = "0.11", default-features = false, features = ["bevy_winit","x11", "ktx2", "zstd", "tonemapping_luts"] }
 
 [[example]]
-name = "load_explicit"
-path = "examples/load_explicit.rs"
-
-[[example]]
 name = "editor"
 path = "examples/editor.rs"
 required-features = ["editor"]

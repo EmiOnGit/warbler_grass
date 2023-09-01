@@ -42,7 +42,7 @@ pub(crate) fn dither_density_map(
     if field_size.length() < 0.0001 {
         return None;
     }
-    let Ok(dynamic_image)  = image.clone().try_into_dynamic() else {
+    let Ok(dynamic_image) = image.clone().try_into_dynamic() else {
         return None;
     };
     // Capacity is not precise but should be a good estimate
@@ -130,7 +130,7 @@ pub(crate) fn add_dither_to_density(
             let xz = aabb.half_extents.xz() * 2.;
             let Some(buffer) = dither_density_map(image, density_map.density, xz) else {
                 warn!("Couldn't dither density map. Maybe the image format is not supported?");
-                continue
+                continue;
             };
             let handle = dithered.add(buffer);
             commands.entity(e).insert(handle);
