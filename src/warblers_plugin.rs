@@ -18,9 +18,9 @@ use bevy::{
 
 use crate::{
     dithering::{add_dither_to_density, DitheredBuffer},
-    y_map::YMap,
     prelude::{GrassColor, WarblerHeight},
     render::{self, cache::UniformBuffer, extract, grass_pipeline::GrassPipeline, prepare, queue},
+    y_map::YMap,
     GrassConfiguration, GrassNoiseTexture,
 };
 

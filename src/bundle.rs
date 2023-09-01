@@ -8,7 +8,7 @@ use bevy::{
     },
 };
 
-use crate::{density_map::DensityMap, y_map::YMap, warblers_plugin::GRASS_MESH_HANDLE};
+use crate::{density_map::DensityMap, warblers_plugin::GRASS_MESH_HANDLE, y_map::YMap};
 
 /// This [`Bundle`] spawns a grass chunk in the world.
 #[derive(Bundle)]

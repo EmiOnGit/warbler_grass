@@ -56,34 +56,33 @@ impl FromWorld for GrassPipeline {
                 },
             ],
         });
-        let y_map_layout =
-            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warbler_grass y map layout"),
-                entries: &[
-                    // y_texture
-                    BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: ShaderStages::VERTEX,
-                        ty: BindingType::Texture {
-                            sample_type: TextureSampleType::Float { filterable: false },
-                            view_dimension: TextureViewDimension::D2,
-                            multisampled: false,
-                        },
-                        count: None,
+        let y_map_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+            label: Some("warbler_grass y map layout"),
+            entries: &[
+                // y_texture
+                BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Texture {
+                        sample_type: TextureSampleType::Float { filterable: false },
+                        view_dimension: TextureViewDimension::D2,
+                        multisampled: false,
                     },
-                    // aabb box
-                    BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: ShaderStages::VERTEX,
-                        ty: BindingType::Buffer {
-                            ty: BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
+                    count: None,
+                },
+                // aabb box
+                BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
                     },
-                ],
-            });
+                    count: None,
+                },
+            ],
+        });
         let density_map_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
                 label: Some("warbler_grass density map layout"),
@@ -101,7 +100,7 @@ impl FromWorld for GrassPipeline {
                     },
                 ],
             });
-        
+
         let heights_texture_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
                 label: Some("warbler_grass height texture layout"),

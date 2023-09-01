@@ -33,9 +33,7 @@ fn main() {
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     // load the image used for the y-map
     let y_map_image = asset_server.load("grass_y_map.png");
-    let y_map = YMap {
-        y_map: y_map_image,
-    };
+    let y_map = YMap { y_map: y_map_image };
 
     // load the image used for the density map
     let density_map_image = asset_server.load("grass_density_map.png");

@@ -7,11 +7,11 @@ use bevy::{
 };
 
 /// The y-map defining the y position of the grass blades.
-/// 
-/// A [`YMap`] is usually called a heightmap in game dev. 
-/// Since it was confused with the [`WarblerHeight`](crate::prelude::WarblerHeight), 
+///
+/// A [`YMap`] is usually called a heightmap in game dev.
+/// Since it was confused with the [`WarblerHeight`](crate::prelude::WarblerHeight),
 /// which controls the actual height of the grass blades, we decided to give it another name
-/// 
+///
 /// The maximum height of the height map is controlled by the height of the [`Aabb`](bevy::render::primitives::Aabb).
 /// The y-map texture will be scaled over all grass blades.
 ///

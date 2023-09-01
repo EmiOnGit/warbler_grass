@@ -13,8 +13,8 @@ use bevy::{
 
 use crate::{
     dithering::DitheredBuffer,
-    y_map::YMap,
     prelude::{GrassColor, WarblerHeight},
+    y_map::YMap,
 };
 
 use super::{cache::UniformBuffer, prepare::BindGroupBuffer};
