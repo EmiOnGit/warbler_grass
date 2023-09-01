@@ -1,7 +1,7 @@
 use bevy::{prelude::*, render::render_resource::BindGroup};
 
 #[derive(Resource, Default)]
-pub(crate) struct UniformBuffer(pub Option<BindGroup>);
+pub(crate) struct UniformBuffer(Option<BindGroup>);
 impl UniformBuffer {
     pub fn set(&mut self, val: BindGroup) {
         self.0 = Some(val);
