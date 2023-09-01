@@ -11,11 +11,6 @@ use bevy::{
 use crate::{density_map::DensityMap, height_map::HeightMap, warblers_plugin::GRASS_MESH_HANDLE};
 
 /// This [`Bundle`] spawns a grass chunk in the world.
-///
-/// This is the recommended way to spawn grass in games.
-/// # Note
-/// If you only want to input explicit positions of the grass blades you can also use
-/// the [`WarblersExplicitBundle`].
 #[derive(Bundle)]
 pub struct WarblersBundle {
     /// The [`Mesh`] of the grass blades
