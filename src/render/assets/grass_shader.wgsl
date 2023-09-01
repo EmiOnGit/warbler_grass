@@ -10,10 +10,10 @@ struct Vertex {
     @location(0) vertex_position: vec3<f32>,
     @location(3) xz_position: vec2<f32>,
 }
-    struct Color {
-        main_color: vec4<f32>,
-        bottom_color: vec4<f32>,
-    }
+struct Color {
+    main_color: vec4<f32>,
+    bottom_color: vec4<f32>,
+}
 @group(1) @binding(0)
 var<uniform> mesh: Mesh;
 
@@ -27,7 +27,7 @@ var noise_texture: texture_2d<f32>;
 var<uniform> color: Color;
 
 @group(4) @binding(0)
-var height_map: texture_2d<f32>;
+var y_texture: texture_2d<f32>;
 
 struct ShaderAabb {
     vect: vec3<f32>,
@@ -38,8 +38,8 @@ struct ShaderAabb {
 var<uniform> aabb: ShaderAabb;
 
 #ifdef HEIGHT_TEXTURE
- @group(5) @binding(0)
-    var heights: texture_2d<f32>;
+    @group(5) @binding(0)
+    var height_texture: texture_2d<f32>;
 #else
     struct ShaderHeightUniform {
         height: f32,
@@ -87,16 +87,6 @@ fn texture2d_offset(texture: texture_2d<f32>, vertex_position: vec2<f32>) -> f32
     var texture_r = textureLoad(texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0).r;
     return texture_r * aabb.vect.y;
 }
-// 2d textures are used to store vertex information.
-// normally this would be done using storage buffers.
-// Storage buffer as of now are not supported by wgsl, therefore this hack is used
-fn storage_pixel_from_texture(index: u32, texture: texture_2d<f32>) -> vec4<f32> {
-    let dim = vec2<u32>(textureDimensions(texture, 0));
-    let coord = vec2<u32>(index % dim.x, index / dim.x);
-    let pixel = textureLoad(texture,coord,0);
-    return(pixel);
-}
-
 @vertex
 fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
     var out: VertexOutput;
@@ -107,12 +97,12 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
     position_field_offset += vec3<f32>(density_offset.x, 0.,density_offset.y);
 
     // ---Y_POSITIONS---
-    position_field_offset.y = texture2d_offset(height_map, position_field_offset.xz);
+    position_field_offset.y = texture2d_offset(y_texture, position_field_offset.xz);
     
     // ---HEIGHT---
     var height = 0.;
     #ifdef HEIGHT_TEXTURE
-        height = (texture2d_offset(heights, position_field_offset.xz) + 4.) / 3.;
+        height = (texture2d_offset(height_texture, position_field_offset.xz) + 4.) / 3.;
     #else
         height = height_uniform.height;
     #endif
