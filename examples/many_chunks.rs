@@ -27,9 +27,9 @@ fn setup_grass_chunks(mut commands: Commands, asset_server: Res<AssetServer>) {
         density_map: density_map_handle.clone(),
         density: 2.,
     };
-    let height_map = asset_server.load("grass_height_map.png");
+    let y_map_image = asset_server.load("grass_height_map.png");
 
-    let height_map = HeightMap { height_map };
+    let y_map = YMap { y_map: y_map_image };
     // each chunk is 50x50
     let (chunk_width, chunk_height) = (50., 50.);
     // spawns a 20x20 grid of chunks
@@ -49,7 +49,7 @@ fn setup_grass_chunks(mut commands: Commands, asset_server: Res<AssetServer>) {
             // we could use seperate density maps for each one
             density_map: density_map.clone(),
             // or seperate height maps if we wanted to
-            height_map: height_map.clone(),
+            y_map: y_map.clone(),
             height: WarblerHeight::Texture(density_map_handle.clone()),
             // the aabb defined the dimensions of the box the chunk lives in
             aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(chunk_width, 2., chunk_height)),

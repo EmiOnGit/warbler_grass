@@ -18,9 +18,9 @@ fn main() {
 }
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Loading the height map from an image
-    let height_map = asset_server.load("grass_height_map.png");
+    let y_map_image = asset_server.load("grass_height_map.png");
     // Constructing the height map struct
-    let height_map = HeightMap { height_map };
+    let y_map = YMap { y_map: y_map_image };
 
     // Loading the density map from an image
     let density_map = asset_server.load("grass_density_map.png");
@@ -33,7 +33,7 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
     // spawns the "chunk" entity
     commands.spawn(WarblersBundle {
-        height_map,
+        y_map,
         density_map,
         // The height of the blades
         height: WarblerHeight::Uniform(2.),

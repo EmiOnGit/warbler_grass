@@ -16,9 +16,9 @@ fn main() {
         .run();
 }
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let height_map = asset_server.load("grass_height_map.png");
+    let y_map_image = asset_server.load("grass_height_map.png");
 
-    let height_map = HeightMap { height_map };
+    let y_map = YMap { y_map: y_map_image };
     let density_map = asset_server.load("grass_density_map.png");
 
     let density_map = DensityMap {
@@ -27,7 +27,7 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
     commands.spawn((WarblersBundle {
         density_map,
-        height_map,
+        y_map,
         aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 10., 100.)),
         // you can define the color for each grass chunk
         grass_color: GrassColor {

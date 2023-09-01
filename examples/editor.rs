@@ -35,9 +35,9 @@ fn setup_grass(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let height_map = asset_server.load("grass_height_map.png");
+    let y_map_image = asset_server.load("grass_height_map.png");
 
-    let height_map = HeightMap { height_map };
+    let y_map = YMap { y_map: y_map_image };
     let density_map_texture = asset_server.load("grass_density_map.png");
     let heights_map_texture = asset_server.load("grass_heights_map.png");
 
@@ -62,7 +62,7 @@ fn setup_grass(
         .insert(Marker);
     commands.spawn(WarblersBundle {
         density_map,
-        height_map,
+        y_map,
         height: warbler_grass::prelude::WarblerHeight::Texture(heights_map_texture.clone()),
         aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 5., 100.)),
         spatial: SpatialBundle {
@@ -85,7 +85,7 @@ fn setup_camera(mut commands: Commands) {
 }
 fn refresh_texture_view(
     marked: Query<&Handle<StandardMaterial>, With<Marker>>,
-    chunk: Query<(&DensityMap, &HeightMap, &WarblerHeight), Without<Marker>>,
+    chunk: Query<(&DensityMap, &YMap, &WarblerHeight), Without<Marker>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     selected_map: Res<SelectedMap>,
     active_chunk: Res<ActiveEditorChunk>,
@@ -94,12 +94,12 @@ fn refresh_texture_view(
         return;
     };
     let material = marked.single();
-    let Ok((density_map, height_map, heights)) = chunk.get(active_entity) else {
+    let Ok((density_map, y_map, heights)) = chunk.get(active_entity) else {
         return;
     };
     if let Some(mat) = materials.get_mut(&material) {
         match *selected_map {
-            SelectedMap::HeightMap => mat.base_color_texture = Some(height_map.height_map.clone()),
+            SelectedMap::HeightMap => mat.base_color_texture = Some(y_map.y_map.clone()),
             SelectedMap::DensityMap => {
                 mat.base_color_texture = Some(density_map.density_map.clone())
             }
