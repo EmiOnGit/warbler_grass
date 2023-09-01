@@ -94,12 +94,6 @@ Note that you can press `TAB` to change the mesh in the demo
 ```shell
 cargo run --example grass_mesh
 ```
-### Load explicit
-You don't want to work with all the weird maps. All you want to do is define explicit positions for the grass blades to spawn in?
-You can definitly also do that
-```shell
-cargo run --example load_explicit
-```
 ### Many chunks
 You'd like to see what this crate can do? Run this demo to see many chunks loaded at once.
 This example is also great to demonstrate the frustum culling of the meshes
