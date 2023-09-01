@@ -18,7 +18,7 @@ fn main() {
 }
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Loading the height map from an image
-    let y_map_image = asset_server.load("grass_height_map.png");
+    let y_map_image = asset_server.load("grass_y_map.png");
     // Constructing the height map struct
     let y_map = YMap { y_map: y_map_image };
 

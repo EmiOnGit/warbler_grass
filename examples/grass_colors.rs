@@ -16,7 +16,7 @@ fn main() {
         .run();
 }
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let y_map_image = asset_server.load("grass_height_map.png");
+    let y_map_image = asset_server.load("grass_y_map.png");
 
     let y_map = YMap { y_map: y_map_image };
     let density_map = asset_server.load("grass_density_map.png");

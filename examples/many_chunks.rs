@@ -27,7 +27,7 @@ fn setup_grass_chunks(mut commands: Commands, asset_server: Res<AssetServer>) {
         density_map: density_map_handle.clone(),
         density: 2.,
     };
-    let y_map_image = asset_server.load("grass_height_map.png");
+    let y_map_image = asset_server.load("grass_y_map.png");
 
     let y_map = YMap { y_map: y_map_image };
     // each chunk is 50x50
