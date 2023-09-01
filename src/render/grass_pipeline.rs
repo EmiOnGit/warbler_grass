@@ -19,7 +19,7 @@ pub struct GrassPipeline {
     shader: Handle<Shader>,
     mesh_pipeline: MeshPipeline,
     pub region_layout: BindGroupLayout,
-    pub height_map_layout: BindGroupLayout,
+    pub y_map_layout: BindGroupLayout,
     pub density_map_layout: BindGroupLayout,
     pub heights_texture_layout: BindGroupLayout,
     pub uniform_height_layout: BindGroupLayout,
@@ -152,7 +152,7 @@ impl FromWorld for GrassPipeline {
             uniform_height_layout,
             heights_texture_layout,
             density_map_layout,
-            height_map_layout: y_map_layout,
+            y_map_layout,
             color_layout,
         }
     }
@@ -181,7 +181,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
         let vertex = &mut descriptor.vertex;
 
         vertex.shader = self.shader.clone();
-        descriptor.layout.push(self.height_map_layout.clone());
+        descriptor.layout.push(self.y_map_layout.clone());
         if key.uniform_height {
             descriptor.layout.push(self.uniform_height_layout.clone());
         } else {

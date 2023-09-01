@@ -30,7 +30,7 @@ pub struct WarblersBundle {
     pub grass_color: GrassColor,
     /// An [`Aabb`] component
     ///
-    /// Note that the Aabb is used to define the world dimensions of the [`DensityMap`] and [`HeightMap`].
+    /// Note that the Aabb is used to define the world dimensions of the [`DensityMap`] and [`YMap`].
     pub aabb: Aabb,
     pub spatial: SpatialBundle,
 }

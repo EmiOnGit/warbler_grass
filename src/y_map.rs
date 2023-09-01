@@ -13,7 +13,6 @@ use bevy::{
 /// which controls the actual height of the grass blades, we decided to give it another name
 /// 
 /// The maximum height of the height map is controlled by the height of the [`Aabb`](bevy::render::primitives::Aabb).
-///
 /// The y-map texture will be scaled over all grass blades.
 ///
 /// For a simple example, take a look at the [`load_grass`](https://github.com/emiongit/warbler_grass/latest/example/load_grass.rs) example

@@ -131,7 +131,7 @@ pub(crate) fn prepare_grass_color(
     }
 }
 
-pub(crate) fn prepare_height_map_buffer(
+pub(crate) fn prepare_y_map_buffer(
     mut commands: Commands,
     render_device: Res<RenderDevice>,
     pipeline: Res<GrassPipeline>,
@@ -139,10 +139,10 @@ pub(crate) fn prepare_height_map_buffer(
     images: Res<RenderAssets<Image>>,
     inserted_grass: Query<(Entity, &YMap, &Aabb)>,
 ) {
-    let layout = pipeline.height_map_layout.clone();
+    let layout = pipeline.y_map_layout.clone();
 
-    for (entity, height_map, aabb) in inserted_grass.iter() {
-        let height_map_texture = if let Some(tex) = images.get(&height_map.y_map) {
+    for (entity, y_map, aabb) in inserted_grass.iter() {
+        let y_map_texture = if let Some(tex) = images.get(&y_map.y_map) {
             &tex.texture_view
         } else {
             &fallback_img.d2.texture_view
@@ -155,12 +155,12 @@ pub(crate) fn prepare_height_map_buffer(
         });
 
         let bind_group_descriptor = BindGroupDescriptor {
-            label: Some("grass height map bind group"),
+            label: Some("grass y-map bind group"),
             layout: &layout,
             entries: &[
                 BindGroupEntry {
                     binding: 0,
-                    resource: BindingResource::TextureView(height_map_texture),
+                    resource: BindingResource::TextureView(y_map_texture),
                 },
                 BindGroupEntry {
                     binding: 1,

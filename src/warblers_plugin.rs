@@ -82,7 +82,7 @@ impl Plugin for WarblersPlugin {
                     prepare::prepare_uniform_buffers,
                     prepare::prepare_height_buffer,
                     prepare::prepare_grass_color,
-                    prepare::prepare_height_map_buffer,
+                    prepare::prepare_y_map_buffer,
                 )
                     .in_set(RenderSet::Prepare),
             )
