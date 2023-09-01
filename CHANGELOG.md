@@ -3,6 +3,7 @@
 * Support for bevy 0.11
 * The color of the grass is now a `Component`, meaning it can be configured on a `Chunk` basis.
 * Remove the `WarblersExplicitBundle`. Only textures are now supported.
+* `HeightMap` is now named `YMap` to easier distinguish between `WarblerHeights`, which controls the height of the grass blades
 ## 0.3.2
 This release mainly includes proper support for wasm builds,
 as well as simplifications in the code and better documentation.

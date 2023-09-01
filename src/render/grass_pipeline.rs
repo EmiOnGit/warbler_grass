@@ -19,13 +19,10 @@ pub struct GrassPipeline {
     shader: Handle<Shader>,
     mesh_pipeline: MeshPipeline,
     pub region_layout: BindGroupLayout,
-    pub height_map_layout: BindGroupLayout,
+    pub y_map_layout: BindGroupLayout,
     pub density_map_layout: BindGroupLayout,
     pub heights_texture_layout: BindGroupLayout,
-    pub explicit_y_layout: BindGroupLayout,
-    pub explicit_height_layout: BindGroupLayout,
     pub uniform_height_layout: BindGroupLayout,
-    pub explicit_xz_layout: BindGroupLayout,
     pub color_layout: BindGroupLayout,
 }
 
@@ -59,34 +56,33 @@ impl FromWorld for GrassPipeline {
                 },
             ],
         });
-        let height_map_layout =
-            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warbler_grass height map layout"),
-                entries: &[
-                    // height_map
-                    BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: ShaderStages::VERTEX,
-                        ty: BindingType::Texture {
-                            sample_type: TextureSampleType::Float { filterable: false },
-                            view_dimension: TextureViewDimension::D2,
-                            multisampled: false,
-                        },
-                        count: None,
+        let y_map_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+            label: Some("warbler_grass y map layout"),
+            entries: &[
+                // y_texture
+                BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Texture {
+                        sample_type: TextureSampleType::Float { filterable: false },
+                        view_dimension: TextureViewDimension::D2,
+                        multisampled: false,
                     },
-                    // aabb box
-                    BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: ShaderStages::VERTEX,
-                        ty: BindingType::Buffer {
-                            ty: BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
+                    count: None,
+                },
+                // aabb box
+                BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
                     },
-                ],
-            });
+                    count: None,
+                },
+            ],
+        });
         let density_map_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
                 label: Some("warbler_grass density map layout"),
@@ -104,34 +100,7 @@ impl FromWorld for GrassPipeline {
                     },
                 ],
             });
-        let explicit_y_layout =
-            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warbler_grass explicit y layout"),
-                entries: &[BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: ShaderStages::VERTEX,
-                    ty: BindingType::Texture {
-                        sample_type: TextureSampleType::Float { filterable: false },
-                        view_dimension: TextureViewDimension::D2,
-                        multisampled: false,
-                    },
-                    count: None,
-                }],
-            });
-        let explicit_height_layout =
-            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warbler_grass explicit height layout"),
-                entries: &[BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: ShaderStages::VERTEX,
-                    ty: BindingType::Texture {
-                        sample_type: TextureSampleType::Float { filterable: false },
-                        view_dimension: TextureViewDimension::D2,
-                        multisampled: false,
-                    },
-                    count: None,
-                }],
-            });
+
         let heights_texture_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
                 label: Some("warbler_grass height texture layout"),
@@ -145,23 +114,6 @@ impl FromWorld for GrassPipeline {
                     },
                     count: None,
                 }],
-            });
-        let explicit_xz_layout =
-            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warbler_grass explicit height layout"),
-                entries: &[
-                    // heights
-                    BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: ShaderStages::VERTEX,
-                        ty: BindingType::Texture {
-                            sample_type: TextureSampleType::Float { filterable: false },
-                            view_dimension: TextureViewDimension::D2,
-                            multisampled: false,
-                        },
-                        count: None,
-                    },
-                ],
             });
         let uniform_height_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
@@ -196,13 +148,10 @@ impl FromWorld for GrassPipeline {
             shader,
             mesh_pipeline: mesh_pipeline.clone(),
             region_layout,
-            explicit_height_layout,
             uniform_height_layout,
             heights_texture_layout,
             density_map_layout,
-            explicit_xz_layout,
-            explicit_y_layout,
-            height_map_layout,
+            y_map_layout,
             color_layout,
         }
     }
@@ -231,12 +180,11 @@ impl SpecializedMeshPipeline for GrassPipeline {
         let vertex = &mut descriptor.vertex;
 
         vertex.shader = self.shader.clone();
-        descriptor.layout.push(self.height_map_layout.clone());
+        descriptor.layout.push(self.y_map_layout.clone());
         if key.uniform_height {
             descriptor.layout.push(self.uniform_height_layout.clone());
         } else {
             vertex.shader_defs.push("HEIGHT_TEXTURE".into());
-
             descriptor.layout.push(self.heights_texture_layout.clone());
         }
 

@@ -31,11 +31,9 @@ fn main() {
 }
 
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // load the image used for the height map
-    let height_map_image = asset_server.load("grass_height_map.png");
-    let height_map = HeightMap {
-        height_map: height_map_image,
-    };
+    // load the image used for the y-map
+    let y_map_image = asset_server.load("grass_y_map.png");
+    let y_map = YMap { y_map: y_map_image };
 
     // load the image used for the density map
     let density_map_image = asset_server.load("grass_density_map.png");
@@ -47,7 +45,7 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
     // spawn the entity rendering out large grass chunk
     commands.spawn(WarblersBundle {
         density_map,
-        height_map,
+        y_map,
         height: WarblerHeight::Uniform(5.),
         // Let's make a large chunk
         // With our density map we spawn around 10 million blades on this area

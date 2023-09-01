@@ -7,9 +7,6 @@ use crate::dithering::DitheredBuffer;
 
 /// A [`Plugin`] that logs the blades drawn in each frame.
 ///
-/// If you want to simply log the values in the terminal,
-/// you can also add the [`LogDiagnosticsPlugin`](bevy::diagnostic::LogDiagnosticsPlugin) to your app
-///
 /// # Example
 /// ```rust
 /// use bevy::diagnostic::LogDiagnosticsPlugin;
@@ -26,7 +23,7 @@ pub struct WarblerDiagnosticsPlugin;
 impl Plugin for WarblerDiagnosticsPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.register_diagnostic(
-            // Adds the [`Diagnostic`] responsable for logging the blade count to the [`Diagnostics`]
+            // Adds the `Diagnostic` responsable for logging the blade count to the `Diagnostics`
             Diagnostic::new(Self::GRASS_BLADE_COUNT, "grass blade count", 20)
                 .with_suffix(" blades"),
         )
@@ -34,9 +31,9 @@ impl Plugin for WarblerDiagnosticsPlugin {
     }
 }
 impl WarblerDiagnosticsPlugin {
-    /// An id for the [`Diagnostic`] of the blade count
+    /// A id for the [`Diagnostic`] of the blade count.
     pub const GRASS_BLADE_COUNT: DiagnosticId =
-        DiagnosticId::from_u128(11920430925311532474622109399490581929);
+        DiagnosticId::from_u128(11_920_430_925_311_532_474_622_109_399_490_581_929);
 
     /// Calculates the amount of blades that are drawn this frame and logs them
     fn measure_blades(

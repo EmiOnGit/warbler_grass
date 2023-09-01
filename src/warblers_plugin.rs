@@ -18,22 +18,22 @@ use bevy::{
 
 use crate::{
     dithering::{add_dither_to_density, DitheredBuffer},
-    height_map::HeightMap,
     prelude::{GrassColor, WarblerHeight},
     render::{self, cache::UniformBuffer, extract, grass_pipeline::GrassPipeline, prepare, queue},
+    y_map::YMap,
     GrassConfiguration, GrassNoiseTexture,
 };
 
 /// A raw handle which points to the shader used to render the grass.
 pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
-    HandleUntyped::weak_from_u64(Shader::TYPE_UUID, 2263343952151597127);
+    HandleUntyped::weak_from_u64(Shader::TYPE_UUID, 2_263_343_952_151_597_127);
 
 /// A raw handle to the default mesh used for grass.
 ///
 /// The [`WarblersPlugin`] adds the corresponding mesh to the world.
 /// So you should only convert the raw handle when the plugin is used
 pub const GRASS_MESH_HANDLE: HandleUntyped =
-    HandleUntyped::weak_from_u64(Mesh::TYPE_UUID, 9357128457583957921);
+    HandleUntyped::weak_from_u64(Mesh::TYPE_UUID, 9_357_128_457_583_957_921);
 
 /// Adds the render pipeline for drawing grass to an [`App`]
 ///
@@ -64,7 +64,7 @@ impl Plugin for WarblersPlugin {
         app.add_plugins((
             ExtractResourcePlugin::<GrassConfiguration>::default(),
             ExtractResourcePlugin::<GrassNoiseTexture>::default(),
-            ExtractComponentPlugin::<HeightMap>::default(),
+            ExtractComponentPlugin::<YMap>::default(),
             ExtractComponentPlugin::<WarblerHeight>::default(),
             ExtractComponentPlugin::<GrassColor>::default(),
         ));
@@ -82,7 +82,7 @@ impl Plugin for WarblersPlugin {
                     prepare::prepare_uniform_buffers,
                     prepare::prepare_height_buffer,
                     prepare::prepare_grass_color,
-                    prepare::prepare_height_map_buffer,
+                    prepare::prepare_y_map_buffer,
                 )
                     .in_set(RenderSet::Prepare),
             )

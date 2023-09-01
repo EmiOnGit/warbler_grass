@@ -8,7 +8,7 @@ use bevy::{
     },
 };
 
-use crate::{density_map::DensityMap, height_map::HeightMap, warblers_plugin::GRASS_MESH_HANDLE};
+use crate::{density_map::DensityMap, warblers_plugin::GRASS_MESH_HANDLE, y_map::YMap};
 
 /// This [`Bundle`] spawns a grass chunk in the world.
 #[derive(Bundle)]
@@ -20,8 +20,8 @@ pub struct WarblersBundle {
     /// You might want to take a look at the
     /// `grass_mesh` example for that
     pub grass_mesh: Handle<Mesh>,
-    /// An [`HeightMap`] component
-    pub height_map: HeightMap,
+    /// An [`YMap`] component
+    pub y_map: YMap,
     /// An [`DensityMap`] component
     pub density_map: DensityMap,
     /// An [`WarblerHeight`] component
@@ -30,7 +30,7 @@ pub struct WarblersBundle {
     pub grass_color: GrassColor,
     /// An [`Aabb`] component
     ///
-    /// Note that the Aabb is used to define the world dimensions of the [`DensityMap`] and [`HeightMap`].
+    /// Note that the Aabb is used to define the world dimensions of the [`DensityMap`] and [`YMap`].
     pub aabb: Aabb,
     pub spatial: SpatialBundle,
 }
@@ -38,12 +38,12 @@ impl Default for WarblersBundle {
     fn default() -> Self {
         Self {
             grass_mesh: GRASS_MESH_HANDLE.typed(),
-            height_map: DEFAULT_IMAGE_HANDLE.typed().into(),
+            y_map: DEFAULT_IMAGE_HANDLE.typed().into(),
             density_map: DEFAULT_IMAGE_HANDLE.typed().into(),
             height: WarblerHeight::Uniform(1.),
             grass_color: GrassColor::default(),
-            aabb: Default::default(),
-            spatial: Default::default(),
+            aabb: Aabb::default(),
+            spatial: SpatialBundle::default(),
         }
     }
 }

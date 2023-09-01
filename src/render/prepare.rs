@@ -6,8 +6,8 @@ use std::ops::Mul;
 use super::cache::UniformBuffer;
 use super::grass_pipeline::GrassPipeline;
 use crate::bundle::WarblerHeight;
-use crate::height_map::HeightMap;
 use crate::prelude::GrassColor;
+use crate::y_map::YMap;
 use crate::{GrassConfiguration, GrassNoiseTexture};
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
@@ -28,7 +28,7 @@ impl<T> BindGroupBuffer<T> {
     pub fn new(bind_group: BindGroup) -> Self {
         BindGroupBuffer {
             bind_group,
-            _inner: PhantomData::default(),
+            _inner: PhantomData,
         }
     }
 }
@@ -131,18 +131,18 @@ pub(crate) fn prepare_grass_color(
     }
 }
 
-pub(crate) fn prepare_height_map_buffer(
+pub(crate) fn prepare_y_map_buffer(
     mut commands: Commands,
     render_device: Res<RenderDevice>,
     pipeline: Res<GrassPipeline>,
     fallback_img: Res<FallbackImage>,
     images: Res<RenderAssets<Image>>,
-    inserted_grass: Query<(Entity, &HeightMap, &Aabb)>,
+    inserted_grass: Query<(Entity, &YMap, &Aabb)>,
 ) {
-    let layout = pipeline.height_map_layout.clone();
+    let layout = pipeline.y_map_layout.clone();
 
-    for (entity, height_map, aabb) in inserted_grass.iter() {
-        let height_map_texture = if let Some(tex) = images.get(&height_map.height_map) {
+    for (entity, y_map, aabb) in inserted_grass.iter() {
+        let y_map_texture = if let Some(tex) = images.get(&y_map.y_map) {
             &tex.texture_view
         } else {
             &fallback_img.d2.texture_view
@@ -155,12 +155,12 @@ pub(crate) fn prepare_height_map_buffer(
         });
 
         let bind_group_descriptor = BindGroupDescriptor {
-            label: Some("grass height map bind group"),
+            label: Some("grass y-map bind group"),
             layout: &layout,
             entries: &[
                 BindGroupEntry {
                     binding: 0,
-                    resource: BindingResource::TextureView(height_map_texture),
+                    resource: BindingResource::TextureView(y_map_texture),
                 },
                 BindGroupEntry {
                     binding: 1,
@@ -176,7 +176,7 @@ pub(crate) fn prepare_height_map_buffer(
         let bind_group = render_device.create_bind_group(&bind_group_descriptor);
         commands
             .entity(entity)
-            .insert(BindGroupBuffer::<HeightMap>::new(bind_group));
+            .insert(BindGroupBuffer::<YMap>::new(bind_group));
     }
 }
 #[allow(clippy::too_many_arguments)]

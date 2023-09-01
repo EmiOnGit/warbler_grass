@@ -12,7 +12,7 @@ use super::grass_pipeline::{GrassPipeline, GrassRenderKey};
 use super::prepare::UniformHeightFlag;
 use super::GrassDrawCall;
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn queue_grass_buffers(
     opaque_3d_draw_functions: Res<DrawFunctions<Opaque3d>>,
     grass_pipeline: Res<GrassPipeline>,
