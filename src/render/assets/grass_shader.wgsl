@@ -25,21 +25,18 @@ var noise_texture: texture_2d<f32>;
 
 @group(3) @binding(0)
 var<uniform> color: Color;
-#ifdef EXPLICIT
-    @group(4) @binding(0)
-    var y_positions: texture_2d<f32>;
-#else
-    @group(4) @binding(0)
-    var height_map: texture_2d<f32>;
 
-    struct ShaderAabb {
-        vect: vec3<f32>,
-        _wasm_padding: f32,
-    }
+@group(4) @binding(0)
+var height_map: texture_2d<f32>;
 
-    @group(4) @binding(1)
-    var<uniform> aabb: ShaderAabb;
-#endif
+struct ShaderAabb {
+    vect: vec3<f32>,
+    _wasm_padding: f32,
+}
+
+@group(4) @binding(1)
+var<uniform> aabb: ShaderAabb;
+
 #ifdef HEIGHT_TEXTURE
  @group(5) @binding(0)
     var heights: texture_2d<f32>;
@@ -71,7 +68,7 @@ fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     var texture_pixel = textureLoad(noise_texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0);
     return texture_pixel.xy * config.wind;
 }
-const BIG_PRIME: f32 = 7759.;
+const BIG_PRIME: f32 = 1302151.;
 
 fn density_map_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     var texture_position = vec2<f32>(vertex_position.x ,vertex_position.y) * BIG_PRIME ;

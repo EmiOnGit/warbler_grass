@@ -22,12 +22,12 @@ use crate::{
     prelude::{GrassColor, WarblerHeight},
     render::{
         self,
-        cache::{ExplicitGrassCache, UniformBuffer},
+        cache::UniformBuffer,
         extract,
         grass_pipeline::GrassPipeline,
         prepare, queue,
     },
-    update, GrassConfiguration, GrassNoiseTexture,
+    GrassConfiguration, GrassNoiseTexture,
 };
 
 /// A raw handle which points to the shader used to render the grass.
@@ -61,7 +61,7 @@ impl Plugin for WarblersPlugin {
 
         app.add_systems(
             Update,
-            (add_dither_to_density, update::add_aabb_to_explicit),
+            add_dither_to_density,
         )
         .add_asset::<DitheredBuffer>()
         .add_plugins(RenderAssetPlugin::<DitheredBuffer>::default());
@@ -86,14 +86,12 @@ impl Plugin for WarblersPlugin {
                 (
                     extract::extract_grass,
                     extract::extract_aabb,
-                    extract::extract_grass_positions,
                 ),
             )
             .add_systems(
                 Render,
                 (
                     prepare::prepare_uniform_buffers,
-                    prepare::prepare_explicit_positions_buffer,
                     prepare::prepare_height_buffer,
                     prepare::prepare_grass_color,
                     prepare::prepare_height_map_buffer,
@@ -109,8 +107,7 @@ impl Plugin for WarblersPlugin {
         render_app
             .init_resource::<FallbackImage>()
             .init_resource::<GrassPipeline>()
-            .init_resource::<UniformBuffer>()
-            .init_resource::<ExplicitGrassCache>();
+            .init_resource::<UniformBuffer>();
     }
 }
 

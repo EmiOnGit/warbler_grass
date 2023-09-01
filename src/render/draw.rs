@@ -18,7 +18,7 @@ use crate::{
 };
 
 use super::{
-    cache::{ExplicitGrassCache, UniformBuffer},
+    cache::UniformBuffer,
     prepare::BindGroupBuffer,
 };
 pub(crate) struct SetUniformBindGroup<const I: usize>;
@@ -105,7 +105,6 @@ pub(crate) struct SetVertexBuffer;
 impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
     type Param = (
         SRes<RenderAssets<Mesh>>,
-        SRes<ExplicitGrassCache>,
         SRes<RenderAssets<DitheredBuffer>>,
     );
     type ViewWorldQuery = ();
@@ -113,13 +112,13 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
 
     #[inline]
     fn render<'w>(
-        item: &P,
+        _item: &P,
         _view: (),
         (mesh_handle, dither_handle): (
             &'w Handle<bevy::prelude::Mesh>,
             Option<&'w Handle<DitheredBuffer>>,
         ),
-        (meshes, cache, dither): SystemParamItem<'w, '_, Self::Param>,
+        (meshes,  dither): SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
         let gpu_mesh = match meshes.into_inner().get(mesh_handle) {
@@ -141,14 +140,7 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
                 return RenderCommandResult::Failure;
             }
         } else {
-            let Some(chunk) = cache.into_inner().get(&item.entity()) else {
-                return RenderCommandResult::Failure;
-            };
-            blade_count = chunk.explicit_count;
-            let Some(xz_buffer) = chunk.explicit_xz_buffer.as_ref() else {
-                return RenderCommandResult::Failure;
-            };
-            pass.set_vertex_buffer(1, xz_buffer.slice(..));
+            return RenderCommandResult::Failure;
         }
 
         match &gpu_mesh.buffer_info {

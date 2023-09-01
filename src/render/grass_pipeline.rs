@@ -231,14 +231,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
         let vertex = &mut descriptor.vertex;
 
         vertex.shader = self.shader.clone();
-
-        if key.is_explicit {
-            vertex.shader_defs.push("EXPLICIT".into());
-            descriptor.layout.push(self.explicit_y_layout.clone());
-        } else {
-            descriptor.layout.push(self.height_map_layout.clone());
-        }
-
+        descriptor.layout.push(self.height_map_layout.clone());
         if key.uniform_height {
             descriptor.layout.push(self.uniform_height_layout.clone());
         } else {
@@ -255,7 +248,6 @@ impl SpecializedMeshPipeline for GrassPipeline {
 #[derive(Eq, PartialEq, Hash, Clone)]
 pub struct GrassRenderKey {
     pub mesh_key: MeshPipelineKey,
-    pub is_explicit: bool,
     pub uniform_height: bool,
 }
 
@@ -263,7 +255,6 @@ impl From<MeshPipelineKey> for GrassRenderKey {
     fn from(mesh_key: MeshPipelineKey) -> Self {
         Self {
             mesh_key,
-            is_explicit: false,
             uniform_height: false,
         }
     }
