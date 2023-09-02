@@ -1,4 +1,4 @@
-use crate::{dithering::DitheredBuffer, y_map::YMap};
+use crate::{dithering::DitheredBuffer, map::YMap};
 use bevy::{
     prelude::*,
     render::{primitives::Aabb, Extract},

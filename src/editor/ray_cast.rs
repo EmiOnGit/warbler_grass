@@ -3,7 +3,7 @@ use bevy::{math::Vec3Swizzles, render::primitives::Aabb};
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 
 use crate::{
-    density_map::DensityMap,
+    map::DensityMap,
     prelude::{WarblerHeight, YMap},
 };
 
