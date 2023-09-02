@@ -43,7 +43,7 @@ pub fn run_ui(world: &mut World) {
             if let Some(mut selected) = selected_map {
                 ui.horizontal(|ui| {
                     ui.radio_value(&mut *selected, SelectedMap::DensityMap, "Density map");
-                    ui.radio_value(&mut *selected, SelectedMap::YMap, "Height map");
+                    ui.radio_value(&mut *selected, SelectedMap::YMap, "Ymap");
                     ui.radio_value(&mut *selected, SelectedMap::HeightsMap, "Heights map");
                 });
             }
