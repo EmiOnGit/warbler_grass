@@ -4,7 +4,7 @@ use bevy::{
     asset::Handle,
     ecs::{component::Component, query::QueryItem},
     reflect::Reflect,
-    render::{extract_component::ExtractComponent, texture::Image},
+    render::{extract_component::ExtractComponent, texture::Image}, prelude::Vec3,
 };
 
 /// The y-map defining the y position of the grass blades.
@@ -22,7 +22,9 @@ pub struct YMap {
     pub y_map: Handle<Image>,
 }
 impl YMap {
-    pub fn new(y_map: Handle<Image>, density: f32) -> Self {
+    /// Creates a new `YMap`
+    pub fn new(y_map: Handle<Image>) -> Self {
+        Vec3::new();
         YMap { y_map }
     }
 }
@@ -63,9 +65,11 @@ pub struct DensityMap {
     /// The density of the grass.
     ///
     /// If the density is high, more grass is spawned in a dense area.
+    /// The density should always be positiv
     pub density: f32,
 }
 impl DensityMap {
+    /// Creates a new `DensityMap`
     pub fn new(density_map: Handle<Image>, density: f32) -> Self {
         if density < 0. {
             bevy::log::warn!("DensityMap was created with a negative density of {density}");
