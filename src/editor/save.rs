@@ -2,7 +2,10 @@ use std::path::PathBuf;
 
 use bevy::prelude::{info, warn, Assets, DetectChanges, Image, Query, Res, Resource};
 
-use crate::{prelude::{DensityMap, WarblerHeight}, y_map::YMap};
+use crate::{
+    prelude::{DensityMap, WarblerHeight},
+    y_map::YMap,
+};
 
 use super::{ray_cast::SelectedMap, ActiveEditorChunk};
 
@@ -10,11 +13,7 @@ pub fn check_for_save_files(
     saver: Res<ImageSaver>,
     active_map: Res<SelectedMap>,
     active_chunk: Res<ActiveEditorChunk>,
-    q: Query<(
-        Option<&DensityMap>,
-        Option<&YMap>,
-        Option<&WarblerHeight>,
-    )>,
+    q: Query<(Option<&DensityMap>, Option<&YMap>, Option<&WarblerHeight>)>,
     images: Res<Assets<Image>>,
 ) {
     if saver.is_changed() {

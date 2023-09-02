@@ -4,7 +4,7 @@ use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 
 use crate::{
     density_map::DensityMap,
-    prelude::{YMap, WarblerHeight},
+    prelude::{WarblerHeight, YMap},
 };
 
 use super::{draw_event::DrawEvent, ActiveEditorChunk};
