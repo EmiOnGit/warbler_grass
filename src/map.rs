@@ -4,7 +4,7 @@ use bevy::{
     asset::Handle,
     ecs::{component::Component, query::QueryItem},
     reflect::Reflect,
-    render::{extract_component::ExtractComponent, texture::Image}, prelude::Vec3,
+    render::{extract_component::ExtractComponent, texture::Image},
 };
 
 /// The y-map defining the y position of the grass blades.
