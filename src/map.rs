@@ -13,7 +13,7 @@ use bevy::{
 /// Since it was confused with the [`WarblerHeight`](crate::prelude::WarblerHeight),
 /// which controls the actual height of the grass blades, we decided to give it another name
 ///
-/// The maximum height of the height map is controlled by the height of the [`Aabb`](bevy::render::primitives::Aabb).
+/// The maximum height of the y-map is controlled by the height of the [`Aabb`](bevy::render::primitives::Aabb).
 /// The y-map texture will be scaled over all grass blades.
 ///
 /// For a simple example, take a look at the [`load_grass`](https://github.com/emiongit/warbler_grass/latest/example/load_grass.rs) example
@@ -24,7 +24,6 @@ pub struct YMap {
 impl YMap {
     /// Creates a new `YMap`
     pub fn new(y_map: Handle<Image>) -> Self {
-        Vec3::new();
         YMap { y_map }
     }
 }
