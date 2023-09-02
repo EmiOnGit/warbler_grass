@@ -4,7 +4,7 @@ use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 
 use crate::{
     density_map::DensityMap,
-    prelude::{HeightMap, WarblerHeight},
+    prelude::{YMap, WarblerHeight},
 };
 
 use super::{draw_event::DrawEvent, ActiveEditorChunk};
@@ -20,7 +20,7 @@ impl Plugin for RayCastPlugin {
 #[derive(Resource, Reflect, Default, InspectorOptions, PartialEq)]
 #[reflect(Resource, InspectorOptions)]
 pub enum SelectedMap {
-    HeightMap,
+    YMap,
     #[default]
     DensityMap,
     HeightsMap,
@@ -34,7 +34,7 @@ fn check_collision_on_click(
             &Transform,
             &Aabb,
             &DensityMap,
-            &HeightMap,
+            &YMap,
             &WarblerHeight,
         ),
         Without<RayCamera>,
@@ -51,7 +51,7 @@ fn check_collision_on_click(
         return;
     };
     let click_ray = raycast_camera.ray.as_ref().unwrap();
-    for (entity, chunk_transform, aabb, density_map, height_map, heights) in &grass_chunk {
+    for (entity, chunk_transform, aabb, density_map, y_map, heights) in &grass_chunk {
         let aabb_center = aabb.center.as_dvec3().as_vec3() + chunk_transform.translation;
 
         let Some(intersection_distance) = click_ray.intersect_plane(aabb_center, Vec3::Y) else {
@@ -72,7 +72,7 @@ fn check_collision_on_click(
             ) + Vec2::ONE)
                 / 2.;
             let image = match *selection {
-                SelectedMap::HeightMap => height_map.height_map.clone(),
+                SelectedMap::YMap => y_map.y_map.clone(),
                 SelectedMap::DensityMap => density_map.density_map.clone(),
                 SelectedMap::HeightsMap => {
                     if let WarblerHeight::Texture(image) = heights {

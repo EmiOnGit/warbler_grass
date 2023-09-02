@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use bevy::prelude::{info, warn, Assets, DetectChanges, Image, Query, Res, Resource};
 
-use crate::prelude::{DensityMap, HeightMap, WarblerHeight};
+use crate::{prelude::{DensityMap, WarblerHeight}, y_map::YMap};
 
 use super::{ray_cast::SelectedMap, ActiveEditorChunk};
 
@@ -12,7 +12,7 @@ pub fn check_for_save_files(
     active_chunk: Res<ActiveEditorChunk>,
     q: Query<(
         Option<&DensityMap>,
-        Option<&HeightMap>,
+        Option<&YMap>,
         Option<&WarblerHeight>,
     )>,
     images: Res<Assets<Image>>,
@@ -21,13 +21,13 @@ pub fn check_for_save_files(
         let Some(entity) = active_chunk.0 else {
             return;
         };
-        if let Ok((density_map, height_map, warbler_height)) = q.get(entity) {
+        if let Ok((density_map, y_map, warbler_height)) = q.get(entity) {
             let image_handle = match *active_map {
-                SelectedMap::HeightMap => {
-                    let Some(height_map) = height_map else {
+                SelectedMap::YMap => {
+                    let Some(y_map) = y_map else {
                         return;
                     };
-                    &height_map.height_map
+                    &y_map.y_map
                 }
                 SelectedMap::DensityMap => {
                     let Some(density_map) = density_map else {
