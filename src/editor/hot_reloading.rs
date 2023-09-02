@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{density_map::DensityMap, prelude::WarblerHeight, y_map::YMap};
+use crate::{map::DensityMap, map::YMap, prelude::WarblerHeight};
 
 use super::draw_event::DrawEvent;
 

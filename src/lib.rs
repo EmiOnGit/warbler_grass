@@ -22,19 +22,13 @@ pub mod diagnostic;
 #[cfg(feature = "editor")]
 pub mod editor;
 
-mod density_map;
-mod y_map;
+pub mod map;
 
-/// Contains the [`YMap`](crate::maps::YMap) and [`DensityMap`](crate::maps::DensityMap) component
-pub mod maps {
-    pub use crate::density_map::*;
-    pub use crate::y_map::*;
-}
 mod render;
 pub mod warblers_plugin;
 pub mod prelude {
     pub use crate::bundle::*;
-    pub use crate::maps::*;
+    pub use crate::map::*;
     pub use crate::warblers_plugin::WarblersPlugin;
     pub use crate::GrassConfiguration;
 }

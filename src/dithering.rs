@@ -1,3 +1,4 @@
+use bevy::math::Vec3Swizzles;
 use bevy::{
     asset::Assets,
     ecs::{
@@ -6,7 +7,6 @@ use bevy::{
     },
     log::warn,
     math::Vec2,
-    math::Vec3Swizzles,
     reflect::{Reflect, TypeUuid},
     render::{
         primitives::Aabb,
@@ -17,7 +17,7 @@ use bevy::{
     },
 };
 
-use crate::density_map::DensityMap;
+use crate::map::DensityMap;
 
 // see https://surma.dev/things/ditherpunk/ for a good resource regarding ordered dithering
 const BAYER_DITHER: [[u8; 8]; 8] = [

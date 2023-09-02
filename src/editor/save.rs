@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use bevy::prelude::{info, warn, Assets, DetectChanges, Image, Query, Res, Resource};
 
 use crate::{
+    map::YMap,
     prelude::{DensityMap, WarblerHeight},
-    y_map::YMap,
 };
 
 use super::{ray_cast::SelectedMap, ActiveEditorChunk};
