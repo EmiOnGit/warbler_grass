@@ -49,6 +49,11 @@ var<uniform> aabb: ShaderAabb;
     var<uniform> height_uniform: ShaderHeightUniform;
 #endif
 
+@group(6) @binding(0)
+var t_normal: texture_2d<f32>;
+@group(6) @binding(1)
+var s_normal: sampler;
+
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
     @location(0) color: vec4<f32>,
@@ -81,32 +86,53 @@ fn density_map_offset(vertex_position: vec2<f32>) -> vec2<f32> {
     var texture_pixel = textureLoad(noise_texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0);
     return texture_pixel.xz - vec2<f32>(0.5,0.5) ;
 }
-fn texture2d_offset(texture: texture_2d<f32>, vertex_position: vec2<f32>) -> f32 {
+fn texture2d_offset(texture: texture_2d<f32>, vertex_position: vec2<f32>) -> vec3<f32> {
     let dim = textureDimensions(texture, 0);
     let texture_position = abs((vertex_position.xy / aabb.vect.xz ) * vec2<f32>(dim)) ;
-    var texture_r = textureLoad(texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0).r;
-    return texture_r * aabb.vect.y;
+    var texture_rgb = textureLoad(texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0).rgb;
+    return texture_rgb * aabb.vect.y;
+}
+// Source: https://gist.github.com/kevinmoran/b45980723e53edeb8a5a43c49f134724
+fn rotate_align(v1: vec3<f32>, v2: vec3<f32>) -> mat3x3<f32> {
+    let axis = cross(v1, v2);
+
+    let cos_a = dot(v1, v2);
+    let k = 1.0 / (1.0 + cos_a);
+
+    let result = mat3x3<f32>( 
+        (axis.x * axis.x * k) + cos_a,  (axis.y * axis.x * k) - axis.z, (axis.z * axis.x * k) + axis.y,
+        (axis.x * axis.y * k) + axis.z, (axis.y * axis.y * k) + cos_a,  (axis.z * axis.y * k) - axis.x,
+        (axis.x * axis.z * k) - axis.y, (axis.y * axis.z * k) + axis.x, (axis.z * axis.z * k) + cos_a 
+    );
+
+    return result;
 }
 @vertex
 fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
     var out: VertexOutput;
-    
+
     var position_field_offset = vec3<f32>(vertex.xz_position.x, 0.,vertex.xz_position.y);
 
     let density_offset = density_map_offset(position_field_offset.xz) / 1.;
     position_field_offset += vec3<f32>(density_offset.x, 0.,density_offset.y);
 
     // ---Y_POSITIONS---
-    position_field_offset.y = texture2d_offset(y_texture, position_field_offset.xz);
+    position_field_offset.y = texture2d_offset(y_texture, position_field_offset.xz).r;
+    
+    // ---NORMAL---
+    var normal = texture2d_offset(t_normal, vertex.xz_position.xy).xyz; // Get normal scaled over grass field
+    normal = normalize(normal);
+    let rotation_matrix = rotate_align(vertex.vertex_position, normal); // Calculate rotation matrix to align grass with normal
     
     // ---HEIGHT---
     var height = 0.;
     #ifdef HEIGHT_TEXTURE
-        height = (texture2d_offset(height_texture, position_field_offset.xz) + 4.) / 3.;
+        height = (texture2d_offset(height_texture, position_field_offset.xz).r + 4.) / 3.;
     #else
         height = height_uniform.height;
     #endif
-    var position = vertex.vertex_position * vec3<f32>(1.,height, 1.) + position_field_offset;
+    var position = rotation_matrix * vertex.vertex_position;
+    position = position * vec3<f32>(1., height, 1.) + position_field_offset;
 
     // ---WIND---
     // only applies wind if the vertex is not on the bottom of the grass (or very small)
@@ -119,7 +145,7 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
     out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
 
     // ---COLOR---
-    let lambda = clamp(vertex.vertex_position.y, 0.,1.);
+    let lambda = clamp(vertex.vertex_position.y, 0., 1.);
     out.color = mix(color.bottom_color, color.main_color, lambda);
     return out;
 }

@@ -46,6 +46,35 @@ impl ExtractComponent for YMap {
     }
 }
 
+#[derive(Reflect, Clone, Component)]
+pub struct NormalMap {
+    pub normal_map: Handle<Image>,
+}
+impl NormalMap {
+    /// Creates a new `NormalMap`
+    pub fn new(normal_map: Handle<Image>) -> Self {
+        NormalMap { normal_map }
+    }
+}
+impl From<Handle<Image>> for NormalMap {
+    fn from(value: Handle<Image>) -> Self {
+        NormalMap { normal_map: value }
+    }
+}
+impl ExtractComponent for NormalMap {
+    type Query = &'static Self;
+
+    type Filter = ();
+
+    type Out = Self;
+
+    fn extract_component(item: QueryItem<'_, Self::Query>) -> Option<Self::Out> {
+        Some(NormalMap {
+            normal_map: item.normal_map.clone_weak(),
+        })
+    }
+}
+
 /// The density map defines the density of grass blades at a given positions.
 ///
 /// The area covered by the density map is defined by the area of the [`Aabb`](bevy::render::primitives::Aabb) component.

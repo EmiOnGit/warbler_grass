@@ -18,7 +18,7 @@ use bevy::{
 
 use crate::{
     dithering::{add_dither_to_density, DitheredBuffer},
-    map::YMap,
+    map::{NormalMap, YMap},
     prelude::{GrassColor, WarblerHeight},
     render::{self, cache::UniformBuffer, extract, grass_pipeline::GrassPipeline, prepare, queue},
     GrassConfiguration, GrassNoiseTexture,
@@ -65,6 +65,7 @@ impl Plugin for WarblersPlugin {
             ExtractResourcePlugin::<GrassConfiguration>::default(),
             ExtractResourcePlugin::<GrassNoiseTexture>::default(),
             ExtractComponentPlugin::<YMap>::default(),
+            ExtractComponentPlugin::<NormalMap>::default(),
             ExtractComponentPlugin::<WarblerHeight>::default(),
             ExtractComponentPlugin::<GrassColor>::default(),
         ));
@@ -83,6 +84,7 @@ impl Plugin for WarblersPlugin {
                     prepare::prepare_height_buffer,
                     prepare::prepare_grass_color,
                     prepare::prepare_y_map_buffer,
+                    prepare::prepare_normal_map_buffer,
                 )
                     .in_set(RenderSet::Prepare),
             )
