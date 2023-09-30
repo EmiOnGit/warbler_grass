@@ -5,10 +5,9 @@ use bevy::{
         mesh::MeshVertexBufferLayout,
         render_resource::{
             BindGroupLayout, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType,
-            BufferBindingType, RenderPipelineDescriptor, SamplerBindingType, ShaderStages,
-            SpecializedMeshPipeline, SpecializedMeshPipelineError, TextureSampleType,
-            TextureViewDimension, VertexAttribute, VertexBufferLayout, VertexFormat,
-            VertexStepMode,
+            BufferBindingType, RenderPipelineDescriptor, ShaderStages, SpecializedMeshPipeline,
+            SpecializedMeshPipelineError, TextureSampleType, TextureViewDimension, VertexAttribute,
+            VertexBufferLayout, VertexFormat, VertexStepMode,
         },
         renderer::RenderDevice,
     },
@@ -98,13 +97,6 @@ impl FromWorld for GrassPipeline {
                             view_dimension: TextureViewDimension::D2,
                             multisampled: false,
                         },
-                        count: None,
-                    },
-                    // normal_texture_sampler
-                    BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: ShaderStages::VERTEX,
-                        ty: BindingType::Sampler(SamplerBindingType::Filtering),
                         count: None,
                     },
                 ],

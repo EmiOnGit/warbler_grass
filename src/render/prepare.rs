@@ -190,26 +190,19 @@ pub(crate) fn prepare_normal_map_buffer(
     let layout = pipeline.normal_map_layout.clone();
 
     for (entity, normal_map) in inserted_grass.iter() {
-        let (normal_map_texture, normal_map_sampler) =
-            if let Some(tex) = images.get(&normal_map.normal_map) {
-                (&tex.texture_view, &tex.sampler)
-            } else {
-                (&fallback_img.d2.texture_view, &fallback_img.d2.sampler)
-            };
+        let normal_map_texture = if let Some(tex) = images.get(&normal_map.normal_map) {
+            &tex.texture_view
+        } else {
+            &fallback_img.d2.texture_view
+        };
 
         let bind_group_descriptor = BindGroupDescriptor {
             label: Some("grass normal-map bind group"),
             layout: &layout,
-            entries: &[
-                BindGroupEntry {
-                    binding: 0,
-                    resource: BindingResource::TextureView(normal_map_texture),
-                },
-                BindGroupEntry {
-                    binding: 1,
-                    resource: BindingResource::Sampler(normal_map_sampler),
-                },
-            ],
+            entries: &[BindGroupEntry {
+                binding: 0,
+                resource: BindingResource::TextureView(normal_map_texture),
+            }],
         };
 
         let bind_group = render_device.create_bind_group(&bind_group_descriptor);

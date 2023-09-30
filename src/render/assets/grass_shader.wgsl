@@ -51,8 +51,6 @@ var<uniform> aabb: ShaderAabb;
 
 @group(6) @binding(0)
 var t_normal: texture_2d<f32>;
-@group(6) @binding(1)
-var s_normal: sampler;
 
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
