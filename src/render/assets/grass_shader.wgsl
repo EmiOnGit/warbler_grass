@@ -109,10 +109,10 @@ fn rotate_align(v1: vec3<f32>, v2: vec3<f32>) -> mat3x3<f32> {
 fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
     var out: VertexOutput;
 
-    var position_field_offset = vec3<f32>(vertex.xz_position.x, 0.,vertex.xz_position.y);
+    var position_field_offset = vec3<f32>(vertex.xz_position.x, 0., vertex.xz_position.y);
 
     let density_offset = density_map_offset(position_field_offset.xz) / 1.;
-    position_field_offset += vec3<f32>(density_offset.x, 0.,density_offset.y);
+    position_field_offset += vec3<f32>(density_offset.x, 0., density_offset.y);
 
     // ---Y_POSITIONS---
     position_field_offset.y = texture2d_offset(y_texture, position_field_offset.xz).r;

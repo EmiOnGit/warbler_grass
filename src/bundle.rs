@@ -8,7 +8,12 @@ use bevy::{
     },
 };
 
-use crate::{map::DensityMap, map::NormalMap, map::YMap, warblers_plugin::GRASS_MESH_HANDLE};
+use crate::{
+    map::DensityMap,
+    map::NormalMap,
+    map::YMap,
+    warblers_plugin::{GRASS_MESH_HANDLE, DEFAULT_NORMAL_MAP_HANDLE},
+};
 
 /// This [`Bundle`] spawns a grass chunk in the world.
 #[derive(Bundle)]
@@ -41,7 +46,7 @@ impl Default for WarblersBundle {
         Self {
             grass_mesh: GRASS_MESH_HANDLE.typed(),
             y_map: DEFAULT_IMAGE_HANDLE.typed().into(),
-            normal_map: DEFAULT_IMAGE_HANDLE.typed().into(),
+            normal_map: DEFAULT_NORMAL_MAP_HANDLE.typed().into(),
             density_map: DEFAULT_IMAGE_HANDLE.typed().into(),
             height: WarblerHeight::Uniform(1.),
             grass_color: GrassColor::default(),
