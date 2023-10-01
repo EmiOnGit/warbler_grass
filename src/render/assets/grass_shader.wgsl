@@ -129,8 +129,7 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
     #else
         height = height_uniform.height;
     #endif
-    var position = rotation_matrix * vertex.vertex_position;
-    position = position * vec3<f32>(1., height, 1.) + position_field_offset;
+    var position = rotation_matrix * (vertex.vertex_position * vec3<f32>(1., height, 1.)) + position_field_offset;
 
     // ---WIND---
     // only applies wind if the vertex is not on the bottom of the grass (or very small)
