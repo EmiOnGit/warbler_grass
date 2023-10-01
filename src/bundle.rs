@@ -28,6 +28,10 @@ pub struct WarblersBundle {
     /// An [`YMap`] component
     pub y_map: YMap,
     /// An [`NormalMap`] component
+    ///
+    /// Defaults to a green 1x1 texture.
+    /// You might want to take a look at the
+    /// `load_grass` example for that
     pub normal_map: NormalMap,
     /// An [`DensityMap`] component
     pub density_map: DensityMap,

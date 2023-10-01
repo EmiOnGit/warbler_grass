@@ -91,6 +91,7 @@ fn texture2d_offset(texture: texture_2d<f32>, vertex_position: vec2<f32>) -> vec
     return texture_rgb * aabb.vect.y;
 }
 // Source: https://gist.github.com/kevinmoran/b45980723e53edeb8a5a43c49f134724
+// Returns a rotation matrix that aligns v1 with v2
 fn rotate_align(v1: vec3<f32>, v2: vec3<f32>) -> mat3x3<f32> {
     let axis = cross(v1, v2);
 

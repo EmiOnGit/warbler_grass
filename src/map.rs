@@ -46,6 +46,12 @@ impl ExtractComponent for YMap {
     }
 }
 
+/// The normal-map defining the rotation of the grass blades.
+///
+/// The area covered by the normal map is defined by the area of the [`Aabb`](bevy::render::primitives::Aabb) component.
+/// The [`NormalMap`] texture will be scaled over the complete area
+///
+/// For a simple example, take a look at the [`load_grass`](https://github.com/emiongit/warbler_grass/latest/example/load_grass.rs) example
 #[derive(Reflect, Clone, Component)]
 pub struct NormalMap {
     pub normal_map: Handle<Image>,
