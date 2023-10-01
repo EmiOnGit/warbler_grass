@@ -120,7 +120,7 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
     // ---NORMAL---
     var normal = texture2d_offset(t_normal, vertex.xz_position.xy).xyz; // Get normal scaled over grass field
     normal = normalize(normal);
-    let rotation_matrix = rotate_align(vertex.vertex_position, normal); // Calculate rotation matrix to align grass with normal
+    let rotation_matrix = rotate_align(vec3<f32>(0.0, 1.0, 0.0), normal); // Calculate rotation matrix to align grass with normal
     
     // ---HEIGHT---
     var height = 0.;
