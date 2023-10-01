@@ -30,10 +30,10 @@ pub fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transfo
         if input.pressed(KeyCode::S) {
             transform.translation -= forward * move_speed;
         }
-        if input.pressed(KeyCode::Up) {
+        if input.pressed(KeyCode::Space) {
             transform.translation += up * move_speed;
         }
-        if input.pressed(KeyCode::Down) {
+        if input.pressed(KeyCode::ShiftLeft) {
             transform.translation -= up * move_speed;
         }
         if input.pressed(KeyCode::Q) {
