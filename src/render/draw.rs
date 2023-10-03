@@ -14,7 +14,7 @@ use bevy::{
 use crate::{
     dithering::DitheredBuffer,
     map::YMap,
-    prelude::{GrassColor, WarblerHeight},
+    prelude::{GrassColor, NormalMap, WarblerHeight},
 };
 
 use super::{cache::UniformBuffer, prepare::BindGroupBuffer};
@@ -48,6 +48,27 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
         _item: &P,
         _view: (),
         bind_group: Option<&'w BindGroupBuffer<YMap>>,
+        _cache: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        let Some(bind_group) = bind_group else {
+            return RenderCommandResult::Failure;
+        };
+        pass.set_bind_group(I, &bind_group.bind_group, &[]);
+        RenderCommandResult::Success
+    }
+}
+pub(crate) struct SetNormalBindGroup<const I: usize>;
+
+impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetNormalBindGroup<I> {
+    type Param = ();
+    type ViewWorldQuery = ();
+    type ItemWorldQuery = Option<Read<BindGroupBuffer<NormalMap>>>;
+
+    fn render<'w>(
+        _item: &P,
+        _view: (),
+        bind_group: Option<&'w BindGroupBuffer<NormalMap>>,
         _cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {

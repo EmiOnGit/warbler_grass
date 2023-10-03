@@ -6,7 +6,7 @@ use std::ops::Mul;
 use super::cache::UniformBuffer;
 use super::grass_pipeline::GrassPipeline;
 use crate::bundle::WarblerHeight;
-use crate::map::YMap;
+use crate::map::{NormalMap, YMap};
 use crate::prelude::GrassColor;
 use crate::{GrassConfiguration, GrassNoiseTexture};
 use bevy::prelude::*;
@@ -177,6 +177,38 @@ pub(crate) fn prepare_y_map_buffer(
         commands
             .entity(entity)
             .insert(BindGroupBuffer::<YMap>::new(bind_group));
+    }
+}
+pub(crate) fn prepare_normal_map_buffer(
+    mut commands: Commands,
+    render_device: Res<RenderDevice>,
+    pipeline: Res<GrassPipeline>,
+    fallback_img: Res<FallbackImage>,
+    images: Res<RenderAssets<Image>>,
+    inserted_grass: Query<(Entity, &NormalMap)>,
+) {
+    let layout = pipeline.normal_map_layout.clone();
+
+    for (entity, normal_map) in inserted_grass.iter() {
+        let normal_map_texture = if let Some(tex) = images.get(&normal_map.normal_map) {
+            &tex.texture_view
+        } else {
+            &fallback_img.d2.texture_view
+        };
+
+        let bind_group_descriptor = BindGroupDescriptor {
+            label: Some("grass normal-map bind group"),
+            layout: &layout,
+            entries: &[BindGroupEntry {
+                binding: 0,
+                resource: BindingResource::TextureView(normal_map_texture),
+            }],
+        };
+
+        let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+        commands
+            .entity(entity)
+            .insert(BindGroupBuffer::<NormalMap>::new(bind_group));
     }
 }
 #[allow(clippy::too_many_arguments)]

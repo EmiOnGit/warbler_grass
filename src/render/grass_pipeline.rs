@@ -20,6 +20,7 @@ pub struct GrassPipeline {
     mesh_pipeline: MeshPipeline,
     pub region_layout: BindGroupLayout,
     pub y_map_layout: BindGroupLayout,
+    pub normal_map_layout: BindGroupLayout,
     pub density_map_layout: BindGroupLayout,
     pub heights_texture_layout: BindGroupLayout,
     pub uniform_height_layout: BindGroupLayout,
@@ -83,6 +84,23 @@ impl FromWorld for GrassPipeline {
                 },
             ],
         });
+        let normal_map_layout =
+            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+                label: Some("warbler_grass normal map layout"),
+                entries: &[
+                    // normal_texture_view
+                    BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: ShaderStages::VERTEX,
+                        ty: BindingType::Texture {
+                            sample_type: TextureSampleType::Float { filterable: false },
+                            view_dimension: TextureViewDimension::D2,
+                            multisampled: false,
+                        },
+                        count: None,
+                    },
+                ],
+            });
         let density_map_layout =
             render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
                 label: Some("warbler_grass density map layout"),
@@ -152,6 +170,7 @@ impl FromWorld for GrassPipeline {
             heights_texture_layout,
             density_map_layout,
             y_map_layout,
+            normal_map_layout,
             color_layout,
         }
     }
@@ -187,6 +206,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
             vertex.shader_defs.push("HEIGHT_TEXTURE".into());
             descriptor.layout.push(self.heights_texture_layout.clone());
         }
+        descriptor.layout.push(self.normal_map_layout.clone());
 
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone();
         Ok(descriptor)

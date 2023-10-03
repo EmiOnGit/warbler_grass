@@ -22,12 +22,19 @@ pub fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transfo
         let mut forward = transform.forward();
         forward.y = 0.;
         let right = transform.right();
+        let up = transform.up();
 
         if input.pressed(KeyCode::W) {
             transform.translation += forward * move_speed;
         }
         if input.pressed(KeyCode::S) {
             transform.translation -= forward * move_speed;
+        }
+        if input.pressed(KeyCode::Space) {
+            transform.translation += up * move_speed;
+        }
+        if input.pressed(KeyCode::ShiftLeft) {
+            transform.translation -= up * move_speed;
         }
         if input.pressed(KeyCode::Q) {
             transform.rotate_y(rotate_speed);

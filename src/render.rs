@@ -4,7 +4,8 @@ use bevy::{
 };
 
 use self::draw::{
-    SetColorBindGroup, SetHeightBindGroup, SetUniformBindGroup, SetVertexBuffer, SetYBindGroup,
+    SetColorBindGroup, SetHeightBindGroup, SetNormalBindGroup, SetUniformBindGroup,
+    SetVertexBuffer, SetYBindGroup,
 };
 
 pub(crate) mod cache;
@@ -30,6 +31,8 @@ pub(crate) type GrassDrawCall = (
     SetYBindGroup<4>,
     // Binds the height of all the grass blades
     SetHeightBindGroup<5>,
+    // Binds the normals of all the grass blades
+    SetNormalBindGroup<6>,
     // Binds the xz position of the grass instances to the vertex buffer
     SetVertexBuffer,
 );
