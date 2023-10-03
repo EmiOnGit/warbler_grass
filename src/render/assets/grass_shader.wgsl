@@ -88,7 +88,7 @@ fn texture2d_offset(texture: texture_2d<f32>, vertex_position: vec2<f32>) -> vec
     let dim = textureDimensions(texture, 0);
     let texture_position = abs((vertex_position.xy / aabb.vect.xz ) * vec2<f32>(dim)) ;
     var texture_rgb = textureLoad(texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0).rgb;
-    return texture_rgb * aabb.vect.y;
+    return texture_rgb;
 }
 // Source: https://gist.github.com/kevinmoran/b45980723e53edeb8a5a43c49f134724
 // Returns a rotation matrix that aligns v1 with v2
@@ -116,7 +116,7 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
     position_field_offset += vec3<f32>(density_offset.x, 0., density_offset.y);
 
     // ---Y_POSITIONS---
-    position_field_offset.y = texture2d_offset(y_texture, position_field_offset.xz).r;
+    position_field_offset.y = texture2d_offset(y_texture, position_field_offset.xz).r * aabb.vect.y;
     
     // ---NORMAL---
     var normal = sqrt(texture2d_offset(t_normal, vertex.xz_position.xy).xyz); // Get normal scaled over grass field in linear space
