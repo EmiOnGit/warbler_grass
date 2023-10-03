@@ -124,8 +124,8 @@ impl Plugin for WarblersPlugin {
 fn default_normal_map() -> Image {
     let format = TextureFormat::bevy_default();
     let mut data = vec![255; format.pixel_size()];
-    data[0] = 0; // R
-    data[2] = 0; // B
+    data[0] = 127; // R
+    data[2] = 127; // B
     Image {
         data,
         texture_descriptor: TextureDescriptor {
