@@ -98,11 +98,11 @@ fn rotate_align(v1: vec3<f32>, v2: vec3<f32>) -> mat3x3<f32> {
     let cos_a = dot(v1, v2);
     let k = 1.0 / (1.0 + cos_a);
 
-    let result = mat3x3<f32>( 
-        (axis.x * axis.x * k) + cos_a,  (axis.y * axis.x * k) - axis.z, (axis.z * axis.x * k) + axis.y,
-        (axis.x * axis.y * k) + axis.z, (axis.y * axis.y * k) + cos_a,  (axis.z * axis.y * k) - axis.x,
-        (axis.x * axis.z * k) - axis.y, (axis.y * axis.z * k) + axis.x, (axis.z * axis.z * k) + cos_a 
-    );
+    let result = mat3x3f( 
+            (axis.x * axis.x * k) + cos_a, (axis.x * axis.y * k) + axis.z, (axis.x * axis.z * k) - axis.y,
+            (axis.y * axis.x * k) - axis.z, (axis.y * axis.y * k) + cos_a,  (axis.y * axis.z * k) + axis.x, 
+            (axis.z * axis.x * k) + axis.y, (axis.z * axis.y * k) - axis.x, (axis.z * axis.z * k) + cos_a 
+        );
 
     return result;
 }
