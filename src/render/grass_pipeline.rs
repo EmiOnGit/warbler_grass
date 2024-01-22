@@ -160,10 +160,9 @@ impl FromWorld for GrassPipeline {
                 count: None,
             }],
         });
-        let shader = GRASS_SHADER_HANDLE.typed::<Shader>();
         let mesh_pipeline = world.resource::<MeshPipeline>();
         GrassPipeline {
-            shader,
+            shader: GRASS_SHADER_HANDLE,
             mesh_pipeline: mesh_pipeline.clone(),
             region_layout,
             uniform_height_layout,
