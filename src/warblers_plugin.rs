@@ -68,7 +68,7 @@ impl Plugin for WarblersPlugin {
         images.set_untracked(DEFAULT_NORMAL_MAP_HANDLE, default_normal_map());
 
         app.add_systems(Update, add_dither_to_density)
-            .add_asset::<DitheredBuffer>()
+            .init_asset::<DitheredBuffer>()
             .add_plugins(RenderAssetPlugin::<DitheredBuffer>::default());
         // Init resources
         app.init_resource::<GrassConfiguration>()
