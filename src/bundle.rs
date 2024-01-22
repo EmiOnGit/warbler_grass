@@ -63,7 +63,7 @@ impl Default for WarblersBundle {
 /// The height of the grass blades
 ///
 /// Can be used in Combination with the [`WarblersBundle`] to spawn grass chunks
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Debug, PartialEq)]
 pub enum WarblerHeight {
     /// Sets the height of the grass blades to a constant value.
     Uniform(f32),

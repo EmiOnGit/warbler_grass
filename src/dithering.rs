@@ -81,6 +81,7 @@ pub(crate) struct DitheredBuffer {
     pub positions: Vec<Vec2>,
 }
 /// The gpu representation of a [`DitheredBuffer`]
+#[derive(Debug)]
 pub(crate) struct GpuDitheredBuffer {
     pub buffer: Buffer,
     pub instances: usize,

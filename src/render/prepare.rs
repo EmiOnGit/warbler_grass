@@ -70,6 +70,7 @@ pub(crate) fn prepare_height_buffer(
                     .entity(entity)
                     .insert(BindGroupBuffer::<WarblerHeight>::new(bind_group))
                     .insert(UniformHeightFlag);
+                println!("prep height {:?}", height);
             }
             WarblerHeight::Texture(heights_texture) => {
                 let layout = pipeline.heights_texture_layout.clone();

@@ -184,7 +184,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
     ) -> Result<RenderPipelineDescriptor, SpecializedMeshPipelineError> {
         let mut descriptor = self.mesh_pipeline.specialize(key.mesh_key, layout)?;
         descriptor.label = Some("Grass Render Pipeline".into());
-        descriptor.layout.push(self.region_layout.clone());
+        // println!("n: {}", descriptor.layout.len());
         descriptor.layout.push(self.color_layout.clone());
         descriptor.vertex.buffers.push(VertexBufferLayout {
             array_stride: std::mem::size_of::<Vec2>() as u64,
@@ -198,16 +198,18 @@ impl SpecializedMeshPipeline for GrassPipeline {
         let vertex = &mut descriptor.vertex;
 
         vertex.shader = self.shader.clone();
-        descriptor.layout.push(self.y_map_layout.clone());
         if key.uniform_height {
             descriptor.layout.push(self.uniform_height_layout.clone());
         } else {
             vertex.shader_defs.push("HEIGHT_TEXTURE".into());
             descriptor.layout.push(self.heights_texture_layout.clone());
         }
+        descriptor.layout.push(self.y_map_layout.clone());
+        descriptor.layout.push(self.region_layout.clone());
         descriptor.layout.push(self.normal_map_layout.clone());
 
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone();
+        println!("specialized");
         Ok(descriptor)
     }
 }

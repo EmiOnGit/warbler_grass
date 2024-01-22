@@ -3,6 +3,7 @@ use bevy::{
         lifetimeless::{Read, SRes},
         SystemParamItem,
     },
+    pbr::RenderMeshInstances,
     prelude::*,
     render::{
         mesh::GpuBufferInfo,
@@ -120,28 +121,32 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
 pub(crate) struct SetVertexBuffer;
 
 impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
-    type Param = (SRes<RenderAssets<Mesh>>, SRes<RenderAssets<DitheredBuffer>>);
+    type Param = (
+        SRes<RenderAssets<Mesh>>,
+        SRes<RenderMeshInstances>,
+        SRes<RenderAssets<DitheredBuffer>>,
+    );
     type ViewWorldQuery = ();
-    type ItemWorldQuery = (Read<Handle<Mesh>>, Option<Read<Handle<DitheredBuffer>>>);
+    type ItemWorldQuery = Option<Read<Handle<DitheredBuffer>>>;
 
     #[inline]
     fn render<'w>(
-        _item: &P,
+        item: &P,
         _view: (),
-        (mesh_handle, dither_handle): (
-            &'w Handle<bevy::prelude::Mesh>,
-            Option<&'w Handle<DitheredBuffer>>,
-        ),
-        (meshes, dither): SystemParamItem<'w, '_, Self::Param>,
+        dither_handle: Option<&'w Handle<DitheredBuffer>>,
+        (meshes, render_mesh_instances, dither): SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        let Some(gpu_mesh) = meshes.into_inner().get(mesh_handle) else {
+        println!("render vertex buffer");
+        let Some(mesh_instance) = render_mesh_instances.get(&item.entity()) else {
+            return RenderCommandResult::Failure;
+        };
+        let Some(gpu_mesh) = meshes.into_inner().get(mesh_instance.mesh_asset_id) else {
             return RenderCommandResult::Failure;
         };
 
         pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
         let blade_count;
-
         if let Some(dither_handle) = dither_handle {
             if let Some(gpu_dither) = dither.into_inner().get(dither_handle) {
                 blade_count = gpu_dither.instances as u32;
@@ -169,6 +174,7 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
                 pass.draw(0..gpu_mesh.vertex_count, 0..blade_count);
             }
         }
+        println!("render vertex buffer success ");
         RenderCommandResult::Success
     }
 }

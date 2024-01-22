@@ -7,7 +7,7 @@ use bevy::{
         extract_component::ExtractComponentPlugin,
         extract_resource::ExtractResourcePlugin,
         mesh::{Indices, Mesh},
-        render_asset::RenderAssetPlugin,
+        render_asset::{PrepareNextFrameAssets, RenderAssetPlugin},
         render_phase::AddRenderCommand,
         render_resource::{
             Extent3d, PrimitiveTopology, Shader, SpecializedMeshPipelines, TextureDescriptor,
@@ -22,7 +22,10 @@ use crate::{
     dithering::{add_dither_to_density, DitheredBuffer},
     map::{NormalMap, YMap},
     prelude::{GrassColor, WarblerHeight},
-    render::{self, cache::UniformBuffer, extract, grass_pipeline::GrassPipeline, prepare, queue},
+    render::{
+        self, cache::UniformBuffer, extract, grass_pipeline::GrassPipeline, prepare,
+        prepare_assets, queue,
+    },
     GrassConfiguration, GrassNoiseTexture,
 };
 
