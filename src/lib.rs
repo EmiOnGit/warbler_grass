@@ -11,7 +11,7 @@ use bevy::{
     render::{
         extract_resource::ExtractResource,
         prelude::Image,
-        texture::{CompressedImageFormats, ImageType},
+        texture::{CompressedImageFormats, ImageSampler, ImageType},
     },
 };
 
@@ -79,6 +79,7 @@ impl FromWorld for GrassNoiseTexture {
             ImageType::Extension("png"),
             CompressedImageFormats::default(),
             false,
+            ImageSampler::Default,
         )
         .unwrap();
         GrassNoiseTexture(images.add(img))
