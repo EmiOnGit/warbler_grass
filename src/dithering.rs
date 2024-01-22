@@ -1,3 +1,4 @@
+use bevy::asset::Asset;
 use bevy::math::Vec3Swizzles;
 use bevy::{
     asset::Assets,
@@ -74,7 +75,7 @@ pub(crate) fn dither_density_map(
 /// A buffer containing the dithered density map
 ///
 /// This struct shouldn't be modified by the user
-#[derive(Reflect, Clone, Debug, TypeUuid)]
+#[derive(Reflect, Clone, Debug, TypeUuid, Asset)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
 pub(crate) struct DitheredBuffer {
     pub positions: Vec<Vec2>,
