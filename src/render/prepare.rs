@@ -13,8 +13,8 @@ use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::{
-    BindGroup, BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding,
-    BufferInitDescriptor, BufferUsages, TextureViewId,
+    BindGroup, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor, BufferUsages,
+    TextureViewId,
 };
 use bevy::render::renderer::RenderDevice;
 use bevy::render::texture::FallbackImage;
@@ -54,10 +54,10 @@ pub(crate) fn prepare_height_buffer(
                     contents: bytemuck::bytes_of(&ShaderHeightUniform::from(height)),
                     usage: BufferUsages::VERTEX | BufferUsages::COPY_DST | BufferUsages::UNIFORM,
                 });
-                let bind_group_descriptor = BindGroupDescriptor {
-                    label: Some("grass blade height bind group"),
-                    layout: &layout,
-                    entries: &[BindGroupEntry {
+                let bind_group = render_device.create_bind_group(
+                    "grass blade height bind group",
+                    &layout,
+                    &[BindGroupEntry {
                         binding: 0,
                         resource: BindingResource::Buffer(BufferBinding {
                             buffer: &buffer,
@@ -65,8 +65,7 @@ pub(crate) fn prepare_height_buffer(
                             size: NonZeroU64::new(mem::size_of::<ShaderHeightUniform>() as u64),
                         }),
                     }],
-                };
-                let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+                );
                 commands
                     .entity(entity)
                     .insert(BindGroupBuffer::<WarblerHeight>::new(bind_group))
@@ -81,16 +80,14 @@ pub(crate) fn prepare_height_buffer(
                     &fallback_img.d2.texture_view
                 };
 
-                let bind_group_descriptor = BindGroupDescriptor {
-                    label: Some("grass height map bind group"),
-                    layout: &layout,
-                    entries: &[BindGroupEntry {
+                let bind_group = render_device.create_bind_group(
+                    "grass height map bind group",
+                    &layout,
+                    &[BindGroupEntry {
                         binding: 0,
                         resource: BindingResource::TextureView(tex),
                     }],
-                };
-
-                let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+                );
                 commands
                     .entity(entity)
                     .insert(BindGroupBuffer::<WarblerHeight>::new(bind_group));
@@ -112,10 +109,10 @@ pub(crate) fn prepare_grass_color(
             contents: bytemuck::bytes_of(&ShaderColorUniform::from(color)),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST | BufferUsages::UNIFORM,
         });
-        let bind_group_descriptor = BindGroupDescriptor {
-            label: Some("grass color bind group"),
-            layout: &layout,
-            entries: &[BindGroupEntry {
+        let bind_group = render_device.create_bind_group(
+            "grass color bind group",
+            &layout,
+            &[BindGroupEntry {
                 binding: 0,
                 resource: BindingResource::Buffer(BufferBinding {
                     buffer: &buffer,
@@ -123,8 +120,7 @@ pub(crate) fn prepare_grass_color(
                     size: NonZeroU64::new(mem::size_of::<ShaderColorUniform>() as u64),
                 }),
             }],
-        };
-        let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+        );
         commands
             .entity(entity)
             .insert(BindGroupBuffer::<GrassColor>::new(bind_group));
@@ -154,10 +150,10 @@ pub(crate) fn prepare_y_map_buffer(
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
 
-        let bind_group_descriptor = BindGroupDescriptor {
-            label: Some("grass y-map bind group"),
-            layout: &layout,
-            entries: &[
+        let bind_group = render_device.create_bind_group(
+            "grass y-map bind group",
+            &layout,
+            &[
                 BindGroupEntry {
                     binding: 0,
                     resource: BindingResource::TextureView(y_map_texture),
@@ -171,9 +167,7 @@ pub(crate) fn prepare_y_map_buffer(
                     }),
                 },
             ],
-        };
-
-        let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+        );
         commands
             .entity(entity)
             .insert(BindGroupBuffer::<YMap>::new(bind_group));
@@ -196,16 +190,14 @@ pub(crate) fn prepare_normal_map_buffer(
             &fallback_img.d2.texture_view
         };
 
-        let bind_group_descriptor = BindGroupDescriptor {
-            label: Some("grass normal-map bind group"),
-            layout: &layout,
-            entries: &[BindGroupEntry {
+        let bind_group = render_device.create_bind_group(
+            "grass normal-map bind group",
+            &layout,
+            &[BindGroupEntry {
                 binding: 0,
                 resource: BindingResource::TextureView(normal_map_texture),
             }],
-        };
-
-        let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+        );
         commands
             .entity(entity)
             .insert(BindGroupBuffer::<NormalMap>::new(bind_group));
@@ -239,10 +231,10 @@ pub(crate) fn prepare_uniform_buffers(
     });
 
     let layout = pipeline.region_layout.clone();
-    let bind_group_descriptor = BindGroupDescriptor {
-        label: Some("grass uniform bind group"),
-        layout: &layout,
-        entries: &[
+    let bind_group = render_device.create_bind_group(
+        "grass uniform bind group ",
+        &layout,
+        &[
             BindGroupEntry {
                 binding: 0,
                 resource: BindingResource::Buffer(BufferBinding {
@@ -256,8 +248,7 @@ pub(crate) fn prepare_uniform_buffers(
                 resource: BindingResource::TextureView(texture),
             },
         ],
-    };
-    let bind_group = render_device.create_bind_group(&bind_group_descriptor);
+    );
     uniform_buffer.set(bind_group);
 }
 
