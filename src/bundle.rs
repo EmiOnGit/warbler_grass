@@ -12,7 +12,7 @@ use crate::{
     map::DensityMap,
     map::NormalMap,
     map::YMap,
-    warblers_plugin::{DEFAULT_NORMAL_MAP_HANDLE, GRASS_MESH_HANDLE},
+    warblers_plugin::{DEFAULT_IMAGE_HANDLE, DEFAULT_NORMAL_MAP_HANDLE, GRASS_MESH_HANDLE},
 };
 
 /// This [`Bundle`] spawns a grass chunk in the world.
@@ -50,9 +50,9 @@ impl Default for WarblersBundle {
         Self {
             grass_mesh: GRASS_MESH_HANDLE,
             //TODO don't use normal map here
-            y_map: DEFAULT_NORMAL_MAP_HANDLE.into(),
+            y_map: DEFAULT_IMAGE_HANDLE.into(),
             normal_map: DEFAULT_NORMAL_MAP_HANDLE.into(),
-            density_map: DEFAULT_NORMAL_MAP_HANDLE.into(),
+            density_map: DEFAULT_IMAGE_HANDLE.into(),
             height: WarblerHeight::Uniform(1.),
             grass_color: GrassColor::default(),
             aabb: Aabb::default(),

@@ -43,6 +43,7 @@ pub const GRASS_MESH_HANDLE: Handle<Mesh> = Handle::weak_from_u128(9_357_128_457
 pub const DEFAULT_NORMAL_MAP_HANDLE: Handle<Image> =
     Handle::weak_from_u128(6_322_765_653_326_473_905);
 
+pub const DEFAULT_IMAGE_HANDLE: Handle<Image> = Handle::weak_from_u128(8_438_109_909_989_143_651);
 /// Adds the render pipeline for drawing grass to an [`App`]
 ///
 /// Should always be inserted to render grass
@@ -64,6 +65,7 @@ impl Plugin for WarblersPlugin {
         // Load default normal map
         let mut images = app.world.resource_mut::<Assets<Image>>();
         images.insert(DEFAULT_NORMAL_MAP_HANDLE, default_normal_map());
+        images.insert(DEFAULT_IMAGE_HANDLE, Image::default());
 
         app.add_systems(Update, add_dither_to_density)
             .init_asset::<DitheredBuffer>()
