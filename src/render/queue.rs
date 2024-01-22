@@ -1,5 +1,5 @@
 use bevy::core_pipeline::core_3d::Opaque3d;
-use bevy::pbr::{MeshPipelineKey, MeshUniform};
+use bevy::pbr::{MeshPipelineKey, MeshUniform, RenderMeshInstances};
 use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_phase::{DrawFunctions, RenderPhase};
@@ -19,14 +19,10 @@ pub(crate) fn queue_grass_buffers(
     msaa: Res<Msaa>,
     mut pipelines: ResMut<SpecializedMeshPipelines<GrassPipeline>>,
     pipeline_cache: Res<PipelineCache>,
+    render_mesh_instances: Res<RenderMeshInstances>,
     meshes: Res<RenderAssets<Mesh>>,
     material_meshes: Query<
-        (
-            Entity,
-            &MeshUniform,
-            &Handle<Mesh>,
-            Option<&UniformHeightFlag>,
-        ),
+        (Entity, &Handle<Mesh>, Option<&UniformHeightFlag>),
         With<Handle<DitheredBuffer>>,
     >,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
@@ -41,7 +37,7 @@ pub(crate) fn queue_grass_buffers(
     for (view, mut opaque_phase) in &mut views {
         let view_key = msaa_key | MeshPipelineKey::from_hdr(view.hdr);
         let rangefinder = view.rangefinder3d();
-        for (entity, mesh_uniform, mesh_handle, has_uniform_height) in material_meshes.iter() {
+        for (entity, mesh_handle, has_uniform_height) in material_meshes.iter() {
             if let Some(mesh) = meshes.get(mesh_handle) {
                 let mesh_key =
                     view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);
@@ -50,11 +46,18 @@ pub(crate) fn queue_grass_buffers(
                 let pipeline = pipelines
                     .specialize(&pipeline_cache, &grass_pipeline, grass_key, &mesh.layout)
                     .unwrap();
+                let Some(mesh_instance) = render_mesh_instances.get(&entity) else {
+                    // TODO
+                    panic!("TODO");
+                };
                 opaque_phase.add(Opaque3d {
                     entity,
                     pipeline,
                     draw_function: draw_custom,
-                    distance: rangefinder.distance(&mesh_uniform.transform),
+                    distance: rangefinder
+                        .distance_translation(&mesh_instance.transforms.transform.translation),
+                    batch_range: 0..1,
+                    dynamic_offset: None,
                 });
             }
         }
