@@ -16,43 +16,38 @@ struct Color {
     main_color: vec4<f32>,
     bottom_color: vec4<f32>,
 }
-// @group(1) @binding(0)
-// var<uniform> mesh: Mesh;
-
+struct ShaderAabb {
+    vect: vec3<f32>,
+    _wasm_padding: f32,
+}
 
 @group(2) @binding(0)
 var<uniform> color: Color;
 
-// @group(4) @binding(0)
-// var y_texture: texture_2d<f32>;
+#ifdef HEIGHT_TEXTURE
+    @group(3) @binding(0)
+    var height_texture: texture_2d<f32>;
+#else
+    struct ShaderHeightUniform {
+        height: f32,
+        _wasm_padding: vec2<f32>,
+    }
+    @group(3) @binding(0)
+    var<uniform> height_uniform: ShaderHeightUniform;
+#endif
 
-// @group(5) @binding(0)
-// var<uniform> config: ShaderRegionConfiguration;
+@group(4) @binding(0)
+var y_texture: texture_2d<f32>;
+@group(4) @binding(1)
+var<uniform> aabb: ShaderAabb;
 
-// @group(5) @binding(1)
-// var noise_texture: texture_2d<f32>;
-// struct ShaderAabb {
-//     vect: vec3<f32>,
-//     _wasm_padding: f32,
-// }
+@group(5) @binding(0)
+var<uniform> config: ShaderRegionConfiguration;
+@group(5) @binding(1)
+var noise_texture: texture_2d<f32>;
 
-// @group(6) @binding(0)
-// var t_normal: texture_2d<f32>;
-
-// @group(5) @binding(1)
-// var<uniform> aabb: ShaderAabb;
-
-// #ifdef HEIGHT_TEXTURE
-//     @group(6) @binding(0)
-//  var height_texture: texture_2d<f32>;
-// #else
-//     struct ShaderHeightUniform {
-//         height: f32,
-//         _wasm_padding: vec2<f32>,
-//     }
-    // @group(2) @binding(0)
-    // var<uniform> height_uniform: ShaderHeightUniform;
-// #endif
+@group(6) @binding(0)
+var t_normal: texture_2d<f32>;
 
 
 struct VertexOutput {
@@ -68,7 +63,7 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
     var position_field_offset = vec3<f32>(vertex.xz_position.x, 0., vertex.xz_position.y);
     // position_field_offset = 100. * textureLoad(y_texture, vec2i(20i,40i), 0 ).xyz*position_field_offset;
     // position_field_offset = position_field_offset - vec3f(config.wind,0.);
-    // position = vertex.vertex_position + position_field_offset / height_uniform.height;
+    position = vertex.vertex_position + position_field_offset / height_uniform.height;
     out.clip_position = vec4f(position,1.);
 
     var lambda = clamp(vertex.vertex_position.y, 0., 1.) ;

@@ -183,20 +183,24 @@ impl SpecializedMeshPipeline for GrassPipeline {
         layout: &MeshVertexBufferLayout,
     ) -> Result<RenderPipelineDescriptor, SpecializedMeshPipelineError> {
         let mut descriptor = self.mesh_pipeline.specialize(key.mesh_key, layout)?;
+        let vertex = &mut descriptor.vertex;
         descriptor.label = Some("Grass Render Pipeline".into());
-        descriptor
-            .vertex
-            .shader_defs
-            .push("MESH_BINDGROUP_1".into());
+        // set shaders
+        vertex.shader = self.shader.clone();
+        descriptor.fragment.as_mut().unwrap().shader = self.shader.clone();
+        // set shader defs
+        vertex.shader_defs.push("MESH_BINDGROUP_1".into());
         descriptor
             .fragment
             .as_mut()
             .unwrap()
             .shader_defs
             .push("MESH_BINDGROUP_1".into());
-        // println!("n: {}", descriptor.layout.len());
-        descriptor.layout.push(self.color_layout.clone());
-        descriptor.vertex.buffers.push(VertexBufferLayout {
+        if !key.uniform_height {
+            vertex.shader_defs.push("HEIGHT_TEXTURE".into());
+        }
+        // set buffers
+        vertex.buffers.push(VertexBufferLayout {
             array_stride: std::mem::size_of::<Vec2>() as u64,
             step_mode: VertexStepMode::Instance,
             attributes: vec![VertexAttribute {
@@ -205,21 +209,24 @@ impl SpecializedMeshPipeline for GrassPipeline {
                 shader_location: 3, // shader locations 0-2 may be taken up by Position, Normal and UV attributes
             }],
         });
-        let vertex = &mut descriptor.vertex;
 
-        vertex.shader = self.shader.clone();
-        // if key.uniform_height {
-        // descriptor.layout.push(self.uniform_height_layout.clone());
-        // } else {
-        // vertex.shader_defs.push("HEIGHT_TEXTURE".into());
-        // descriptor.layout.push(self.heights_texture_layout.clone());
-        // }
-        // descriptor.layout.push(self.y_map_layout.clone());
-        // descriptor.layout.push(self.region_layout.clone());
-        // descriptor.layout.push(self.normal_map_layout.clone());
-
-        descriptor.fragment.as_mut().unwrap().shader = self.shader.clone();
-        println!("groups: {}", descriptor.layout.len());
+        // set layouts
+        // layouts that are added to the descriptor.
+        // Order of elements has to correspond with the groups
+        let layouts = [
+            if key.uniform_height {
+                &self.uniform_height_layout
+            } else {
+                &self.heights_texture_layout
+            },
+            &self.color_layout,
+            &self.y_map_layout,
+            &self.region_layout,
+            &self.normal_map_layout,
+        ];
+        for layout in layouts {
+            descriptor.layout.push(layout.clone());
+        }
         Ok(descriptor)
     }
 }
