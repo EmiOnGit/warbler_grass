@@ -1,6 +1,7 @@
 #import bevy_pbr::mesh_functions::{mesh_position_local_to_clip, get_model_matrix}
 #import bevy_pbr::mesh_types::Mesh
 #import bevy_pbr::mesh_view_bindings::globals
+#import bevy_pbr::mesh_bindings::mesh,
 #import bevy_render::maths::affine_to_square
 
 struct ShaderRegionConfiguration {
@@ -15,49 +16,72 @@ struct Color {
     main_color: vec4<f32>,
     bottom_color: vec4<f32>,
 }
-@group(1) @binding(0)
-var<uniform> mesh: Mesh;
+// @group(1) @binding(0)
+// var<uniform> mesh: Mesh;
 
 
-@group(3) @binding(0)
+@group(2) @binding(0)
 var<uniform> color: Color;
 
-@group(4) @binding(0)
-var y_texture: texture_2d<f32>;
+// @group(4) @binding(0)
+// var y_texture: texture_2d<f32>;
 
-@group(5) @binding(0)
-var<uniform> config: ShaderRegionConfiguration;
+// @group(5) @binding(0)
+// var<uniform> config: ShaderRegionConfiguration;
 
-@group(5) @binding(1)
-var noise_texture: texture_2d<f32>;
+// @group(5) @binding(1)
+// var noise_texture: texture_2d<f32>;
 // struct ShaderAabb {
 //     vect: vec3<f32>,
 //     _wasm_padding: f32,
 // }
 
-@group(6) @binding(0)
-var t_normal: texture_2d<f32>;
+// @group(6) @binding(0)
+// var t_normal: texture_2d<f32>;
 
 // @group(5) @binding(1)
 // var<uniform> aabb: ShaderAabb;
 
-#ifdef HEIGHT_TEXTURE
-    @group(6) @binding(0)
- var height_texture: texture_2d<f32>;
-#else
-    struct ShaderHeightUniform {
-        height: f32,
-        _wasm_padding: vec2<f32>,
-    }
-    @group(2) @binding(0)
-    var<uniform> height_uniform: ShaderHeightUniform;
-#endif
+// #ifdef HEIGHT_TEXTURE
+//     @group(6) @binding(0)
+//  var height_texture: texture_2d<f32>;
+// #else
+//     struct ShaderHeightUniform {
+//         height: f32,
+//         _wasm_padding: vec2<f32>,
+//     }
+    // @group(2) @binding(0)
+    // var<uniform> height_uniform: ShaderHeightUniform;
+// #endif
 
 
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
     @location(0) color: vec4<f32>,
 };
+@vertex
+fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
+    var out: VertexOutput;
+    var col = vec4f(0.5,0.1,0.1,1.);
+    var position = vec3f(0.);
+
+    var position_field_offset = vec3<f32>(vertex.xz_position.x, 0., vertex.xz_position.y);
+    // position_field_offset = 100. * textureLoad(y_texture, vec2i(20i,40i), 0 ).xyz*position_field_offset;
+    // position_field_offset = position_field_offset - vec3f(config.wind,0.);
+    // position = vertex.vertex_position + position_field_offset / height_uniform.height;
+    out.clip_position = vec4f(position,1.);
+
+    var lambda = clamp(vertex.vertex_position.y, 0., 1.) ;
+    col= mix(color.bottom_color, color.main_color, lambda);
+    // col= col + textureLoad(t_normal, vec2i(20i,40i), 0) * 2.;
+    out.color = vec4f(1.,1.,0.,1.);
+    var aasd = mesh_position_local_to_clip(
+        get_model_matrix(0u),
+        vec4<f32>(position, 1.0)
+    );
+
+    return out;
+}
 
 // const NOISE_TEXTURE_SPEED: f32 = 50.;
 // const NOISE_TEXTURE_ZOOM: f32 = 35.;
@@ -108,53 +132,53 @@ struct VertexOutput {
 
 //     return result;
 // }
-@vertex
-fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
-    var out: VertexOutput;
-    var position_field_offset = vec3<f32>(vertex.xz_position.x, 0., vertex.xz_position.y);
-    position_field_offset = 100. * textureLoad(y_texture, vec2i(20i,40i), 0 ).xyz*position_field_offset;
-    position_field_offset = position_field_offset - vec3f(config.wind,0.);
+// @vertex
+// fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
+//     var out: VertexOutput;
+//     var position_field_offset = vec3<f32>(vertex.xz_position.x, 0., vertex.xz_position.y);
+//     position_field_offset = 100. * textureLoad(y_texture, vec2i(20i,40i), 0 ).xyz*position_field_offset;
+//     position_field_offset = position_field_offset - vec3f(config.wind,0.);
 
-    // let density_offset = density_map_offset(position_field_offset.xz) / 1.;
-    // position_field_offset += vec3<f32>(density_offset.x, 0., density_offset.y);
+//     // let density_offset = density_map_offset(position_field_offset.xz) / 1.;
+//     // position_field_offset += vec3<f32>(density_offset.x, 0., density_offset.y);
 
-    // // ---Y_POSITIONS---
-    // position_field_offset.y = texture2d_offset(y_texture, position_field_offset.xz).r * aabb.vect.y;
+//     // // ---Y_POSITIONS---
+//     // position_field_offset.y = texture2d_offset(y_texture, position_field_offset.xz).r * aabb.vect.y;
     
-    // // ---NORMAL---
-    // var normal = sqrt(texture2d_offset(t_normal, vertex.xz_position.xy).xyz); // Get normal scaled over grass field in linear space
-    // normal = normal * 2. - vec3f(1.);
-    // normal = normalize(normal);
-    // let rotation_matrix = rotate_align(vec3<f32>(0.0, 1.0, 0.0), normal); // Calculate rotation matrix to align grass with normal
+//     // // ---NORMAL---
+//     // var normal = sqrt(texture2d_offset(t_normal, vertex.xz_position.xy).xyz); // Get normal scaled over grass field in linear space
+//     // normal = normal * 2. - vec3f(1.);
+//     // normal = normalize(normal);
+//     // let rotation_matrix = rotate_align(vec3<f32>(0.0, 1.0, 0.0), normal); // Calculate rotation matrix to align grass with normal
     
-    // // ---HEIGHT---
-    // var height = 0.;
-    // #ifdef HEIGHT_TEXTURE
-    //     height = (texture2d_offset(height_texture, position_field_offset.xz).r + 4.) / 3.;
-    // #else
-    //     height = height_uniform.height;
-    // #endif
-    // var position = rotation_matrix * (vertex.vertex_position * vec3<f32>(1., height, 1.)) + position_field_offset;
-    let position = vertex.vertex_position + position_field_offset / height_uniform.height;
-    // // ---WIND---
-    // // only applies wind if the vertex is not on the bottom of the grass (or very small)
-    // let offset = wind_offset(position_field_offset.xz);
-    // let strength = max(0.,log(vertex.vertex_position.y + 1.));
-    // position.x += offset.x * strength;
-    // position.z += offset.y * strength;
+//     // // ---HEIGHT---
+//     // var height = 0.;
+//     // #ifdef HEIGHT_TEXTURE
+//     //     height = (texture2d_offset(height_texture, position_field_offset.xz).r + 4.) / 3.;
+//     // #else
+//     //     height = height_uniform.height;
+//     // #endif
+//     // var position = rotation_matrix * (vertex.vertex_position * vec3<f32>(1., height, 1.)) + position_field_offset;
+//     let position = vertex.vertex_position + position_field_offset / height_uniform.height;
+//     // // ---WIND---
+//     // // only applies wind if the vertex is not on the bottom of the grass (or very small)
+//     // let offset = wind_offset(position_field_offset.xz);
+//     // let strength = max(0.,log(vertex.vertex_position.y + 1.));
+//     // position.x += offset.x * strength;
+//     // position.z += offset.y * strength;
     
-    // // ---CLIP_POSITION---
-    // out.clip_position = mesh_position_local_to_clip(get_model_matrix(0u), vec4<f32>(position, 1.0));
-    out.clip_position =  vec4f(position,1.);
+//     // // ---CLIP_POSITION---
+//     // out.clip_position = mesh_position_local_to_clip(get_model_matrix(0u), vec4<f32>(position, 1.0));
+//     out.clip_position =  vec4f(position,1.);
 
-    // // ---COLOR---
-    position_field_offset = 100. * textureLoad(y_texture, vec2i(20i,40i), 0 ).xyz*position_field_offset;
-    var lambda = clamp(vertex.vertex_position.y, 0., 1.) ;
+//     // // ---COLOR---
+//     position_field_offset = 100. * textureLoad(y_texture, vec2i(20i,40i), 0 ).xyz*position_field_offset;
+//     var lambda = clamp(vertex.vertex_position.y, 0., 1.) ;
 
-    out.color = mix(color.bottom_color, color.main_color, lambda);
-    out.color = out.color + textureLoad(t_normal, vec2i(20i,40i), 0) * 2.;
-    return out;
-}
+//     out.color = mix(color.bottom_color, color.main_color, lambda);
+//     out.color = out.color + textureLoad(t_normal, vec2i(20i,40i), 0) * 2.;
+//     return out;
+// }
 
 
 @fragment

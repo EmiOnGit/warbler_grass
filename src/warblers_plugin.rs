@@ -22,10 +22,7 @@ use crate::{
     dithering::{add_dither_to_density, DitheredBuffer},
     map::{NormalMap, YMap},
     prelude::{GrassColor, WarblerHeight},
-    render::{
-        self, cache::UniformBuffer, extract, grass_pipeline::GrassPipeline, prepare,
-        prepare_assets, queue,
-    },
+    render::{self, cache::UniformBuffer, extract, grass_pipeline::GrassPipeline, prepare, queue},
     GrassConfiguration, GrassNoiseTexture,
 };
 

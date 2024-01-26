@@ -43,7 +43,6 @@ pub(crate) fn queue_grass_buffers(
             };
 
             if let Some(mesh) = meshes.get(mesh_instance.mesh_asset_id) {
-                println!("queue");
                 let mesh_key =
                     view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);
                 let mut grass_key = GrassRenderKey::from(mesh_key);

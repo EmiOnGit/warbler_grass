@@ -13,7 +13,6 @@ mod draw;
 pub(crate) mod extract;
 pub(crate) mod grass_pipeline;
 pub(crate) mod prepare;
-pub(crate) mod prepare_assets;
 pub(crate) mod queue;
 
 // The main render call used for the grass render pipeline
@@ -27,11 +26,11 @@ pub(crate) type GrassDrawCall = (
     SetMeshBindGroup<1>,
     // Binds the [`GrassConfiguration`](crate::GrassConfiguration)
     SetUniformBindGroup<5>,
-    SetColorBindGroup<3>,
+    SetColorBindGroup<2>,
     // Bind group for the y position lookup of the blades
     SetYBindGroup<4>,
     // Binds the height of all the grass blades
-    SetHeightBindGroup<2>,
+    SetHeightBindGroup<3>,
     // Binds the normals of all the grass blades
     SetNormalBindGroup<6>,
     // Binds the xz position of the grass instances to the vertex buffer

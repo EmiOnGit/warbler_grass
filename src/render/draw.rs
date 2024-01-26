@@ -137,7 +137,6 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
         (meshes, render_mesh_instances, dither): SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        println!("render vertex buffer");
         let Some(mesh_instance) = render_mesh_instances.get(&item.entity()) else {
             return RenderCommandResult::Failure;
         };
@@ -174,7 +173,6 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
                 pass.draw(0..gpu_mesh.vertex_count, 0..blade_count);
             }
         }
-        println!("render vertex buffer success ");
         RenderCommandResult::Success
     }
 }
