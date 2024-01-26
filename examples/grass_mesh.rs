@@ -39,7 +39,7 @@ fn setup_grass(
     // so we can swap them later
     let store = GrassMeshStore {
         custom_handle: grass_mesh.clone(),
-        default_handle: GRASS_MESH_HANDLE.typed(),
+        default_handle: GRASS_MESH_HANDLE,
     };
     commands.insert_resource(store);
 
