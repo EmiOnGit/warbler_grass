@@ -6,11 +6,9 @@ use bevy::render::render_phase::{DrawFunctions, RenderPhase};
 use bevy::render::render_resource::{PipelineCache, SpecializedMeshPipelines};
 use bevy::render::view::ExtractedView;
 
-use crate::dithering::DitheredBuffer;
 use crate::prelude::WarblerHeight;
 
 use super::grass_pipeline::{GrassPipeline, GrassRenderKey};
-use super::prepare::UniformHeightFlag;
 use super::GrassDrawCall;
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
@@ -38,20 +36,17 @@ pub(crate) fn queue_grass_buffers(
         let rangefinder = view.rangefinder3d();
         for (entity, height) in material_meshes.iter() {
             let Some(mesh_instance) = render_mesh_instances.get(&entity) else {
-                // TODO
-                panic!("TODO");
+                continue;
             };
 
             if let Some(mesh) = meshes.get(mesh_instance.mesh_asset_id) {
                 let mesh_key =
                     view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);
                 let mut grass_key = GrassRenderKey::from(mesh_key);
-                // grass_key.uniform_height = has_uniform_height.is_some();
-                // TODO
-                // let WarblerHeight::Uniform(_) = has_uniform_height else {
-                // panic!();
-                // };
-                grass_key.uniform_height = true;
+                grass_key.uniform_height = match height {
+                    WarblerHeight::Uniform(_) => true,
+                    WarblerHeight::Texture(_) => false,
+                };
                 let pipeline = pipelines
                     .specialize(&pipeline_cache, &grass_pipeline, grass_key, &mesh.layout)
                     .unwrap();

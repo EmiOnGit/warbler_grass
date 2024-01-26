@@ -21,20 +21,20 @@ struct ShaderAabb {
     _wasm_padding: f32,
 }
 
-@group(2) @binding(0)
-var<uniform> color: Color;
-
 #ifdef HEIGHT_TEXTURE
-    @group(3) @binding(0)
+    @group(2) @binding(0)
     var height_texture: texture_2d<f32>;
 #else
     struct ShaderHeightUniform {
         height: f32,
         _wasm_padding: vec2<f32>,
     }
-    @group(3) @binding(0)
+    @group(2) @binding(0)
     var<uniform> height_uniform: ShaderHeightUniform;
 #endif
+@group(3) @binding(0)
+var<uniform> color: Color;
+
 
 @group(4) @binding(0)
 var y_texture: texture_2d<f32>;

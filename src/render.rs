@@ -24,13 +24,14 @@ pub(crate) type GrassDrawCall = (
     SetMeshViewBindGroup<0>,
     // Binds the default mesh bind group to the vertex buffer
     SetMeshBindGroup<1>,
+    // Binds the height of all the grass blades
+    SetHeightBindGroup<2>,
+    // Binds the color of all the grass blades
+    SetColorBindGroup<3>,
     // Binds the [`GrassConfiguration`](crate::GrassConfiguration)
     SetUniformBindGroup<5>,
-    SetColorBindGroup<2>,
     // Bind group for the y position lookup of the blades
     SetYBindGroup<4>,
-    // Binds the height of all the grass blades
-    SetHeightBindGroup<3>,
     // Binds the normals of all the grass blades
     SetNormalBindGroup<6>,
     // Binds the xz position of the grass instances to the vertex buffer
