@@ -108,7 +108,6 @@ fn rotate_align(v1: vec3<f32>, v2: vec3<f32>) -> mat3x3<f32> {
 fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
     var out: VertexOutput;
     var position_field_offset = vec3<f32>(vertex.xz_position.x, 0., vertex.xz_position.y);
-    position_field_offset = 100. * textureLoad(y_texture, vec2i(20i,40i), 0 ).xyz*position_field_offset;
     position_field_offset = position_field_offset - vec3f(config.wind,0.);
 
     let density_offset = density_map_offset(position_field_offset.xz) / 1.;
