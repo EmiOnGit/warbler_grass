@@ -4,7 +4,7 @@
 
 A `bevy` plugin for ergonomic integration of grass in 3d games.
 
-Currently, bevy version `0.11` is supported.
+Currently, bevy version `0.12` is supported.
 Wasm builds are also supported!
 
 **Don't use this project for serious projects, it is still under heavy development. 
@@ -19,7 +19,7 @@ Another cool project using this crate is the [foxtrot](https://github.com/janhoh
 Add `warbler_grass` as dependency to your project
 ```toml
 [dependencies]
-warbler_grass = "0.4"
+warbler_grass = "0.5"
 ```
 ### Add grass to your game:
 ```rust
@@ -108,6 +108,13 @@ Of course you can also load it and see what happens.
 # I'd run this demo in release mode first to see how your hardware can keep up
 cargo run -r --example stress_test
 ```
+
+## Version Table
+
+| `warbler_grass` | Bevy   |
+|-----------------|--------|
+| `0.5`           | `0.12`  |
+| `0.4`           | `0.11` |
 
 ## Contributing
 If you read this part, you might consider helping this project grow.
