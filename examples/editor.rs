@@ -97,7 +97,7 @@ fn refresh_texture_view(
     let Ok((density_map, y_map, heights)) = chunk.get(active_entity) else {
         return;
     };
-    if let Some(mat) = materials.get_mut(&material) {
+    if let Some(mat) = materials.get_mut(material.clone()) {
         match *selected_map {
             SelectedMap::YMap => mat.base_color_texture = Some(y_map.y_map.clone()),
             SelectedMap::DensityMap => {
