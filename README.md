@@ -26,7 +26,6 @@ warbler_grass = "0.5"
 
 use bevy::{prelude::*, render::primitives::Aabb};
 use warbler_grass::prelude::*;
-mod helper;
 
 fn main() {
     App::new()
@@ -103,7 +102,7 @@ cargo run -r --example many_chunks
 ```
 ### Stress test
 This is not much of a example. It is used to limit test the crate.
-Of course you can also load it and see what happens.
+Of course, you can also load it and see what happens.
 ```shell
 # I'd run this demo in release mode first to see how your hardware can keep up
 cargo run -r --example stress_test
@@ -113,12 +112,12 @@ cargo run -r --example stress_test
 
 | `warbler_grass` | Bevy   |
 |-----------------|--------|
-| `0.5`           | `0.12`  |
+| `0.5`           | `0.12` |
 | `0.4`           | `0.11` |
 
 ## Contributing
 If you read this part, you might consider helping this project grow.
-I consider this project very beginner friendly. 
+I consider this project very beginner-friendly. 
 It is relatively easy to grasp the workings since the use case is clear; to draw grass efficiently.
 Don't fear if you are a beginner in bevy or even rust!
 

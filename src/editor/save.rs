@@ -1,6 +1,7 @@
+use bevy::log::{info, warn};
 use std::path::PathBuf;
 
-use bevy::prelude::{info, warn, Assets, DetectChanges, Image, Query, Res, Resource};
+use bevy::prelude::{Assets, DetectChanges, Image, Query, Res, Resource};
 
 use crate::{
     map::YMap,
