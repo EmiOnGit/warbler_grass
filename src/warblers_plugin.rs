@@ -2,12 +2,14 @@ use bevy::{
     app::Plugin,
     asset::{load_internal_asset, Assets},
     core_pipeline::core_3d::Opaque3d,
+    pbr::MeshPipeline,
     prelude::*,
     render::{
+        batching::batch_and_prepare_render_phase,
         extract_component::ExtractComponentPlugin,
         extract_resource::ExtractResourcePlugin,
         mesh::{Indices, Mesh},
-        render_asset::{PrepareNextFrameAssets, RenderAssetPlugin},
+        render_asset::RenderAssetPlugin,
         render_phase::AddRenderCommand,
         render_resource::{
             Extent3d, PrimitiveTopology, Shader, SpecializedMeshPipelines, TextureDescriptor,
@@ -99,6 +101,8 @@ impl Plugin for WarblersPlugin {
                     prepare::prepare_grass_color,
                     prepare::prepare_y_map_buffer,
                     prepare::prepare_normal_map_buffer,
+                    prepare::prepare_instance_index
+                        .after(batch_and_prepare_render_phase::<Opaque3d, MeshPipeline>),
                 )
                     .in_set(RenderSet::Prepare),
             )

@@ -1,7 +1,11 @@
 //! Demonstrates how to spawn multiple chunks
 //!
 //! Currently, the example spawns around 3 million grass blades in total
-use bevy::{diagnostic::LogDiagnosticsPlugin, prelude::*, render::primitives::Aabb};
+use bevy::{
+    diagnostic::LogDiagnosticsPlugin,
+    prelude::*,
+    render::{primitives::Aabb, view::NoFrustumCulling},
+};
 use warbler_grass::{diagnostic::WarblerDiagnosticsPlugin, prelude::*};
 mod helper;
 fn main() {

@@ -49,7 +49,6 @@ impl Default for WarblersBundle {
     fn default() -> Self {
         Self {
             grass_mesh: GRASS_MESH_HANDLE,
-            //TODO don't use normal map here
             y_map: DEFAULT_IMAGE_HANDLE.into(),
             normal_map: DEFAULT_NORMAL_MAP_HANDLE.into(),
             density_map: DEFAULT_IMAGE_HANDLE.into(),

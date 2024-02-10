@@ -20,8 +20,6 @@ pub(crate) fn queue_grass_buffers(
     pipeline_cache: Res<PipelineCache>,
     render_mesh_instances: Res<RenderMeshInstances>,
     meshes: Res<RenderAssets<Mesh>>,
-    // TODO
-    // material_meshes: Query<(Entity, Option<&UniformHeightFlag>), With<<DitheredBuffer>>>,
     material_meshes: Query<(Entity, &WarblerHeight)>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
 ) {

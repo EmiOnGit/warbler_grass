@@ -25,6 +25,7 @@ pub struct GrassPipeline {
     pub heights_texture_layout: BindGroupLayout,
     pub uniform_height_layout: BindGroupLayout,
     pub color_layout: BindGroupLayout,
+    pub instance_index_bind_group_layout: BindGroupLayout,
 }
 
 impl FromWorld for GrassPipeline {
@@ -160,6 +161,21 @@ impl FromWorld for GrassPipeline {
                 count: None,
             }],
         });
+
+        let instance_index_bind_group_layout =
+            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+                label: Some("instance index bind group layout"),
+                entries: &[BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                }],
+            });
         let mesh_pipeline = world.resource::<MeshPipeline>();
         GrassPipeline {
             shader: GRASS_SHADER_HANDLE,
@@ -171,6 +187,7 @@ impl FromWorld for GrassPipeline {
             y_map_layout,
             normal_map_layout,
             color_layout,
+            instance_index_bind_group_layout,
         }
     }
 }
@@ -223,6 +240,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
             &self.y_map_layout,
             &self.region_layout,
             &self.normal_map_layout,
+            &self.instance_index_bind_group_layout,
         ];
         for layout in layouts {
             descriptor.layout.push(layout.clone());

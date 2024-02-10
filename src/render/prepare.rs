@@ -9,12 +9,15 @@ use crate::bundle::WarblerHeight;
 use crate::map::{NormalMap, YMap};
 use crate::prelude::GrassColor;
 use crate::{GrassConfiguration, GrassNoiseTexture};
+use bevy::core_pipeline::core_3d::Opaque3d;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
+use bevy::render::render_phase::RenderPhase;
 use bevy::render::render_resource::{
-    BindGroup, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor, BufferUsages,
-    TextureViewId,
+    BindGroup, BindGroupEntries, BindGroupEntry, BindGroupLayoutDescriptor, BindGroupLayoutEntry,
+    BindingResource, BindingType, BufferBinding, BufferBindingType, BufferInitDescriptor,
+    BufferUsages, ShaderStages, TextureViewId,
 };
 use bevy::render::renderer::RenderDevice;
 use bevy::render::texture::FallbackImage;
@@ -30,6 +33,57 @@ impl<T> BindGroupBuffer<T> {
             bind_group,
             _inner: PhantomData,
         }
+    }
+}
+#[derive(Component)]
+pub(crate) struct IndexBindgroup {
+    pub bind_group: BindGroup,
+}
+pub(crate) fn prepare_instance_index(
+    query: Query<Entity, With<WarblerHeight>>,
+    mut commands: Commands,
+    phases: Query<&RenderPhase<Opaque3d>>,
+    render_device: Res<RenderDevice>,
+) {
+    for entity in &query {
+        let Some(item) = phases
+            .iter()
+            .map(|phase| &phase.items)
+            .flatten()
+            .find(|item| item.entity == entity)
+        else {
+            continue;
+        };
+        let index_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+            label: Some("instance index buffer"),
+            contents: bytemuck::cast_slice(&[item.batch_range.start]),
+            usage: BufferUsages::VERTEX | BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+        });
+        let layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+            label: "instance index layout".into(),
+            entries: &[BindGroupLayoutEntry {
+                binding: 0,
+                visibility: ShaderStages::VERTEX,
+                ty: BindingType::Buffer {
+                    ty: BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
+        });
+        let bind_group = render_device.create_bind_group(
+            "instance index bindgroup",
+            &layout,
+            &BindGroupEntries::single(BufferBinding {
+                buffer: &index_buffer,
+                offset: 0,
+                size: None,
+            }),
+        );
+        commands
+            .entity(entity)
+            .insert(IndexBindgroup { bind_group });
     }
 }
 #[derive(Component)]

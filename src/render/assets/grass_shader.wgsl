@@ -49,6 +49,8 @@ var noise_texture: texture_2d<f32>;
 @group(6) @binding(0)
 var t_normal: texture_2d<f32>;
 
+@group(7) @binding(0)
+var<uniform> instance_index: u32;
 
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
@@ -105,7 +107,7 @@ fn rotate_align(v1: vec3<f32>, v2: vec3<f32>) -> mat3x3<f32> {
     return result;
 }
 @vertex
-fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
+fn vertex(vertex: Vertex) -> VertexOutput {
     var out: VertexOutput;
     var position_field_offset = vec3<f32>(vertex.xz_position.x, 0., vertex.xz_position.y);
     position_field_offset = position_field_offset - vec3f(config.wind,0.);
@@ -138,13 +140,13 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
     position.z += offset.y * strength;
     
     // ---CLIP_POSITION---
-    out.clip_position = mesh_position_local_to_clip(get_model_matrix(0u), vec4<f32>(position, 1.0));
+    out.clip_position = mesh_position_local_to_clip(get_model_matrix(instance_index), vec4<f32>(position, 1.0));
 
-    // // ---COLOR---
-    position_field_offset = 100. * textureLoad(y_texture, vec2i(20i,40i), 0 ).xyz*position_field_offset;
+    // ---COLOR---
     var lambda = clamp(vertex.vertex_position.y, 0., 1.) ;
 
     out.color = mix(color.bottom_color, color.main_color, lambda);
+    // out.color = vec4f(1.,1.,1.,1.) / f32(1u+instance_index);
     return out;
 }
 

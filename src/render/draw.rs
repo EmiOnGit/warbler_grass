@@ -18,7 +18,10 @@ use crate::{
     prelude::{GrassColor, NormalMap, WarblerHeight},
 };
 
-use super::{cache::UniformBuffer, prepare::BindGroupBuffer};
+use super::{
+    cache::UniformBuffer,
+    prepare::{BindGroupBuffer, IndexBindgroup},
+};
 pub(crate) struct SetUniformBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
@@ -115,6 +118,26 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
     ) -> RenderCommandResult {
         pass.set_bind_group(I, &height.bind_group, &[]);
 
+        RenderCommandResult::Success
+    }
+}
+pub(crate) struct SetInstanceIndexBindGroup<const N: usize>;
+
+impl<P: PhaseItem, const N: usize> RenderCommand<P> for SetInstanceIndexBindGroup<N> {
+    type Param = ();
+    type ViewWorldQuery = ();
+
+    type ItemWorldQuery = Read<IndexBindgroup>;
+
+    #[inline]
+    fn render<'w>(
+        _item: &P,
+        _view: (),
+        index_bindgroup: &'w IndexBindgroup,
+        _: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        pass.set_bind_group(N, &index_bindgroup.bind_group, &[]);
         RenderCommandResult::Success
     }
 }
