@@ -59,14 +59,14 @@ impl Plugin for WarblersPlugin {
 
         // Load default grass blade mesh
         let mut meshes = app.world.resource_mut::<Assets<Mesh>>();
-        meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
+        meshes.insert(GRASS_MESH_HANDLE, default_grass_mesh());
 
         // Load default normal map
         let mut images = app.world.resource_mut::<Assets<Image>>();
-        images.set_untracked(DEFAULT_NORMAL_MAP_HANDLE, default_normal_map());
+        images.insert(DEFAULT_NORMAL_MAP_HANDLE, default_normal_map());
 
         app.add_systems(Update, add_dither_to_density)
-            .add_asset::<DitheredBuffer>()
+            .init_asset::<DitheredBuffer>()
             .add_plugins(RenderAssetPlugin::<DitheredBuffer>::default());
         // Init resources
         app.init_resource::<GrassConfiguration>()

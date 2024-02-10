@@ -1,4 +1,5 @@
 use bevy::core_pipeline::core_3d::Opaque3d;
+use bevy::math::Affine3A;
 use bevy::pbr::{MeshPipelineKey, MeshTransforms};
 use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssets;
@@ -50,12 +51,13 @@ pub(crate) fn queue_grass_buffers(
                 let pipeline = pipelines
                     .specialize(&pipeline_cache, &grass_pipeline, grass_key, &mesh.layout)
                     .unwrap();
+                let homogenous_coords: Mat4 = Affine3A::from(&mesh_uniform.transform).into();
                 opaque_phase.add(Opaque3d {
                     entity,
                     pipeline,
                     draw_function: draw_custom,
                     batch_range: 0..1,
-                    distance: rangefinder.distance(&mesh_uniform.transform),
+                    distance: rangefinder.distance(&homogenous_coords),
                     dynamic_offset: None,
                 });
             }

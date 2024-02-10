@@ -36,7 +36,8 @@ pub(crate) fn dither_density_map(
         return None;
     };
     // Capacity is not precise but should be a good estimate
-    let mut dither_buffer = Vec::with_capacity(image.size().length() as usize);
+    let image_length = (image.size().length_squared() as f32).sqrt();
+    let mut dither_buffer = Vec::with_capacity(image_length as usize);
     let buffer = dynamic_image.into_luma8();
     let i_count = (density * field_size.x).abs() as usize;
     let j_count = (density * field_size.y).abs() as usize;

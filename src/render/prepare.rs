@@ -13,8 +13,8 @@ use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::{
-    BindGroup, BindGroupDescriptor, BindGroupEntry, BindingResource, BufferBinding,
-    BufferInitDescriptor, BufferUsages, TextureViewId,
+    BindGroup, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor, BufferUsages,
+    TextureViewId,
 };
 use bevy::render::renderer::RenderDevice;
 use bevy::render::texture::FallbackImage;

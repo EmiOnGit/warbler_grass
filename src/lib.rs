@@ -3,6 +3,7 @@
 //! A bevy plugin for easily creating million of grass blades in your game.
 //! The crate heavily uses instanced rendering to render as much grass as possible.
 //! More information can be found on the [`github repository`](https://github.com/EmiOnGit/warbler_grass)
+use bevy::render::texture::ImageSampler;
 use bevy::{
     asset::{Assets, Handle},
     ecs::prelude::{FromWorld, ReflectResource, Resource, World},
@@ -74,13 +75,12 @@ impl Clone for GrassNoiseTexture {
 impl FromWorld for GrassNoiseTexture {
     fn from_world(world: &mut World) -> Self {
         let mut images = world.resource_mut::<Assets<Image>>();
-        let img = Image::from_buffer(
-            include_bytes!("render/assets/default_noise.png"),
-            ImageType::Extension("png"),
-            CompressedImageFormats::default(),
-            false,
-        )
-        .unwrap();
+        let buffer = include_bytes!("render/assets/default_noise.png");
+        let extension = ImageType::Extension("png");
+        let compression = CompressedImageFormats::default();
+        let is_srgb = false;
+        let sampler = ImageSampler::default();
+        let img = Image::from_buffer(buffer, extension, compression, is_srgb, sampler).unwrap();
         GrassNoiseTexture(images.add(img))
     }
 }
