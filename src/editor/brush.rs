@@ -75,8 +75,8 @@ impl BrushBehavior for Airbrush {
     }
 }
 
-fn pixel_positions(brush_size: u32, image_dimensions: Vec2, position: Vec2) -> Vec<(u32, u32)> {
-    let position = (image_dimensions * position).as_ivec2();
+fn pixel_positions(brush_size: u32, image_dimensions: UVec2, position: Vec2) -> Vec<(u32, u32)> {
+    let position = (image_dimensions.as_vec2() * position).as_ivec2();
     let range = brush_size as i32 * (image_dimensions.x + image_dimensions.y) as i32 / 100;
     (-range..range)
         .flat_map(|i| (-range..range).map(move |j| (i, j)))

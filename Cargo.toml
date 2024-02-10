@@ -1,6 +1,6 @@
 [package]
 name = "warbler_grass"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
@@ -18,10 +18,10 @@ editor = ["dep:bevy-inspector-egui", "dep:rfd"]
 [dependencies]
 bytemuck = "1.13.0"
 bitflags = "2"
-rfd = { version = "0.11.2", optional = true }
-bevy-inspector-egui = { version = "0.19", optional = true }
+rfd = { version = "0.13", optional = true }
+bevy-inspector-egui = { version = "0.22", optional = true }
 [dependencies.bevy]
-version = "0.12.0"
+version = "0.12"
 default-features = false
 features = [ "bevy_core_pipeline", "bevy_render", "bevy_asset", "bevy_pbr" , "png"]
 

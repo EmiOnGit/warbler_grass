@@ -102,7 +102,7 @@ fn update_camera_ray(
     mut ray_cam: Query<(&mut RayCamera, &Camera, &GlobalTransform)>,
     mut cursor: EventReader<CursorMoved>,
 ) {
-    let Some(cursor_position) = cursor.iter().last() else {
+    let Some(cursor_position) = cursor.read().last() else {
         return;
     };
     let cursor_position = cursor_position.position;
