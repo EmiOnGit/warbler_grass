@@ -1,6 +1,6 @@
-#import bevy_pbr::mesh_functions mesh_position_local_to_clip
-#import bevy_pbr::mesh_types Mesh
-#import bevy_pbr::mesh_view_bindings globals
+#import bevy_pbr::mesh_function::mesh_position_local_to_clip
+#import bevy_pbr::mesh_types::Mesh
+#import bevy_pbr::mesh_view_bindings::globals
 
 struct ShaderRegionConfiguration {
     wind: vec2<f32>,

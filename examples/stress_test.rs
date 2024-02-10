@@ -25,7 +25,6 @@ fn main() {
         // more wind
         .insert_resource(GrassConfiguration {
             wind: Vec2::new(2., 2.),
-            ..default()
         })
         .run();
 }
