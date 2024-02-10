@@ -1,21 +1,11 @@
+use bevy::ecs::system::lifetimeless::SRes;
+use bevy::ecs::system::SystemParamItem;
 use bevy::math::Vec3Swizzles;
-use bevy::{
-    asset::Assets,
-    ecs::{
-        prelude::*,
-        system::{lifetimeless::SRes, SystemParamItem},
-    },
-    log::warn,
-    math::Vec2,
-    reflect::{Reflect, TypeUuid},
-    render::{
-        primitives::Aabb,
-        render_asset::{PrepareAssetError, RenderAsset},
-        render_resource::{Buffer, BufferInitDescriptor, BufferUsages},
-        renderer::RenderDevice,
-        texture::Image,
-    },
-};
+use bevy::prelude::*;
+use bevy::render::primitives::Aabb;
+use bevy::render::render_asset::{PrepareAssetError, RenderAsset};
+use bevy::render::render_resource::{Buffer, BufferInitDescriptor, BufferUsages};
+use bevy::render::renderer::RenderDevice;
 
 use crate::map::DensityMap;
 
@@ -74,8 +64,7 @@ pub(crate) fn dither_density_map(
 /// A buffer containing the dithered density map
 ///
 /// This struct shouldn't be modified by the user
-#[derive(Reflect, Clone, Debug, TypeUuid)]
-#[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
+#[derive(Clone, Debug, TypePath, Asset)]
 pub(crate) struct DitheredBuffer {
     pub positions: Vec<Vec2>,
 }

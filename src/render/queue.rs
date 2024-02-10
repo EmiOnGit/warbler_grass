@@ -1,5 +1,5 @@
 use bevy::core_pipeline::core_3d::Opaque3d;
-use bevy::pbr::{MeshPipelineKey, MeshUniform};
+use bevy::pbr::{MeshPipelineKey, MeshTransforms};
 use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_phase::{DrawFunctions, RenderPhase};
@@ -23,7 +23,7 @@ pub(crate) fn queue_grass_buffers(
     material_meshes: Query<
         (
             Entity,
-            &MeshUniform,
+            &MeshTransforms,
             &Handle<Mesh>,
             Option<&UniformHeightFlag>,
         ),
@@ -54,7 +54,9 @@ pub(crate) fn queue_grass_buffers(
                     entity,
                     pipeline,
                     draw_function: draw_custom,
+                    batch_range: 0..1,
                     distance: rangefinder.distance(&mesh_uniform.transform),
+                    dynamic_offset: None,
                 });
             }
         }
