@@ -41,7 +41,7 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
 // this can be useful if your game has seasons
 fn change_colors(mut grass_colors: Query<&mut GrassColor>, time: Res<Time>) {
     // Most likely you'd want to choose other colors
-    let r = ((time.raw_elapsed_seconds() / 2.).sin() / 2.) + 0.5;
+    let r = ((time.elapsed_seconds() / 2.).sin() / 2.) + 0.5;
     let g = 1. - r;
     for mut color in &mut grass_colors {
         color.main_color.set_r(r);

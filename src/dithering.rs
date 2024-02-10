@@ -130,7 +130,7 @@ pub(crate) fn add_dither_to_density(
     }
 }
 #[cfg(test)]
-mod tests {
+mod t0ests {
     use bevy::math::Vec2;
     use bevy::prelude::Image;
     #[test]

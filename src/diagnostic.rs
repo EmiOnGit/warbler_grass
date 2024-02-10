@@ -15,9 +15,9 @@ use crate::dithering::DitheredBuffer;
 ///
 /// App::new()
 ///     // add this plugin to log the values
-///     .add_plugin(WarblerDiagnosticsPlugin)
+///     .add_plugins(WarblerDiagnosticsPlugin)
 ///     // add bevys plugin to print all logged values to the terminal
-///     .add_plugin(LogDiagnosticsPlugin::default());
+///     .add_plugins(LogDiagnosticsPlugin::default());
 /// ```
 pub struct WarblerDiagnosticsPlugin;
 impl Plugin for WarblerDiagnosticsPlugin {
