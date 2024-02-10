@@ -150,7 +150,7 @@ mod t0ests {
     fn dither_density() {
         let image = Image::default(); // 1x1x1 image all white
         let dither = super::dither_density_map(&image, 2., Vec2::new(1., 1.));
-        assert_eq!(dither.unwrap().positions.len(), (1 * 2) * (1 * 2));
+        assert_eq!(dither.unwrap().positions.len(), 2 * 2);
         let dither = super::dither_density_map(&image, 2., Vec2::new(10., 5.));
         assert!(dither.unwrap().positions.len() == (10 * 2) * (5 * 2));
         let dither = super::dither_density_map(&image, 5., Vec2::new(1., 1.));
