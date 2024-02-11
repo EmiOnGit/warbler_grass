@@ -15,8 +15,8 @@ use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_phase::RenderPhase;
 use bevy::render::render_resource::{
-    BindGroup, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor, BufferUsages,
-    TextureViewId,
+    BindGroup, BindGroupEntries, BindingResource, BufferBinding, BufferInitDescriptor,
+    BufferUsages, TextureViewId,
 };
 use bevy::render::renderer::RenderDevice;
 use bevy::render::texture::FallbackImage;
@@ -62,14 +62,11 @@ pub(crate) fn prepare_instance_index(
         let bind_group = render_device.create_bind_group(
             "instance index bindgroup",
             layout,
-            &[BindGroupEntry {
-                binding: 0,
-                resource: BindingResource::Buffer(BufferBinding {
-                    buffer: &index_buffer,
-                    offset: 0,
-                    size: None,
-                }),
-            }],
+            &BindGroupEntries::single(BindingResource::Buffer(BufferBinding {
+                buffer: &index_buffer,
+                offset: 0,
+                size: None,
+            })),
         );
 
         commands
@@ -102,14 +99,11 @@ pub(crate) fn prepare_height_buffer(
                 let bind_group = render_device.create_bind_group(
                     "grass blade height bind group",
                     &layout,
-                    &[BindGroupEntry {
-                        binding: 0,
-                        resource: BindingResource::Buffer(BufferBinding {
-                            buffer: &buffer,
-                            offset: 0,
-                            size: NonZeroU64::new(mem::size_of::<ShaderHeightUniform>() as u64),
-                        }),
-                    }],
+                    &BindGroupEntries::single(BindingResource::Buffer(BufferBinding {
+                        buffer: &buffer,
+                        offset: 0,
+                        size: NonZeroU64::new(mem::size_of::<ShaderHeightUniform>() as u64),
+                    })),
                 );
                 commands
                     .entity(entity)
@@ -128,10 +122,7 @@ pub(crate) fn prepare_height_buffer(
                 let bind_group = render_device.create_bind_group(
                     "grass height map bind group",
                     &layout,
-                    &[BindGroupEntry {
-                        binding: 0,
-                        resource: BindingResource::TextureView(tex),
-                    }],
+                    &BindGroupEntries::single(BindingResource::TextureView(tex)),
                 );
                 commands
                     .entity(entity)
@@ -157,14 +148,11 @@ pub(crate) fn prepare_grass_color(
         let bind_group = render_device.create_bind_group(
             "grass color bind group",
             &layout,
-            &[BindGroupEntry {
-                binding: 0,
-                resource: BindingResource::Buffer(BufferBinding {
-                    buffer: &buffer,
-                    offset: 0,
-                    size: NonZeroU64::new(mem::size_of::<ShaderColorUniform>() as u64),
-                }),
-            }],
+            &BindGroupEntries::single(BindingResource::Buffer(BufferBinding {
+                buffer: &buffer,
+                offset: 0,
+                size: NonZeroU64::new(mem::size_of::<ShaderColorUniform>() as u64),
+            })),
         );
         commands
             .entity(entity)
@@ -199,20 +187,14 @@ pub(crate) fn prepare_y_map_buffer(
         let bind_group = render_device.create_bind_group(
             "grass y-map bind group",
             &layout,
-            &[
-                BindGroupEntry {
-                    binding: 0,
-                    resource: BindingResource::TextureView(y_map_texture),
-                },
-                BindGroupEntry {
-                    binding: 1,
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &aabb_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-            ],
+            &BindGroupEntries::sequential((
+                BindingResource::TextureView(y_map_texture),
+                BindingResource::Buffer(BufferBinding {
+                    buffer: &aabb_buffer,
+                    offset: 0,
+                    size: None,
+                }),
+            )),
         );
         commands
             .entity(entity)
@@ -239,10 +221,7 @@ pub(crate) fn prepare_normal_map_buffer(
         let bind_group = render_device.create_bind_group(
             "grass normal-map bind group",
             &layout,
-            &[BindGroupEntry {
-                binding: 0,
-                resource: BindingResource::TextureView(normal_map_texture),
-            }],
+            &BindGroupEntries::single(BindingResource::TextureView(normal_map_texture)),
         );
         commands
             .entity(entity)
@@ -280,20 +259,14 @@ pub(crate) fn prepare_uniform_buffers(
     let bind_group = render_device.create_bind_group(
         "grass uniform bind group ",
         &layout,
-        &[
-            BindGroupEntry {
-                binding: 0,
-                resource: BindingResource::Buffer(BufferBinding {
-                    buffer: &config_buffer,
-                    offset: 0,
-                    size: None,
-                }),
-            },
-            BindGroupEntry {
-                binding: 1,
-                resource: BindingResource::TextureView(texture),
-            },
-        ],
+        &BindGroupEntries::sequential((
+            BindingResource::Buffer(BufferBinding {
+                buffer: &config_buffer,
+                offset: 0,
+                size: None,
+            }),
+            BindingResource::TextureView(texture),
+        )),
     );
     uniform_buffer.set(bind_group);
 }
