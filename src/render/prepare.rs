@@ -15,9 +15,8 @@ use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_phase::RenderPhase;
 use bevy::render::render_resource::{
-    BindGroup, BindGroupEntries, BindGroupEntry,
-    BindingResource, BufferBinding, BufferInitDescriptor,
-    BufferUsages, TextureViewId,
+    BindGroup, BindGroupEntry, BindingResource, BufferBinding, BufferInitDescriptor, BufferUsages,
+    TextureViewId,
 };
 use bevy::render::renderer::RenderDevice;
 use bevy::render::texture::FallbackImage;
@@ -49,21 +48,20 @@ pub(crate) fn prepare_instance_index(
     for entity in &query {
         let Some(item) = phases
             .iter()
-            .map(|phase| &phase.items)
-            .flatten()
+            .flat_map(|phase| &phase.items)
             .find(|item| item.entity == entity)
         else {
             continue;
         };
         let index_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("instance index buffer"),
-            contents: bytemuck::cast_slice(&[item.batch_range.start,0,0,0]),
+            contents: bytemuck::cast_slice(&[item.batch_range.start, 0, 0, 0]),
             usage: BufferUsages::VERTEX | BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
         let layout = &pipeline.instance_index_bind_group_layout;
         let bind_group = render_device.create_bind_group(
             "instance index bindgroup",
-            &layout,
+            layout,
             &[BindGroupEntry {
                 binding: 0,
                 resource: BindingResource::Buffer(BufferBinding {
@@ -185,7 +183,6 @@ pub(crate) fn prepare_y_map_buffer(
     let layout = pipeline.y_map_layout.clone();
 
     for (entity, y_map, aabb) in inserted_grass.iter() {
-     
         let y_map_texture = if let Some(tex) = images.get(&y_map.y_map) {
             &tex.texture_view
         } else {
