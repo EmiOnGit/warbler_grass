@@ -182,7 +182,6 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
         } else {
             return RenderCommandResult::Failure;
         }
-
         match &gpu_mesh.buffer_info {
             GpuBufferInfo::Indexed {
                 buffer,

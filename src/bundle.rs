@@ -3,8 +3,7 @@ use bevy::{
     ecs::{bundle::Bundle, component::Component, query::QueryItem},
     prelude::Color,
     render::{
-        extract_component::ExtractComponent, mesh::Mesh, prelude::SpatialBundle, primitives::Aabb,
-        texture::Image,
+        batching::NoAutomaticBatching, extract_component::ExtractComponent, mesh::Mesh, prelude::SpatialBundle, primitives::Aabb, texture::Image
     },
 };
 
@@ -44,6 +43,7 @@ pub struct WarblersBundle {
     /// Note that the Aabb is used to define the world dimensions of the [`DensityMap`] and [`YMap`].
     pub aabb: Aabb,
     pub spatial: SpatialBundle,
+    pub no_automatic_batching: NoAutomaticBatching
 }
 impl Default for WarblersBundle {
     fn default() -> Self {
@@ -56,6 +56,7 @@ impl Default for WarblersBundle {
             grass_color: GrassColor::default(),
             aabb: Aabb::default(),
             spatial: SpatialBundle::default(),
+            no_automatic_batching: NoAutomaticBatching,
         }
     }
 }

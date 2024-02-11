@@ -104,9 +104,9 @@ impl Plugin for WarblersPlugin {
                     prepare::prepare_instance_index
                         .after(batch_and_prepare_render_phase::<Opaque3d, MeshPipeline>),
                 )
-                    .in_set(RenderSet::Prepare),
+                    .in_set(RenderSet::PrepareResources),
             )
-            .add_systems(Render, queue::queue_grass_buffers.in_set(RenderSet::Queue));
+            .add_systems(Render, queue::queue_grass_buffers.in_set(RenderSet::QueueMeshes));
     }
 
     fn finish(&self, app: &mut App) {

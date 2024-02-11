@@ -15,9 +15,9 @@ use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_phase::RenderPhase;
 use bevy::render::render_resource::{
-    BindGroup, BindGroupEntries, BindGroupEntry, BindGroupLayoutDescriptor, BindGroupLayoutEntry,
-    BindingResource, BindingType, BufferBinding, BufferBindingType, BufferInitDescriptor,
-    BufferUsages, ShaderStages, TextureViewId,
+    BindGroup, BindGroupEntries, BindGroupEntry,
+    BindingResource, BufferBinding, BufferInitDescriptor,
+    BufferUsages, TextureViewId,
 };
 use bevy::render::renderer::RenderDevice;
 use bevy::render::texture::FallbackImage;
@@ -40,9 +40,10 @@ pub(crate) struct IndexBindgroup {
     pub bind_group: BindGroup,
 }
 pub(crate) fn prepare_instance_index(
-    query: Query<Entity, With<WarblerHeight>>,
+    query: Query<Entity, With<GrassColor>>,
     mut commands: Commands,
     phases: Query<&RenderPhase<Opaque3d>>,
+    pipeline: Res<GrassPipeline>,
     render_device: Res<RenderDevice>,
 ) {
     for entity in &query {
@@ -56,31 +57,23 @@ pub(crate) fn prepare_instance_index(
         };
         let index_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("instance index buffer"),
-            contents: bytemuck::cast_slice(&[item.batch_range.start]),
+            contents: bytemuck::cast_slice(&[item.batch_range.start,0,0,0]),
             usage: BufferUsages::VERTEX | BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
-        let layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: "instance index layout".into(),
-            entries: &[BindGroupLayoutEntry {
-                binding: 0,
-                visibility: ShaderStages::VERTEX,
-                ty: BindingType::Buffer {
-                    ty: BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            }],
-        });
+        let layout = &pipeline.instance_index_bind_group_layout;
         let bind_group = render_device.create_bind_group(
             "instance index bindgroup",
             &layout,
-            &BindGroupEntries::single(BufferBinding {
-                buffer: &index_buffer,
-                offset: 0,
-                size: None,
-            }),
+            &[BindGroupEntry {
+                binding: 0,
+                resource: BindingResource::Buffer(BufferBinding {
+                    buffer: &index_buffer,
+                    offset: 0,
+                    size: None,
+                }),
+            }],
         );
+
         commands
             .entity(entity)
             .insert(IndexBindgroup { bind_group });
@@ -192,15 +185,17 @@ pub(crate) fn prepare_y_map_buffer(
     let layout = pipeline.y_map_layout.clone();
 
     for (entity, y_map, aabb) in inserted_grass.iter() {
+     
         let y_map_texture = if let Some(tex) = images.get(&y_map.y_map) {
             &tex.texture_view
         } else {
             &fallback_img.d2.texture_view
         };
 
+        let shader_aabb = ShaderAabb::from(Vec3::from(aabb.half_extents.mul(2.)));
         let aabb_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: Some("aabb buffer"),
-            contents: bytemuck::bytes_of(&ShaderAabb::from(Vec3::from(aabb.half_extents.mul(2.)))),
+            contents: bytemuck::bytes_of(&shader_aabb),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
 
@@ -328,14 +323,14 @@ impl From<&GrassConfiguration> for ShaderRegionConfiguration {
 struct ShaderAabb {
     vect: Vec3,
     /// Wasm requires shader uniforms to be aligned to 16 bytes
-    _wasm_padding: f32,
+    _wasm_padding: u32,
 }
 
 impl From<Vec3> for ShaderAabb {
     fn from(vect: Vec3) -> Self {
         Self {
             vect,
-            _wasm_padding: 0.,
+            _wasm_padding: 0,
         }
     }
 }

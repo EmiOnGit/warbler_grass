@@ -7,7 +7,7 @@
 struct ShaderRegionConfiguration {
     wind: vec2<f32>,
     _wasm_padding: vec2<f32>,
-};
+}
 struct Vertex {
     @location(0) vertex_position: vec3<f32>,
     @location(3) xz_position: vec2<f32>,
@@ -21,6 +21,12 @@ struct ShaderAabb {
     _wasm_padding: f32,
 }
 
+struct InstanceIndex {
+    index: u32,
+    // We have to respect the memory layout here
+    _padding1: u32,
+    _padding2: vec2u,
+}
 #ifdef HEIGHT_TEXTURE
     @group(2) @binding(0)
     var height_texture: texture_2d<f32>;
@@ -50,7 +56,7 @@ var noise_texture: texture_2d<f32>;
 var t_normal: texture_2d<f32>;
 
 @group(7) @binding(0)
-var<uniform> instance_index: u32;
+var<uniform> instance_index: InstanceIndex;
 
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
@@ -140,13 +146,12 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     position.z += offset.y * strength;
     
     // ---CLIP_POSITION---
-    out.clip_position = mesh_position_local_to_clip(get_model_matrix(instance_index), vec4<f32>(position, 1.0));
+    out.clip_position = mesh_position_local_to_clip(get_model_matrix(instance_index.index), vec4<f32>(position, 1.0));
 
     // ---COLOR---
     var lambda = clamp(vertex.vertex_position.y, 0., 1.) ;
 
-    out.color = mix(color.bottom_color, color.main_color, lambda);
-    // out.color = vec4f(1.,1.,1.,1.) / f32(1u+instance_index);
+    out.color = mix(color.bottom_color, color.main_color, lambda) ;
     return out;
 }
 
