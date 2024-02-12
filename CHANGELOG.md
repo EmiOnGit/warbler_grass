@@ -1,4 +1,9 @@
 # Changelog
+## 0.5
+* Support for bevy 0.12
+* `WarblerBundle` now contains the `NoAutomaticBatching` component
+Besides that, a lot of internal restructering was needed
+
 ## 0.4
 * Support for bevy 0.11
 * The color of the grass is now a `Component`, meaning it can be configured on a `Chunk` basis.
