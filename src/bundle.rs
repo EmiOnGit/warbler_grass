@@ -3,8 +3,7 @@ use bevy::{
     ecs::{bundle::Bundle, component::Component, query::QueryItem},
     prelude::Color,
     render::{
-        extract_component::ExtractComponent, mesh::Mesh, prelude::SpatialBundle, primitives::Aabb,
-        texture::Image, texture::DEFAULT_IMAGE_HANDLE,
+        batching::NoAutomaticBatching, extract_component::ExtractComponent, mesh::Mesh, prelude::SpatialBundle, primitives::Aabb, texture::Image
     },
 };
 
@@ -12,7 +11,7 @@ use crate::{
     map::DensityMap,
     map::NormalMap,
     map::YMap,
-    warblers_plugin::{GRASS_MESH_HANDLE, DEFAULT_NORMAL_MAP_HANDLE},
+    warblers_plugin::{DEFAULT_IMAGE_HANDLE, DEFAULT_NORMAL_MAP_HANDLE, GRASS_MESH_HANDLE},
 };
 
 /// This [`Bundle`] spawns a grass chunk in the world.
@@ -44,25 +43,27 @@ pub struct WarblersBundle {
     /// Note that the Aabb is used to define the world dimensions of the [`DensityMap`] and [`YMap`].
     pub aabb: Aabb,
     pub spatial: SpatialBundle,
+    pub no_automatic_batching: NoAutomaticBatching
 }
 impl Default for WarblersBundle {
     fn default() -> Self {
         Self {
-            grass_mesh: GRASS_MESH_HANDLE.typed(),
-            y_map: DEFAULT_IMAGE_HANDLE.typed().into(),
-            normal_map: DEFAULT_NORMAL_MAP_HANDLE.typed().into(),
-            density_map: DEFAULT_IMAGE_HANDLE.typed().into(),
+            grass_mesh: GRASS_MESH_HANDLE,
+            y_map: DEFAULT_IMAGE_HANDLE.into(),
+            normal_map: DEFAULT_NORMAL_MAP_HANDLE.into(),
+            density_map: DEFAULT_IMAGE_HANDLE.into(),
             height: WarblerHeight::Uniform(1.),
             grass_color: GrassColor::default(),
             aabb: Aabb::default(),
             spatial: SpatialBundle::default(),
+            no_automatic_batching: NoAutomaticBatching,
         }
     }
 }
 /// The height of the grass blades
 ///
 /// Can be used in Combination with the [`WarblersBundle`] to spawn grass chunks
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Debug, PartialEq)]
 pub enum WarblerHeight {
     /// Sets the height of the grass blades to a constant value.
     Uniform(f32),

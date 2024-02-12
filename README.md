@@ -1,10 +1,10 @@
 # <img src="branding/warbler_display.svg" width="500">
-[![crates.io](https://img.shields.io/badge/crates.io-v0.4-orange)](https://crates.io/crates/warbler_grass)
-[![docs.io](https://img.shields.io/badge/docs-v0.4-green)](https://docs.rs/warbler_grass/0.4/warbler_grass/)
+[![crates.io](https://img.shields.io/badge/crates.io-v0.5-orange)](https://crates.io/crates/warbler_grass)
+[![docs.io](https://img.shields.io/badge/docs-v0.5-green)](https://docs.rs/warbler_grass/0.5/warbler_grass/)
 
 A `bevy` plugin for ergonomic integration of grass in 3d games.
 
-Currently, bevy version `0.11` is supported.
+Currently, bevy version `0.12` is supported.
 Wasm builds are also supported!
 
 **Don't use this project for serious projects, it is still under heavy development. 
@@ -12,21 +12,19 @@ Currently, the project is not ready to be used besides side projects or for lear
 
 <img src="images/preview.png" width="700">
 
-The preview image comes from [my demo project](https://github.com/EmiOnGit/birdylook) where I use this crate for grass rending
 
-Another cool project using this crate is the [foxtrot](https://github.com/janhohenheim/foxtrot) template. Check it out!
+A cool project using this crate is the [foxtrot](https://github.com/janhohenheim/foxtrot) template. Check it out!
 ## Usage
 Add `warbler_grass` as dependency to your project
 ```toml
 [dependencies]
-warbler_grass = "0.4"
+warbler_grass = "0.5"
 ```
 ### Add grass to your game:
 ```rust
 
 use bevy::{prelude::*, render::primitives::Aabb};
 use warbler_grass::prelude::*;
-mod helper;
 
 fn main() {
     App::new()
@@ -63,11 +61,12 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 ```
-You can also use the editor to modify the maps in your game
-Take a look at the `editor` example on how this might work
+You can also use the editor to modify the maps in your game.
+Take a look at the `editor` example on how this might work.
+(This is very much just WIP, but can give you a quick and dirty tool or give you an example to work out your own editor)
 
 ## Examples
-You can find them in the [`example folder`](https://github.com/EmiOnGit/warbler_grass/tree/master/examples)
+You can find them in the [`example folder`](https://github.com/EmiOnGit/warbler_grass/tree/main/examples)
 
 
 ### Load grass
@@ -103,15 +102,22 @@ cargo run -r --example many_chunks
 ```
 ### Stress test
 This is not much of a example. It is used to limit test the crate.
-Of course you can also load it and see what happens.
+Of course, you can also load it and see what happens.
 ```shell
 # I'd run this demo in release mode first to see how your hardware can keep up
 cargo run -r --example stress_test
 ```
 
+## Version Table
+
+| `warbler_grass` | Bevy   |
+|-----------------|--------|
+| `0.5`           | `0.12` |
+| `0.4`           | `0.11` |
+
 ## Contributing
 If you read this part, you might consider helping this project grow.
-I consider this project very beginner friendly. 
+I consider this project very beginner-friendly. 
 It is relatively easy to grasp the workings since the use case is clear; to draw grass efficiently.
 Don't fear if you are a beginner in bevy or even rust!
 

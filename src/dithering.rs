@@ -1,21 +1,12 @@
+use bevy::asset::Asset;
+use bevy::ecs::system::lifetimeless::SRes;
+use bevy::ecs::system::SystemParamItem;
 use bevy::math::Vec3Swizzles;
-use bevy::{
-    asset::Assets,
-    ecs::{
-        prelude::*,
-        system::{lifetimeless::SRes, SystemParamItem},
-    },
-    log::warn,
-    math::Vec2,
-    reflect::{Reflect, TypeUuid},
-    render::{
-        primitives::Aabb,
-        render_asset::{PrepareAssetError, RenderAsset},
-        render_resource::{Buffer, BufferInitDescriptor, BufferUsages},
-        renderer::RenderDevice,
-        texture::Image,
-    },
-};
+use bevy::prelude::*;
+use bevy::render::primitives::Aabb;
+use bevy::render::render_asset::{PrepareAssetError, RenderAsset};
+use bevy::render::render_resource::{Buffer, BufferInitDescriptor, BufferUsages};
+use bevy::render::renderer::RenderDevice;
 
 use crate::map::DensityMap;
 
@@ -46,7 +37,9 @@ pub(crate) fn dither_density_map(
         return None;
     };
     // Capacity is not precise but should be a good estimate
-    let mut dither_buffer = Vec::with_capacity(image.size().length() as usize);
+
+    let image_length = (image.size().length_squared() as f32).sqrt();
+    let mut dither_buffer = Vec::with_capacity(image_length as usize);
     let buffer = dynamic_image.into_luma8();
     let i_count = (density * field_size.x).abs() as usize;
     let j_count = (density * field_size.y).abs() as usize;
@@ -74,12 +67,12 @@ pub(crate) fn dither_density_map(
 /// A buffer containing the dithered density map
 ///
 /// This struct shouldn't be modified by the user
-#[derive(Reflect, Clone, Debug, TypeUuid)]
-#[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
+#[derive(Clone, Debug, TypePath, Asset)]
 pub(crate) struct DitheredBuffer {
     pub positions: Vec<Vec2>,
 }
 /// The gpu representation of a [`DitheredBuffer`]
+#[derive(Debug)]
 pub(crate) struct GpuDitheredBuffer {
     pub buffer: Buffer,
     pub instances: usize,
@@ -157,7 +150,7 @@ mod tests {
     fn dither_density() {
         let image = Image::default(); // 1x1x1 image all white
         let dither = super::dither_density_map(&image, 2., Vec2::new(1., 1.));
-        assert_eq!(dither.unwrap().positions.len(), (1 * 2) * (1 * 2));
+        assert_eq!(dither.unwrap().positions.len(), 2 * 2);
         let dither = super::dither_density_map(&image, 2., Vec2::new(10., 5.));
         assert!(dither.unwrap().positions.len() == (10 * 2) * (5 * 2));
         let dither = super::dither_density_map(&image, 5., Vec2::new(1., 1.));

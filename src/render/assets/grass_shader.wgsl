@@ -1,11 +1,13 @@
-#import bevy_pbr::mesh_functions mesh_position_local_to_clip
-#import bevy_pbr::mesh_types Mesh
-#import bevy_pbr::mesh_view_bindings globals
+#import bevy_pbr::mesh_functions::{mesh_position_local_to_clip, get_model_matrix}
+#import bevy_pbr::mesh_types::Mesh
+#import bevy_pbr::mesh_view_bindings::globals
+#import bevy_pbr::mesh_bindings::mesh
+#import bevy_render::maths::affine_to_square
 
 struct ShaderRegionConfiguration {
     wind: vec2<f32>,
     _wasm_padding: vec2<f32>,
-};
+}
 struct Vertex {
     @location(0) vertex_position: vec3<f32>,
     @location(3) xz_position: vec2<f32>,
@@ -14,43 +16,47 @@ struct Color {
     main_color: vec4<f32>,
     bottom_color: vec4<f32>,
 }
-@group(1) @binding(0)
-var<uniform> mesh: Mesh;
-
-@group(2) @binding(0)
-var<uniform> config: ShaderRegionConfiguration;
-
-@group(2) @binding(1)
-var noise_texture: texture_2d<f32>;
-
-@group(3) @binding(0)
-var<uniform> color: Color;
-
-@group(4) @binding(0)
-var y_texture: texture_2d<f32>;
-
 struct ShaderAabb {
     vect: vec3<f32>,
     _wasm_padding: f32,
 }
 
-@group(4) @binding(1)
-var<uniform> aabb: ShaderAabb;
-
+struct InstanceIndex {
+    index: u32,
+    // We have to respect the memory layout here
+    _padding1: u32,
+    _padding2: vec2u,
+}
 #ifdef HEIGHT_TEXTURE
-    @group(5) @binding(0)
+    @group(2) @binding(0)
     var height_texture: texture_2d<f32>;
 #else
     struct ShaderHeightUniform {
         height: f32,
         _wasm_padding: vec2<f32>,
     }
-    @group(5) @binding(0)
+    @group(2) @binding(0)
     var<uniform> height_uniform: ShaderHeightUniform;
 #endif
+@group(3) @binding(0)
+var<uniform> color: Color;
+
+
+@group(4) @binding(0)
+var y_texture: texture_2d<f32>;
+@group(4) @binding(1)
+var<uniform> aabb: ShaderAabb;
+
+@group(5) @binding(0)
+var<uniform> config: ShaderRegionConfiguration;
+@group(5) @binding(1)
+var noise_texture: texture_2d<f32>;
 
 @group(6) @binding(0)
 var t_normal: texture_2d<f32>;
+
+@group(7) @binding(0)
+var<uniform> instance_index: InstanceIndex;
 
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
@@ -86,7 +92,7 @@ fn density_map_offset(vertex_position: vec2<f32>) -> vec2<f32> {
 }
 fn texture2d_offset(texture: texture_2d<f32>, vertex_position: vec2<f32>) -> vec3<f32> {
     let dim = textureDimensions(texture, 0);
-    let texture_position = abs((vertex_position.xy / aabb.vect.xz ) * vec2<f32>(dim)) ;
+let texture_position = abs((vertex_position.xy / aabb.vect.xz ) * vec2<f32>(dim)) ;
     var texture_rgb = textureLoad(texture, vec2<i32>(i32(texture_position.x),i32(texture_position.y)), 0).rgb;
     return texture_rgb;
 }
@@ -107,10 +113,10 @@ fn rotate_align(v1: vec3<f32>, v2: vec3<f32>) -> mat3x3<f32> {
     return result;
 }
 @vertex
-fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> VertexOutput {
+fn vertex(vertex: Vertex) -> VertexOutput {
     var out: VertexOutput;
-
     var position_field_offset = vec3<f32>(vertex.xz_position.x, 0., vertex.xz_position.y);
+    position_field_offset = position_field_offset - vec3f(config.wind,0.);
 
     let density_offset = density_map_offset(position_field_offset.xz) / 1.;
     position_field_offset += vec3<f32>(density_offset.x, 0., density_offset.y);
@@ -132,7 +138,6 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
         height = height_uniform.height;
     #endif
     var position = rotation_matrix * (vertex.vertex_position * vec3<f32>(1., height, 1.)) + position_field_offset;
-
     // ---WIND---
     // only applies wind if the vertex is not on the bottom of the grass (or very small)
     let offset = wind_offset(position_field_offset.xz);
@@ -141,11 +146,12 @@ fn vertex(vertex: Vertex, @builtin(instance_index) instance_index: u32) -> Verte
     position.z += offset.y * strength;
     
     // ---CLIP_POSITION---
-    out.clip_position = mesh_position_local_to_clip(mesh.model, vec4<f32>(position, 1.0));
+    out.clip_position = mesh_position_local_to_clip(get_model_matrix(instance_index.index), vec4<f32>(position, 1.0));
 
     // ---COLOR---
-    let lambda = clamp(vertex.vertex_position.y, 0., 1.);
-    out.color = mix(color.bottom_color, color.main_color, lambda);
+    var lambda = clamp(vertex.vertex_position.y, 0., 1.) ;
+
+    out.color = mix(color.bottom_color, color.main_color, lambda) ;
     return out;
 }
 

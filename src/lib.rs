@@ -11,7 +11,7 @@ use bevy::{
     render::{
         extract_resource::ExtractResource,
         prelude::Image,
-        texture::{CompressedImageFormats, ImageType},
+        texture::{CompressedImageFormats, ImageSampler, ImageType},
     },
 };
 
@@ -74,13 +74,12 @@ impl Clone for GrassNoiseTexture {
 impl FromWorld for GrassNoiseTexture {
     fn from_world(world: &mut World) -> Self {
         let mut images = world.resource_mut::<Assets<Image>>();
-        let img = Image::from_buffer(
-            include_bytes!("render/assets/default_noise.png"),
-            ImageType::Extension("png"),
-            CompressedImageFormats::default(),
-            false,
-        )
-        .unwrap();
+        let buffer = include_bytes!("render/assets/default_noise.png");
+        let extension = ImageType::Extension("png");
+        let compression = CompressedImageFormats::default();
+        let is_srgb = false;
+        let sampler = ImageSampler::default();
+        let img = Image::from_buffer(buffer, extension, compression, is_srgb, sampler).unwrap();
         GrassNoiseTexture(images.add(img))
     }
 }

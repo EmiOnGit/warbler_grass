@@ -10,7 +10,7 @@ pub fn draw_map(
     mut draw_events: EventReader<DrawEvent>,
     mut images: ResMut<Assets<Image>>,
 ) {
-    for event in draw_events.iter() {
+    for event in draw_events.read() {
         match event {
             DrawEvent::Draw { positions, image } => {
                 if let Some(image) = images.get_mut(image) {

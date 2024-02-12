@@ -1,6 +1,6 @@
 //! The basic example which simply spawns a chunk of grass the recommended way
-use bevy::{prelude::*, render::primitives::Aabb};
-use warbler_grass::prelude::*;
+use bevy::{diagnostic::LogDiagnosticsPlugin, prelude::*, render::primitives::Aabb};
+use warbler_grass::{diagnostic::WarblerDiagnosticsPlugin, prelude::*};
 mod helper;
 
 fn main() {
@@ -11,6 +11,8 @@ fn main() {
             WarblersPlugin,
             // Just a helper plugin for spawning a camera
             // As in all examples, you can use the wasd keys for movement and qe for rotation
+            WarblerDiagnosticsPlugin,
+            LogDiagnosticsPlugin::default(),
             helper::SimpleCamera,
         ))
         .add_systems(Startup, setup_grass)

@@ -1,10 +1,11 @@
 use bevy::{
     app::Plugin,
-    asset::{load_internal_asset, Assets, HandleUntyped},
+    asset::{load_internal_asset, Assets},
     core_pipeline::core_3d::Opaque3d,
+    pbr::MeshPipeline,
     prelude::*,
-    reflect::TypeUuid,
     render::{
+        batching::batch_and_prepare_render_phase,
         extract_component::ExtractComponentPlugin,
         extract_resource::ExtractResourcePlugin,
         mesh::{Indices, Mesh},
@@ -28,23 +29,23 @@ use crate::{
 };
 
 /// A raw handle which points to the shader used to render the grass.
-pub(crate) const GRASS_SHADER_HANDLE: HandleUntyped =
-    HandleUntyped::weak_from_u64(Shader::TYPE_UUID, 2_263_343_952_151_597_127);
+pub(crate) const GRASS_SHADER_HANDLE: Handle<Shader> =
+    Handle::weak_from_u128(2_263_343_952_151_597_127);
 
 /// A raw handle to the default mesh used for grass.
 ///
 /// The [`WarblersPlugin`] adds the corresponding mesh to the world.
 /// So you should only convert the raw handle when the plugin is used
-pub const GRASS_MESH_HANDLE: HandleUntyped =
-    HandleUntyped::weak_from_u64(Mesh::TYPE_UUID, 9_357_128_457_583_957_921);
+pub const GRASS_MESH_HANDLE: Handle<Mesh> = Handle::weak_from_u128(9_357_128_457_583_957_921);
 
 /// A raw handle to the default normal map.
 ///
 /// The [`WarblersPlugin`] adds the corresponding image to the world.
 /// So you should only convert the raw handle when the plugin is used
-pub const DEFAULT_NORMAL_MAP_HANDLE: HandleUntyped =
-    HandleUntyped::weak_from_u64(Image::TYPE_UUID, 6_322_765_653_326_473_905);
+pub const DEFAULT_NORMAL_MAP_HANDLE: Handle<Image> =
+    Handle::weak_from_u128(6_322_765_653_326_473_905);
 
+pub const DEFAULT_IMAGE_HANDLE: Handle<Image> = Handle::weak_from_u128(8_438_109_909_989_143_651);
 /// Adds the render pipeline for drawing grass to an [`App`]
 ///
 /// Should always be inserted to render grass
@@ -61,14 +62,15 @@ impl Plugin for WarblersPlugin {
 
         // Load default grass blade mesh
         let mut meshes = app.world.resource_mut::<Assets<Mesh>>();
-        meshes.set_untracked(GRASS_MESH_HANDLE, default_grass_mesh());
+        meshes.insert(GRASS_MESH_HANDLE, default_grass_mesh());
 
         // Load default normal map
         let mut images = app.world.resource_mut::<Assets<Image>>();
-        images.set_untracked(DEFAULT_NORMAL_MAP_HANDLE, default_normal_map());
+        images.insert(DEFAULT_NORMAL_MAP_HANDLE, default_normal_map());
+        images.insert(DEFAULT_IMAGE_HANDLE, Image::default());
 
         app.add_systems(Update, add_dither_to_density)
-            .add_asset::<DitheredBuffer>()
+            .init_asset::<DitheredBuffer>()
             .add_plugins(RenderAssetPlugin::<DitheredBuffer>::default());
         // Init resources
         app.init_resource::<GrassConfiguration>()
@@ -99,10 +101,12 @@ impl Plugin for WarblersPlugin {
                     prepare::prepare_grass_color,
                     prepare::prepare_y_map_buffer,
                     prepare::prepare_normal_map_buffer,
+                    prepare::prepare_instance_index
+                        .after(batch_and_prepare_render_phase::<Opaque3d, MeshPipeline>),
                 )
-                    .in_set(RenderSet::Prepare),
+                    .in_set(RenderSet::PrepareResources),
             )
-            .add_systems(Render, queue::queue_grass_buffers.in_set(RenderSet::Queue));
+            .add_systems(Render, queue::queue_grass_buffers.in_set(RenderSet::QueueMeshes));
     }
 
     fn finish(&self, app: &mut App) {
@@ -142,7 +146,7 @@ fn default_normal_map() -> Image {
             usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
             view_formats: &[],
         },
-        sampler_descriptor: ImageSampler::Default,
+        sampler: ImageSampler::Default,
         texture_view_descriptor: None,
     }
 }

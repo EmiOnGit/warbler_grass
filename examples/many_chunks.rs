@@ -54,7 +54,7 @@ fn setup_grass_chunks(mut commands: Commands, asset_server: Res<AssetServer>) {
             // the aabb defined the dimensions of the box the chunk lives in
             aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(chunk_width, 2., chunk_height)),
             grass_color: GrassColor {
-                main_color: color.clone(),
+                main_color: color,
                 bottom_color: color * 0.4,
             },
 

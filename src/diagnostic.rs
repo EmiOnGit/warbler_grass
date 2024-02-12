@@ -1,6 +1,7 @@
 use bevy::{
     diagnostic::{Diagnostic, DiagnosticId, Diagnostics, RegisterDiagnostic},
-    prelude::{Assets, ComputedVisibility, Handle, Plugin, Query, Res, Update},
+    prelude::{Assets, Handle, InheritedVisibility, Plugin, Query, Res, Update},
+    render::view::ViewVisibility,
 };
 
 use crate::dithering::DitheredBuffer;
@@ -15,9 +16,9 @@ use crate::dithering::DitheredBuffer;
 ///
 /// App::new()
 ///     // add this plugin to log the values
-///     .add_plugin(WarblerDiagnosticsPlugin)
+///     .add_plugins(WarblerDiagnosticsPlugin)
 ///     // add bevys plugin to print all logged values to the terminal
-///     .add_plugin(LogDiagnosticsPlugin::default());
+///     .add_plugins(LogDiagnosticsPlugin::default());
 /// ```
 pub struct WarblerDiagnosticsPlugin;
 impl Plugin for WarblerDiagnosticsPlugin {
@@ -31,13 +32,17 @@ impl Plugin for WarblerDiagnosticsPlugin {
     }
 }
 impl WarblerDiagnosticsPlugin {
-    /// A id for the [`Diagnostic`] of the blade count.
+    /// An id for the [`Diagnostic`] of the blade count.
     pub const GRASS_BLADE_COUNT: DiagnosticId =
         DiagnosticId::from_u128(11_920_430_925_311_532_474_622_109_399_490_581_929);
 
     /// Calculates the amount of blades that are drawn this frame and logs them
     fn measure_blades(
-        blades: Query<(&Handle<DitheredBuffer>, &ComputedVisibility)>,
+        blades: Query<(
+            &Handle<DitheredBuffer>,
+            &InheritedVisibility,
+            &ViewVisibility,
+        )>,
         dither: Res<Assets<DitheredBuffer>>,
         mut diagnostics: Diagnostics,
     ) {
@@ -45,8 +50,10 @@ impl WarblerDiagnosticsPlugin {
         let count: u32 = blades
             .iter()
             // We are only interested in visible chunks
-            .filter(|(_handle, visible)| visible.is_visible())
-            .filter_map(|(handle, _visible)| dither.get(handle))
+            .filter(|(_handle, inherited_visibility, view_visibility)| {
+                inherited_visibility.get() && view_visibility.get()
+            })
+            .filter_map(|(handle, _visible, _view_visibility)| dither.get(handle))
             .map(|buffer| buffer.positions.len() as u32)
             .sum();
 

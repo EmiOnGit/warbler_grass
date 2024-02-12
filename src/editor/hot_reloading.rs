@@ -10,7 +10,7 @@ pub fn notify_image_change(
     mut ev_asset: EventReader<DrawEvent>,
     mut q: Query<(&mut YMap, &mut DensityMap, &mut WarblerHeight)>,
 ) {
-    for ev in ev_asset.iter() {
+    for ev in ev_asset.read() {
         let Some(image) = ev.image_handle() else {
             continue;
         };
