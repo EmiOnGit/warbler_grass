@@ -4,7 +4,7 @@ use bevy::ecs::system::SystemParamItem;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
-use bevy::render::render_asset::{PrepareAssetError, RenderAsset};
+use bevy::render::render_asset::{PrepareAssetError, RenderAsset, RenderAssetUsages};
 use bevy::render::render_resource::{Buffer, BufferInitDescriptor, BufferUsages};
 use bevy::render::renderer::RenderDevice;
 
@@ -78,29 +78,27 @@ pub(crate) struct GpuDitheredBuffer {
     pub instances: usize,
 }
 impl RenderAsset for DitheredBuffer {
-    type ExtractedAsset = DitheredBuffer;
-
     type PreparedAsset = GpuDitheredBuffer;
 
     type Param = SRes<RenderDevice>;
 
-    fn extract_asset(&self) -> Self::ExtractedAsset {
-        self.clone()
+    fn asset_usage(&self) -> bevy::render::render_asset::RenderAssetUsages {
+        RenderAssetUsages::default()
     }
 
     fn prepare_asset(
-        extracted_asset: Self::ExtractedAsset,
+        self,
         param: &mut SystemParamItem<Self::Param>,
-    ) -> Result<Self::PreparedAsset, PrepareAssetError<Self::ExtractedAsset>> {
+    ) -> Result<Self::PreparedAsset, PrepareAssetError<Self>> {
         let render_device = param;
         let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: "dither buffer".into(),
-            contents: bytemuck::cast_slice(extracted_asset.positions.as_slice()),
+            contents: bytemuck::cast_slice(self.positions.as_slice()),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
         Ok(GpuDitheredBuffer {
             buffer,
-            instances: extracted_asset.positions.len(),
+            instances: self.positions.len(),
         })
     }
 }
