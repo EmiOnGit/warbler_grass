@@ -9,7 +9,7 @@ use bevy::{
         extract_component::ExtractComponentPlugin,
         extract_resource::ExtractResourcePlugin,
         mesh::{Indices, Mesh},
-        render_asset::RenderAssetPlugin,
+        render_asset::{RenderAssetPlugin, RenderAssetUsages},
         render_phase::AddRenderCommand,
         render_resource::{
             Extent3d, PrimitiveTopology, Shader, SpecializedMeshPipelines, TextureDescriptor,
@@ -106,7 +106,10 @@ impl Plugin for WarblersPlugin {
                 )
                     .in_set(RenderSet::PrepareResources),
             )
-            .add_systems(Render, queue::queue_grass_buffers.in_set(RenderSet::QueueMeshes));
+            .add_systems(
+                Render,
+                queue::queue_grass_buffers.in_set(RenderSet::QueueMeshes),
+            );
     }
 
     fn finish(&self, app: &mut App) {
@@ -148,6 +151,7 @@ fn default_normal_map() -> Image {
         },
         sampler: ImageSampler::Default,
         texture_view_descriptor: None,
+        asset_usage: RenderAssetUsages::default(),
     }
 }
 
@@ -156,7 +160,10 @@ fn default_normal_map() -> Image {
 /// Can be overridden in the corresponding [`Bundle`] using the grass_mesh [`Component`].
 /// You can take a look at the grass_mesh example in the repository on how this might work
 fn default_grass_mesh() -> Mesh {
-    let mut grass_mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    let mut grass_mesh = Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::default(),
+    );
     grass_mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
         vec![
@@ -166,6 +173,6 @@ fn default_grass_mesh() -> Mesh {
             [0.25, 1., 0.15],
         ],
     );
-    grass_mesh.set_indices(Some(Indices::U32(vec![1, 0, 3, 2, 1, 3, 0, 2, 3])));
+    grass_mesh.insert_indices(Indices::U32(vec![1, 0, 3, 2, 1, 3, 0, 2, 3]));
     grass_mesh
 }
