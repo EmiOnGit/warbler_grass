@@ -21,12 +21,12 @@ bitflags = "2"
 rfd = { version = "0.13", optional = true }
 bevy-inspector-egui = { version = "0.22", optional = true }
 [dependencies.bevy]
-version = "0.12"
+version = "0.13"
 default-features = false
 features = [ "bevy_core_pipeline", "bevy_render", "bevy_asset", "bevy_pbr" , "png"]
 
 [dev-dependencies]
-bevy = { version = "0.12", default-features = false, features = ["bevy_winit","x11", "ktx2", "zstd", "tonemapping_luts", "multi-threaded"] }
+bevy = { version = "0.13", default-features = false, features = ["bevy_winit","x11", "ktx2", "zstd", "tonemapping_luts", "multi-threaded"] }
 
 [[example]]
 name = "editor"
