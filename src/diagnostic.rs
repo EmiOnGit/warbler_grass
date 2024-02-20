@@ -25,15 +25,16 @@ impl Plugin for WarblerDiagnosticsPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.register_diagnostic(
             // Adds the `Diagnostic` responsable for logging the blade count to the `Diagnostics`
-            Diagnostic::new(Self::GRASS_BLADE_COUNT).with_suffix(" blades"),
+            Diagnostic::new(Self::GRASS_BLADE_COUNT)
+                .with_suffix(" blades")
+                .with_max_history_length(20),
         )
         .add_systems(Update, Self::measure_blades);
     }
 }
 impl WarblerDiagnosticsPlugin {
     /// An id for the [`Diagnostic`] of the blade count.
-    pub const GRASS_BLADE_COUNT: DiagnosticPath =
-        DiagnosticPath::const_new("grass/blade_count").with_max_history_length(20);
+    pub const GRASS_BLADE_COUNT: DiagnosticPath = DiagnosticPath::const_new("grass/blade_count");
 
     /// Calculates the amount of blades that are drawn this frame and logs them
     fn measure_blades(
