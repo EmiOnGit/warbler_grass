@@ -3,7 +3,8 @@ use bevy::{
     ecs::{bundle::Bundle, component::Component, query::QueryItem},
     prelude::Color,
     render::{
-        batching::NoAutomaticBatching, extract_component::ExtractComponent, mesh::Mesh, prelude::SpatialBundle, primitives::Aabb, texture::Image
+        batching::NoAutomaticBatching, extract_component::ExtractComponent, mesh::Mesh,
+        prelude::SpatialBundle, primitives::Aabb, texture::Image,
     },
 };
 
@@ -43,7 +44,7 @@ pub struct WarblersBundle {
     /// Note that the Aabb is used to define the world dimensions of the [`DensityMap`] and [`YMap`].
     pub aabb: Aabb,
     pub spatial: SpatialBundle,
-    pub no_automatic_batching: NoAutomaticBatching
+    pub no_automatic_batching: NoAutomaticBatching,
 }
 impl Default for WarblersBundle {
     fn default() -> Self {
@@ -91,13 +92,13 @@ impl Default for GrassColor {
     }
 }
 impl ExtractComponent for WarblerHeight {
-    type Query = &'static Self;
+    type QueryData = &'static Self;
 
-    type Filter = ();
+    type QueryFilter = ();
 
     type Out = Self;
 
-    fn extract_component(item: QueryItem<'_, Self::Query>) -> Option<Self::Out> {
+    fn extract_component(item: QueryItem<'_, Self::QueryData>) -> Option<Self::Out> {
         match item {
             WarblerHeight::Uniform(_) => Some(item.clone()),
             WarblerHeight::Texture(handle) => Some(WarblerHeight::Texture(handle.clone_weak())),
