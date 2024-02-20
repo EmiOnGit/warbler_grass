@@ -1,7 +1,10 @@
 use bevy::{
-    ecs::system::{
-        lifetimeless::{Read, SRes},
-        SystemParamItem,
+    ecs::{
+        query::ROQueryItem,
+        system::{
+            lifetimeless::{Read, SRes},
+            SystemParamItem,
+        },
     },
     pbr::RenderMeshInstances,
     prelude::*,
@@ -26,17 +29,17 @@ pub(crate) struct SetUniformBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
     type Param = SRes<UniformBuffer>;
-    type ViewWorldQuery = ();
-    type ItemWorldQuery = ();
+    type ViewQuery = ();
+    type ItemQuery = ();
 
     fn render<'w>(
-        _item: &P,
-        _view: (),
-        _entity: (),
-        cache: SystemParamItem<'w, '_, Self::Param>,
+        item: &P,
+        view: ROQueryItem<'w, Self::ViewQuery>,
+        entity: Option<ROQueryItem<'w, Self::ItemQuery>>,
+        param: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        pass.set_bind_group(I, cache.into_inner().ref_unwrap(), &[]);
+        pass.set_bind_group(I, param.into_inner().ref_unwrap(), &[]);
 
         RenderCommandResult::Success
     }
@@ -45,12 +48,12 @@ pub(crate) struct SetYBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
     type Param = ();
-    type ViewWorldQuery = ();
-    type ItemWorldQuery = Option<Read<BindGroupBuffer<YMap>>>;
+    type ViewQuery = ();
+    type ItemQuery = Read<BindGroupBuffer<YMap>>;
 
     fn render<'w>(
         _item: &P,
-        _view: (),
+        _view: ROQueryItem<'w, Self::ViewQuery>,
         bind_group: Option<&'w BindGroupBuffer<YMap>>,
         _cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
@@ -66,12 +69,12 @@ pub(crate) struct SetNormalBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetNormalBindGroup<I> {
     type Param = ();
-    type ViewWorldQuery = ();
-    type ItemWorldQuery = Option<Read<BindGroupBuffer<NormalMap>>>;
+    type ViewQuery = ();
+    type ItemQuery = Read<BindGroupBuffer<NormalMap>>;
 
     fn render<'w>(
         _item: &P,
-        _view: (),
+        _view: ROQueryItem<'w, Self::ViewQuery>,
         bind_group: Option<&'w BindGroupBuffer<NormalMap>>,
         _cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
@@ -87,17 +90,17 @@ pub(crate) struct SetColorBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetColorBindGroup<I> {
     type Param = ();
-    type ViewWorldQuery = ();
-    type ItemWorldQuery = Read<BindGroupBuffer<GrassColor>>;
+    type ViewQuery = ();
+    type ItemQuery = Read<BindGroupBuffer<GrassColor>>;
 
     fn render<'w>(
         _item: &P,
-        _view: (),
-        color: &'w BindGroupBuffer<GrassColor>,
+        _view: ROQueryItem<'w, Self::ViewQuery>,
+        color: Option<&'w BindGroupBuffer<GrassColor>>,
         _param: (),
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        pass.set_bind_group(I, &color.bind_group, &[]);
+        pass.set_bind_group(I, &color.unwrap().bind_group, &[]);
 
         RenderCommandResult::Success
     }
@@ -106,17 +109,17 @@ pub(crate) struct SetHeightBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
     type Param = ();
-    type ViewWorldQuery = ();
-    type ItemWorldQuery = Read<BindGroupBuffer<WarblerHeight>>;
+    type ViewQuery = ();
+    type ItemQuery = Read<BindGroupBuffer<WarblerHeight>>;
 
     fn render<'w>(
         _item: &P,
-        _view: (),
-        height: &'w BindGroupBuffer<WarblerHeight>,
+        _view: ROQueryItem<'w, Self::ViewQuery>,
+        height: Option<&'w BindGroupBuffer<WarblerHeight>>,
         _param: (),
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        pass.set_bind_group(I, &height.bind_group, &[]);
+        pass.set_bind_group(I, &height.unwrap().bind_group, &[]);
 
         RenderCommandResult::Success
     }
@@ -125,19 +128,19 @@ pub(crate) struct SetInstanceIndexBindGroup<const N: usize>;
 
 impl<P: PhaseItem, const N: usize> RenderCommand<P> for SetInstanceIndexBindGroup<N> {
     type Param = ();
-    type ViewWorldQuery = ();
+    type ViewQuery = ();
 
-    type ItemWorldQuery = Read<IndexBindgroup>;
+    type ItemQuery = Read<IndexBindgroup>;
 
     #[inline]
     fn render<'w>(
         _item: &P,
-        _view: (),
-        index_bindgroup: &'w IndexBindgroup,
+        _view: ROQueryItem<'w, Self::ViewQuery>,
+        index_bindgroup: Option<&'w IndexBindgroup>,
         _: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        pass.set_bind_group(N, &index_bindgroup.bind_group, &[]);
+        pass.set_bind_group(N, &index_bindgroup.unwrap().bind_group, &[]);
         RenderCommandResult::Success
     }
 }
@@ -149,13 +152,13 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
         SRes<RenderMeshInstances>,
         SRes<RenderAssets<DitheredBuffer>>,
     );
-    type ViewWorldQuery = ();
-    type ItemWorldQuery = Option<Read<Handle<DitheredBuffer>>>;
+    type ViewQuery = ();
+    type ItemQuery = Read<Handle<DitheredBuffer>>;
 
     #[inline]
     fn render<'w>(
         item: &P,
-        _view: (),
+        _view: ROQueryItem<'w, Self::ViewQuery>,
         dither_handle: Option<&'w Handle<DitheredBuffer>>,
         (meshes, render_mesh_instances, dither): SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
