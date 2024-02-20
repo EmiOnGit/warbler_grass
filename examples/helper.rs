@@ -15,19 +15,22 @@ fn setup_camera(mut commands: Commands) {
         ..default()
     },));
 }
-pub fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transform, With<Camera>>) {
+pub fn camera_movement(
+    input: Res<ButtonInput<KeyCode>>,
+    mut query: Query<&mut Transform, With<Camera>>,
+) {
     for mut transform in &mut query {
         let move_speed = 0.6;
         let rotate_speed = 0.03;
-        let mut forward = transform.forward();
+        let mut forward = *transform.forward();
         forward.y = 0.;
         let right = transform.right();
         let up = transform.up();
 
-        if input.pressed(KeyCode::W) {
+        if input.pressed(KeyCode::KeyW) {
             transform.translation += forward * move_speed;
         }
-        if input.pressed(KeyCode::S) {
+        if input.pressed(KeyCode::KeyS) {
             transform.translation -= forward * move_speed;
         }
         if input.pressed(KeyCode::Space) {
@@ -36,16 +39,16 @@ pub fn camera_movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transfo
         if input.pressed(KeyCode::ShiftLeft) {
             transform.translation -= up * move_speed;
         }
-        if input.pressed(KeyCode::Q) {
+        if input.pressed(KeyCode::KeyQ) {
             transform.rotate_y(rotate_speed);
         }
-        if input.pressed(KeyCode::E) {
+        if input.pressed(KeyCode::KeyE) {
             transform.rotate_y(-rotate_speed);
         }
-        if input.pressed(KeyCode::A) {
+        if input.pressed(KeyCode::KeyA) {
             transform.translation -= right * move_speed;
         }
-        if input.pressed(KeyCode::D) {
+        if input.pressed(KeyCode::KeyD) {
             transform.translation += right * move_speed;
         }
     }
