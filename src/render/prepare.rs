@@ -314,8 +314,8 @@ struct ShaderColorUniform {
 impl From<&GrassColor> for ShaderColorUniform {
     fn from(config: &GrassColor) -> Self {
         Self {
-            main_color: config.main_color.into(),
-            bottom_color: config.bottom_color.into(),
+            main_color: config.main_color.rgba_to_vec4(),
+            bottom_color: config.bottom_color.rgba_to_vec4(),
         }
     }
 }
