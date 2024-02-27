@@ -74,6 +74,7 @@ impl Plugin for WarblersPlugin {
             .add_plugins(RenderAssetPlugin::<DitheredBuffer>::default());
         // Init resources
         app.init_resource::<GrassConfiguration>()
+            .init_resource::<Time>()
             .register_type::<GrassConfiguration>()
             .init_resource::<GrassNoiseTexture>();
         // Add extraction of the configuration
@@ -91,7 +92,11 @@ impl Plugin for WarblersPlugin {
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_systems(
                 ExtractSchedule,
-                (extract::extract_grass, extract::extract_aabb),
+                (
+                    extract::extract_grass,
+                    extract::extract_aabb,
+                    extract::extract_time,
+                ),
             )
             .add_systems(
                 Render,

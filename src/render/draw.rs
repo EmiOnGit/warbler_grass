@@ -33,9 +33,9 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
     type ItemQuery = ();
 
     fn render<'w>(
-        item: &P,
-        view: ROQueryItem<'w, Self::ViewQuery>,
-        entity: Option<ROQueryItem<'w, Self::ItemQuery>>,
+        _item: &P,
+        _view: ROQueryItem<'w, Self::ViewQuery>,
+        _entity: Option<ROQueryItem<'w, Self::ItemQuery>>,
         param: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
@@ -58,11 +58,12 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetYBindGroup<I> {
         _cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        let Some(bind_group) = bind_group else {
-            return RenderCommandResult::Failure;
-        };
-        pass.set_bind_group(I, &bind_group.bind_group, &[]);
-        RenderCommandResult::Success
+        if let Some(bind_group) = bind_group {
+            pass.set_bind_group(I, &bind_group.bind_group, &[]);
+            RenderCommandResult::Success
+        } else {
+            RenderCommandResult::Failure
+        }
     }
 }
 pub(crate) struct SetNormalBindGroup<const I: usize>;
@@ -79,11 +80,12 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetNormalBindGroup<I> {
         _cache: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        let Some(bind_group) = bind_group else {
-            return RenderCommandResult::Failure;
-        };
-        pass.set_bind_group(I, &bind_group.bind_group, &[]);
-        RenderCommandResult::Success
+        if let Some(bind_group) = bind_group {
+            pass.set_bind_group(I, &bind_group.bind_group, &[]);
+            RenderCommandResult::Success
+        } else {
+            RenderCommandResult::Failure
+        }
     }
 }
 pub(crate) struct SetColorBindGroup<const I: usize>;
@@ -100,9 +102,12 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetColorBindGroup<I> {
         _param: (),
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        pass.set_bind_group(I, &color.unwrap().bind_group, &[]);
-
-        RenderCommandResult::Success
+        if let Some(color) = color {
+            pass.set_bind_group(I, &color.bind_group, &[]);
+            RenderCommandResult::Success
+        } else {
+            RenderCommandResult::Failure
+        }
     }
 }
 pub(crate) struct SetHeightBindGroup<const I: usize>;
@@ -119,9 +124,12 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
         _param: (),
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        pass.set_bind_group(I, &height.unwrap().bind_group, &[]);
-
-        RenderCommandResult::Success
+        if let Some(height) = height {
+            pass.set_bind_group(I, &height.bind_group, &[]);
+            RenderCommandResult::Success
+        } else {
+            RenderCommandResult::Failure
+        }
     }
 }
 pub(crate) struct SetInstanceIndexBindGroup<const N: usize>;
@@ -140,8 +148,12 @@ impl<P: PhaseItem, const N: usize> RenderCommand<P> for SetInstanceIndexBindGrou
         _: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        pass.set_bind_group(N, &index_bindgroup.unwrap().bind_group, &[]);
-        RenderCommandResult::Success
+        if let Some(index_bindgroup) = index_bindgroup {
+            pass.set_bind_group(N, &index_bindgroup.bind_group, &[]);
+            RenderCommandResult::Success
+        } else {
+            RenderCommandResult::Failure
+        }
     }
 }
 pub(crate) struct SetVertexBuffer;
