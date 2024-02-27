@@ -29,7 +29,7 @@ fn setup_grass(
     // We could use any mesh we want. We should choose a low poly mesh however since we draw a lot of them
     let grass_mesh: Handle<Mesh> = meshes.add(Capsule3d {
         radius: 0.3,
-        half_length: 2.5,
+        half_length: 1.,
         ..default()
     });
     // we use a resource to keep track of the handles
