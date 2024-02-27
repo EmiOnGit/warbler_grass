@@ -67,7 +67,8 @@ struct VertexOutput {
 const NOISE_TEXTURE_SPEED: f32 = 50.;
 const NOISE_TEXTURE_ZOOM: f32 = 35.;
 fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
-    var texture_offset = config.wind.xy * (config._wasm_padding + config.time) * NOISE_TEXTURE_SPEED;
+    // var texture_offset = config.wind.xy * (config._wasm_padding + config.time) * NOISE_TEXTURE_SPEED;
+    // var texture_offset = vec2f(1.,1.)* (config._wasm_padding + config.time) * NOISE_TEXTURE_SPEED;
     var texture_position = vec2<f32>(vertex_position.x ,vertex_position.y) * NOISE_TEXTURE_ZOOM + texture_offset;
     
     // dimensions of noise texture in vec2<u32>
