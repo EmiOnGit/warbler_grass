@@ -244,9 +244,6 @@ pub(crate) fn prepare_uniform_buffers(
         .get(&noise_config.0)
         .unwrap_or(&fallback_img.d2)
         .texture_view;
-    if !region_config.is_changed() && Some(texture.id()) == *last_texture_id {
-        return;
-    }
     *last_texture_id = Some(texture.id());
 
     let shader_config =
