@@ -1,6 +1,6 @@
 # <img src="branding/warbler_display.svg" width="500">
-[![crates.io](https://img.shields.io/badge/crates.io-v0.5-orange)](https://crates.io/crates/warbler_grass)
-[![docs.io](https://img.shields.io/badge/docs-vlatest-green)](https://docs.rs/warbler_grass/latest/warbler_grass/)
+[![crates.io](https://img.shields.io/badge/crates.io-latest-orange)](https://crates.io/crates/warbler_grass)
+[![docs.io](https://img.shields.io/badge/docs-latest-green)](https://docs.rs/warbler_grass/latest/warbler_grass/)
 
 A `bevy` plugin for ergonomic integration of grass in 3d games.
 
@@ -28,10 +28,13 @@ use warbler_grass::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins((
+        DefaultPlugins,
         // This plugin is needed to initialize everything for the grass render pipeline
-        .add_plugin(WarblersPlugin)
-        .add_startup_system(setup_grass)
+        WarblersPlugin
+        ))
+        .add_plugin()
+        .add_systems(Startup, setup_grass)
         .run();
 }
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
