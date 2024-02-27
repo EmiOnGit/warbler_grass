@@ -4,7 +4,7 @@ use bevy::ecs::system::SystemParamItem;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
-use bevy::render::render_asset::{PrepareAssetError, RenderAsset};
+use bevy::render::render_asset::{PrepareAssetError, RenderAsset, RenderAssetUsages};
 use bevy::render::render_resource::{Buffer, BufferInitDescriptor, BufferUsages};
 use bevy::render::renderer::RenderDevice;
 
@@ -78,29 +78,27 @@ pub(crate) struct GpuDitheredBuffer {
     pub instances: usize,
 }
 impl RenderAsset for DitheredBuffer {
-    type ExtractedAsset = DitheredBuffer;
-
     type PreparedAsset = GpuDitheredBuffer;
 
     type Param = SRes<RenderDevice>;
 
-    fn extract_asset(&self) -> Self::ExtractedAsset {
-        self.clone()
+    fn asset_usage(&self) -> bevy::render::render_asset::RenderAssetUsages {
+        RenderAssetUsages::default()
     }
 
     fn prepare_asset(
-        extracted_asset: Self::ExtractedAsset,
+        self,
         param: &mut SystemParamItem<Self::Param>,
-    ) -> Result<Self::PreparedAsset, PrepareAssetError<Self::ExtractedAsset>> {
+    ) -> Result<Self::PreparedAsset, PrepareAssetError<Self>> {
         let render_device = param;
         let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: "dither buffer".into(),
-            contents: bytemuck::cast_slice(extracted_asset.positions.as_slice()),
+            contents: bytemuck::cast_slice(self.positions.as_slice()),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
         Ok(GpuDitheredBuffer {
             buffer,
-            instances: extracted_asset.positions.len(),
+            instances: self.positions.len(),
         })
     }
 }
@@ -136,6 +134,7 @@ pub(crate) fn add_dither_to_density(
 mod tests {
     use bevy::math::Vec2;
     use bevy::prelude::Image;
+    use bevy::render::render_asset::RenderAssetUsages;
     #[test]
     fn dither_1x1() {
         let image = Image::default(); // 1x1x1 image all white
@@ -164,7 +163,7 @@ mod tests {
         let pixel = luma.get_pixel_mut(0, 0);
         pixel.0 = [0];
         // this image is now black
-        let image = Image::from_dynamic(luma.into(), true);
+        let image = Image::from_dynamic(luma.into(), true, RenderAssetUsages::empty());
         // with a black image we expect 0 grassblades regardless of density
         let dither = super::dither_density_map(&image, 2., Vec2::new(1., 1.));
         assert!(dither.unwrap().positions.is_empty());

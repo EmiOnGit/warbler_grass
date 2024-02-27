@@ -11,27 +11,18 @@ description = "A bevy plugin for creating 3d grass in your game"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[features]
-default = []
-editor = ["dep:bevy-inspector-egui", "dep:rfd"]
 
 [dependencies]
 bytemuck = "1.13.0"
 bitflags = "2"
-rfd = { version = "0.13", optional = true }
-bevy-inspector-egui = { version = "0.22", optional = true }
 [dependencies.bevy]
-version = "0.12"
+version = "0.13"
 default-features = false
 features = [ "bevy_core_pipeline", "bevy_render", "bevy_asset", "bevy_pbr" , "png"]
 
 [dev-dependencies]
-bevy = { version = "0.12", default-features = false, features = ["bevy_winit","x11", "ktx2", "zstd", "tonemapping_luts", "multi-threaded"] }
+bevy = { version = "0.13", default-features = false, features = ["bevy_winit","x11", "ktx2", "zstd", "tonemapping_luts", "multi-threaded"] }
 
-[[example]]
-name = "editor"
-path = "examples/editor.rs"
-required-features = ["editor"]
 
 [[example]]
 name = "load_grass"

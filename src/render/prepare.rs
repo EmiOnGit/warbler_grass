@@ -237,18 +237,17 @@ pub(crate) fn prepare_uniform_buffers(
     render_device: Res<RenderDevice>,
     mut uniform_buffer: ResMut<UniformBuffer>,
     images: Res<RenderAssets<Image>>,
+    time: Res<Time>,
     mut last_texture_id: Local<Option<TextureViewId>>,
 ) {
     let texture = &images
         .get(&noise_config.0)
         .unwrap_or(&fallback_img.d2)
         .texture_view;
-    if !region_config.is_changed() && Some(texture.id()) == *last_texture_id {
-        return;
-    }
     *last_texture_id = Some(texture.id());
 
-    let shader_config = ShaderRegionConfiguration::from(region_config.as_ref());
+    let shader_config =
+        ShaderRegionConfiguration::new(region_config.as_ref(), time.elapsed_seconds_wrapped());
     let config_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
         label: Some("region config buffer"),
         contents: bytemuck::bytes_of(&shader_config),
@@ -274,20 +273,24 @@ pub(crate) fn prepare_uniform_buffers(
 #[derive(Debug, Clone, Copy, Pod, Zeroable)]
 #[repr(C)]
 struct ShaderRegionConfiguration {
-    wind: Vec2,
+    /// The time since startup in seconds.
+    /// Wraps to 0 after 1 hour
+    time: f32,
     /// Wasm requires shader uniforms to be aligned to 16 bytes
-    _wasm_padding: Vec2,
+    _wasm_padding: f32,
+    /// Direction of the wind
+    wind: Vec2,
 }
 
-impl From<&GrassConfiguration> for ShaderRegionConfiguration {
-    fn from(config: &GrassConfiguration) -> Self {
+impl ShaderRegionConfiguration {
+    pub fn new(config: &GrassConfiguration, time: f32) -> ShaderRegionConfiguration {
         Self {
             wind: config.wind,
-            _wasm_padding: Vec2::ZERO,
+            _wasm_padding: 0.,
+            time,
         }
     }
 }
-
 #[derive(Debug, Clone, Copy, Pod, Zeroable)]
 #[repr(C)]
 struct ShaderAabb {
@@ -314,8 +317,8 @@ struct ShaderColorUniform {
 impl From<&GrassColor> for ShaderColorUniform {
     fn from(config: &GrassColor) -> Self {
         Self {
-            main_color: config.main_color.into(),
-            bottom_color: config.bottom_color.into(),
+            main_color: config.main_color.rgba_to_vec4(),
+            bottom_color: config.bottom_color.rgba_to_vec4(),
         }
     }
 }

@@ -1,12 +1,13 @@
 #import bevy_pbr::mesh_functions::{mesh_position_local_to_clip, get_model_matrix}
 #import bevy_pbr::mesh_types::Mesh
-#import bevy_pbr::mesh_view_bindings::globals
+// #import bevy_pbr::mesh_view_bindings::globals
 #import bevy_pbr::mesh_bindings::mesh
 #import bevy_render::maths::affine_to_square
 
 struct ShaderRegionConfiguration {
+    time: f32,
+    _wasm_padding: f32,
     wind: vec2<f32>,
-    _wasm_padding: vec2<f32>,
 }
 struct Vertex {
     @location(0) vertex_position: vec3<f32>,
@@ -66,7 +67,7 @@ struct VertexOutput {
 const NOISE_TEXTURE_SPEED: f32 = 50.;
 const NOISE_TEXTURE_ZOOM: f32 = 35.;
 fn wind_offset(vertex_position: vec2<f32>) -> vec2<f32> {
-    var texture_offset = config.wind.xy * globals.time * NOISE_TEXTURE_SPEED;
+    var texture_offset = config.wind.xy * config.time * NOISE_TEXTURE_SPEED;
     var texture_position = vec2<f32>(vertex_position.x ,vertex_position.y) * NOISE_TEXTURE_ZOOM + texture_offset;
     
     // dimensions of noise texture in vec2<u32>

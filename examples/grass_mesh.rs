@@ -27,14 +27,11 @@ fn setup_grass(
 ) {
     // The interesting part in this example
     // We could use any mesh we want. We should choose a low poly mesh however since we draw a lot of them
-    let grass_mesh: Handle<Mesh> = meshes.add(
-        shape::Capsule {
-            radius: 0.3,
-            depth: 2.5,
-            ..default()
-        }
-        .into(),
-    );
+    let grass_mesh: Handle<Mesh> = meshes.add(Capsule3d {
+        radius: 0.3,
+        half_length: 1.,
+        ..default()
+    });
     // we use a resource to keep track of the handles
     // so we can swap them later
     let store = GrassMeshStore {
@@ -73,7 +70,7 @@ struct GrassMeshStore {
 fn swap_grass_mesh(
     mut commands: Commands,
     mut queue: Query<(Entity, &mut Handle<Mesh>)>,
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
     store: Res<GrassMeshStore>,
 ) {
     if input.just_pressed(KeyCode::Tab) {

@@ -4,8 +4,8 @@ use bevy::{
     render::{
         mesh::MeshVertexBufferLayout,
         render_resource::{
-            BindGroupLayout, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType,
-            BufferBindingType, RenderPipelineDescriptor, ShaderStages, SpecializedMeshPipeline,
+            BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType,
+            RenderPipelineDescriptor, ShaderStages, SpecializedMeshPipeline,
             SpecializedMeshPipelineError, TextureSampleType, TextureViewDimension, VertexAttribute,
             VertexBufferLayout, VertexFormat, VertexStepMode,
         },
@@ -31,9 +31,9 @@ pub struct GrassPipeline {
 impl FromWorld for GrassPipeline {
     fn from_world(world: &mut World) -> Self {
         let render_device = world.get_resource::<RenderDevice>().unwrap();
-        let region_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("warbler_grass configuration layout"),
-            entries: &[
+        let region_layout = render_device.create_bind_group_layout(
+            Some("warbler_grass configuration layout"),
+            &[
                 // config
                 BindGroupLayoutEntry {
                     binding: 0,
@@ -57,10 +57,10 @@ impl FromWorld for GrassPipeline {
                     count: None,
                 },
             ],
-        });
-        let y_map_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("warbler_grass y map layout"),
-            entries: &[
+        );
+        let y_map_layout = render_device.create_bind_group_layout(
+            Some("warbler_grass y map layout"),
+            &[
                 // y_texture
                 BindGroupLayoutEntry {
                     binding: 0,
@@ -84,46 +84,12 @@ impl FromWorld for GrassPipeline {
                     count: None,
                 },
             ],
-        });
-        let normal_map_layout =
-            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warbler_grass normal map layout"),
-                entries: &[
-                    // normal_texture_view
-                    BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: ShaderStages::VERTEX,
-                        ty: BindingType::Texture {
-                            sample_type: TextureSampleType::Float { filterable: false },
-                            view_dimension: TextureViewDimension::D2,
-                            multisampled: false,
-                        },
-                        count: None,
-                    },
-                ],
-            });
-        let density_map_layout =
-            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warbler_grass density map layout"),
-                entries: &[
-                    // density map
-                    BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: ShaderStages::VERTEX,
-                        ty: BindingType::Texture {
-                            sample_type: TextureSampleType::Float { filterable: false },
-                            view_dimension: TextureViewDimension::D2,
-                            multisampled: false,
-                        },
-                        count: None,
-                    },
-                ],
-            });
-
-        let heights_texture_layout =
-            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warbler_grass height texture layout"),
-                entries: &[BindGroupLayoutEntry {
+        );
+        let normal_map_layout = render_device.create_bind_group_layout(
+            Some("warbler_grass normal map layout"),
+            &[
+                // normal_texture_view
+                BindGroupLayoutEntry {
                     binding: 0,
                     visibility: ShaderStages::VERTEX,
                     ty: BindingType::Texture {
@@ -132,25 +98,42 @@ impl FromWorld for GrassPipeline {
                         multisampled: false,
                     },
                     count: None,
-                }],
-            });
-        let uniform_height_layout =
-            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("warbler_grasss configuration layout"),
-                entries: &[BindGroupLayoutEntry {
+                },
+            ],
+        );
+        let density_map_layout = render_device.create_bind_group_layout(
+            Some("warbler_grass density map layout"),
+            &[
+                // density map
+                BindGroupLayoutEntry {
                     binding: 0,
                     visibility: ShaderStages::VERTEX,
-                    ty: BindingType::Buffer {
-                        ty: BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
+                    ty: BindingType::Texture {
+                        sample_type: TextureSampleType::Float { filterable: false },
+                        view_dimension: TextureViewDimension::D2,
+                        multisampled: false,
                     },
                     count: None,
-                }],
-            });
-        let color_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("warbler_grass color layout"),
-            entries: &[BindGroupLayoutEntry {
+                },
+            ],
+        );
+
+        let heights_texture_layout = render_device.create_bind_group_layout(
+            Some("warbler_grass height texture layout"),
+            &[BindGroupLayoutEntry {
+                binding: 0,
+                visibility: ShaderStages::VERTEX,
+                ty: BindingType::Texture {
+                    sample_type: TextureSampleType::Float { filterable: false },
+                    view_dimension: TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            }],
+        );
+        let uniform_height_layout = render_device.create_bind_group_layout(
+            Some("warbler_grasss configuration layout"),
+            &[BindGroupLayoutEntry {
                 binding: 0,
                 visibility: ShaderStages::VERTEX,
                 ty: BindingType::Buffer {
@@ -160,22 +143,34 @@ impl FromWorld for GrassPipeline {
                 },
                 count: None,
             }],
-        });
+        );
+        let color_layout = render_device.create_bind_group_layout(
+            Some("warbler_grass color layout"),
+            &[BindGroupLayoutEntry {
+                binding: 0,
+                visibility: ShaderStages::VERTEX,
+                ty: BindingType::Buffer {
+                    ty: BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
+        );
 
-        let instance_index_bind_group_layout =
-            render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("instance index bind group layout"),
-                entries: &[BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: ShaderStages::VERTEX,
-                    ty: BindingType::Buffer {
-                        ty: BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                }],
-            });
+        let instance_index_bind_group_layout = render_device.create_bind_group_layout(
+            Some("instance index bind group layout"),
+            &[BindGroupLayoutEntry {
+                binding: 0,
+                visibility: ShaderStages::VERTEX,
+                ty: BindingType::Buffer {
+                    ty: BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
+        );
 
         let mesh_pipeline = world.resource::<MeshPipeline>();
         GrassPipeline {

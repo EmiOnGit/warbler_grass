@@ -1,10 +1,10 @@
 # <img src="branding/warbler_display.svg" width="500">
-[![crates.io](https://img.shields.io/badge/crates.io-v0.5-orange)](https://crates.io/crates/warbler_grass)
-[![docs.io](https://img.shields.io/badge/docs-v0.5-green)](https://docs.rs/warbler_grass/0.5/warbler_grass/)
+[![crates.io](https://img.shields.io/badge/crates.io-latest-orange)](https://crates.io/crates/warbler_grass)
+[![docs.io](https://img.shields.io/badge/docs-latest-green)](https://docs.rs/warbler_grass/latest/warbler_grass/)
 
 A `bevy` plugin for ergonomic integration of grass in 3d games.
 
-Currently, bevy version `0.12` is supported.
+Currently, bevy version `0.13` is supported.
 Wasm builds are also supported!
 
 **Don't use this project for serious projects, it is still under heavy development. 
@@ -28,10 +28,13 @@ use warbler_grass::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins((
+        DefaultPlugins,
         // This plugin is needed to initialize everything for the grass render pipeline
-        .add_plugin(WarblersPlugin)
-        .add_startup_system(setup_grass)
+        WarblersPlugin
+        ))
+        .add_plugin()
+        .add_systems(Startup, setup_grass)
         .run();
 }
 fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -61,9 +64,6 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 ```
-You can also use the editor to modify the maps in your game.
-Take a look at the `editor` example on how this might work.
-(This is very much just WIP, but can give you a quick and dirty tool or give you an example to work out your own editor)
 
 ## Examples
 You can find them in the [`example folder`](https://github.com/EmiOnGit/warbler_grass/tree/main/examples)
@@ -73,12 +73,6 @@ You can find them in the [`example folder`](https://github.com/EmiOnGit/warbler_
 The basic example. If you just want to take a look how using this crate might look like, look no further
 ```shell
 cargo run --example load_grass
-```
-### Editor
-A simple editor to modify and save the maps such as the density map of the grass
-Note that you also need the editor feature of this crate, which is not enabled by default
-```shell
-cargo run --example editor --features="editor"
 ```
 ### Grass colors
 You don't like the default grass color or you game has multiple seasons? 
@@ -112,6 +106,7 @@ cargo run -r --example stress_test
 
 | `warbler_grass` | Bevy   |
 |-----------------|--------|
+| `0.6`           | `0.13` |
 | `0.5`           | `0.12` |
 | `0.4`           | `0.11` |
 

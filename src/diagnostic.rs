@@ -1,5 +1,5 @@
 use bevy::{
-    diagnostic::{Diagnostic, DiagnosticId, Diagnostics, RegisterDiagnostic},
+    diagnostic::{Diagnostic, DiagnosticPath, Diagnostics, RegisterDiagnostic},
     prelude::{Assets, Handle, InheritedVisibility, Plugin, Query, Res, Update},
     render::view::ViewVisibility,
 };
@@ -25,16 +25,16 @@ impl Plugin for WarblerDiagnosticsPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.register_diagnostic(
             // Adds the `Diagnostic` responsable for logging the blade count to the `Diagnostics`
-            Diagnostic::new(Self::GRASS_BLADE_COUNT, "grass blade count", 20)
-                .with_suffix(" blades"),
+            Diagnostic::new(Self::GRASS_BLADE_COUNT)
+                .with_suffix(" blades")
+                .with_max_history_length(20),
         )
         .add_systems(Update, Self::measure_blades);
     }
 }
 impl WarblerDiagnosticsPlugin {
     /// An id for the [`Diagnostic`] of the blade count.
-    pub const GRASS_BLADE_COUNT: DiagnosticId =
-        DiagnosticId::from_u128(11_920_430_925_311_532_474_622_109_399_490_581_929);
+    pub const GRASS_BLADE_COUNT: DiagnosticPath = DiagnosticPath::const_new("grass/blade_count");
 
     /// Calculates the amount of blades that are drawn this frame and logs them
     fn measure_blades(
@@ -57,6 +57,6 @@ impl WarblerDiagnosticsPlugin {
             .map(|buffer| buffer.positions.len() as u32)
             .sum();
 
-        diagnostics.add_measurement(Self::GRASS_BLADE_COUNT, || count as f64);
+        diagnostics.add_measurement(&Self::GRASS_BLADE_COUNT, || count as f64);
     }
 }

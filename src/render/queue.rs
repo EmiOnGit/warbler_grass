@@ -31,7 +31,6 @@ pub(crate) fn queue_grass_buffers(
 
     for (view, mut opaque_phase) in &mut views {
         let view_key = msaa_key | MeshPipelineKey::from_hdr(view.hdr);
-        let rangefinder = view.rangefinder3d();
         for (entity, height) in material_meshes.iter() {
             let Some(mesh_instance) = render_mesh_instances.get(&entity) else {
                 continue;
@@ -52,10 +51,9 @@ pub(crate) fn queue_grass_buffers(
                     entity,
                     pipeline,
                     draw_function: draw_custom,
-                    distance: rangefinder
-                        .distance_translation(&mesh_instance.transforms.transform.translation),
                     batch_range: 0..1,
                     dynamic_offset: None,
+                    asset_id: mesh_instance.mesh_asset_id,
                 });
             }
         }

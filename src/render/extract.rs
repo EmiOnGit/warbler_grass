@@ -30,3 +30,8 @@ pub(crate) fn extract_aabb(
     }
     commands.insert_or_spawn_batch(values);
 }
+// # TODO
+// this is only a temporary solution. Since globals are not visible in the vertex shader in bevy version 0.13, we have to manually extract the time
+pub(crate) fn extract_time(mut commands: Commands, time: Extract<Res<Time>>) {
+    commands.insert_resource(**time);
+}

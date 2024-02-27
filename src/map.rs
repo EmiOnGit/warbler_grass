@@ -33,13 +33,13 @@ impl From<Handle<Image>> for YMap {
     }
 }
 impl ExtractComponent for YMap {
-    type Query = &'static Self;
+    type QueryData = &'static Self;
 
-    type Filter = ();
+    type QueryFilter = ();
 
     type Out = Self;
 
-    fn extract_component(item: QueryItem<'_, Self::Query>) -> Option<Self::Out> {
+    fn extract_component(item: QueryItem<'_, Self::QueryData>) -> Option<Self::Out> {
         Some(YMap {
             y_map: item.y_map.clone_weak(),
         })
@@ -68,13 +68,13 @@ impl From<Handle<Image>> for NormalMap {
     }
 }
 impl ExtractComponent for NormalMap {
-    type Query = &'static Self;
+    type QueryData = &'static Self;
 
-    type Filter = ();
+    type QueryFilter = ();
 
     type Out = Self;
 
-    fn extract_component(item: QueryItem<'_, Self::Query>) -> Option<Self::Out> {
+    fn extract_component(item: QueryItem<'_, Self::QueryData>) -> Option<Self::Out> {
         Some(NormalMap {
             normal_map: item.normal_map.clone_weak(),
         })
