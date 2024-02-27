@@ -134,6 +134,7 @@ pub(crate) fn add_dither_to_density(
 mod tests {
     use bevy::math::Vec2;
     use bevy::prelude::Image;
+    use bevy::render::render_asset::RenderAssetUsages;
     #[test]
     fn dither_1x1() {
         let image = Image::default(); // 1x1x1 image all white
@@ -162,7 +163,7 @@ mod tests {
         let pixel = luma.get_pixel_mut(0, 0);
         pixel.0 = [0];
         // this image is now black
-        let image = Image::from_dynamic(luma.into(), true);
+        let image = Image::from_dynamic(luma.into(), true, RenderAssetUsages::empty());
         // with a black image we expect 0 grassblades regardless of density
         let dither = super::dither_density_map(&image, 2., Vec2::new(1., 1.));
         assert!(dither.unwrap().positions.is_empty());
