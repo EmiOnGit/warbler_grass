@@ -18,7 +18,7 @@ A cool project using this crate is the [foxtrot](https://github.com/janhohenheim
 Add `warbler_grass` as dependency to your project
 ```toml
 [dependencies]
-warbler_grass = "0.5"
+warbler_grass = "0.6"
 ```
 ### Add grass to your game:
 ```rust
