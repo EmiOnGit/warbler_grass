@@ -33,7 +33,6 @@ fn main() {
         // This plugin is needed to initialize everything for the grass render pipeline
         WarblersPlugin
         ))
-        .add_plugin()
         .add_systems(Startup, setup_grass)
         .run();
 }
