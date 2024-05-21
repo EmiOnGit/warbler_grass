@@ -117,6 +117,10 @@ pub(crate) fn add_dither_to_density(
         .iter()
         .chain(stored.iter().map(|(e, map, aabb)| (*e, map, aabb)))
     {
+        // If the entity was stored in `storage` and got deleted from the world, we can savely ignore it.
+        let Some(mut e_builder) = commands.get_entity(e) else {
+            continue;
+        };
         if let Some(image) = images.get(&density_map.density_map) {
             let xz = aabb.half_extents.xz() * 2.;
             let Some(buffer) = dither_density_map(image, density_map.density, xz) else {
@@ -124,7 +128,7 @@ pub(crate) fn add_dither_to_density(
                 continue;
             };
             let handle = dithered.add(buffer);
-            commands.entity(e).insert(handle);
+            e_builder.try_insert(handle);
         } else {
             storage.push((e, density_map.clone(), *aabb));
         }
