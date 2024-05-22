@@ -173,6 +173,9 @@ pub(crate) fn add_dither_task(
                 }
                 Err(error) => {
                     command_queue.push(move |world: &mut World| {
+                        if let Some(mut entity_builder) = world.get_entity_mut(e) {
+                            entity_builder.remove::<ComputeDither>();
+                        }
                         world.send_event::<GrassComputeEvent>(
                             GrassComputeError::FailedComputation(e, error).into(),
                         );
@@ -188,6 +191,9 @@ pub(crate) fn add_dither_task(
 fn on_dither_success(world: &mut World, e: Entity, buffer: DitheredBuffer) {
     let Some(mut dithered) = world.get_resource_mut::<Assets<DitheredBuffer>>() else {
         world.send_event::<GrassComputeEvent>(GrassComputeError::FailedRequestResource.into());
+        if let Some(mut entity_builder) = world.get_entity_mut(e) {
+            entity_builder.remove::<ComputeDither>();
+        }
         return;
     };
     let handle = dithered.add(buffer);
