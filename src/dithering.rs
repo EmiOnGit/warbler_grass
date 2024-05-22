@@ -186,10 +186,8 @@ pub(crate) fn add_dither_task(
     }
 }
 fn on_dither_success(world: &mut World, e: Entity, buffer: DitheredBuffer) {
-    let err = DitherComputeError::ImageFormat;
     let Some(mut dithered) = world.get_resource_mut::<Assets<DitheredBuffer>>() else {
-        error!("`DitheredBuffer` assets are not found in the world. Couldn't append dither buffer to grass chunk");
-        world.send_event::<GrassComputeEvent>(GrassComputeError::FailedComputation(e, err).into());
+        world.send_event::<GrassComputeEvent>(GrassComputeError::FailedRequestResource.into());
         return;
     };
     let handle = dithered.add(buffer);
@@ -197,8 +195,7 @@ fn on_dither_success(world: &mut World, e: Entity, buffer: DitheredBuffer) {
         entity_builder.insert(handle).remove::<ComputeDither>();
         world.send_event(GrassComputeEvent::FinishedComputation(e));
     } else {
-        warn!("Tried to insert `DitheredBuffer` to entity with id: {e:?} but the entity does not exist anymore");
-        world.send_event::<GrassComputeEvent>(GrassComputeError::FailedComputation(e, err).into());
+        world.send_event::<GrassComputeEvent>(GrassComputeError::EntityDoesNotExist(e).into());
     }
 }
 
@@ -227,14 +224,14 @@ impl From<GrassComputeError> for GrassComputeEvent {
 #[derive(Debug)]
 pub enum GrassComputeError {
     FailedComputation(Entity, DitherComputeError),
-    FailedRequestResource(Entity),
+    FailedRequestResource,
     EntityDoesNotExist(Entity),
 }
 impl Display for GrassComputeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             GrassComputeError::FailedComputation(_, er) => er.fmt(f),
-            GrassComputeError::FailedRequestResource(_) => write!(f,"Failed to request the `DitherBuffer` assets, which should be inserted with the `WarblerPlugin` at the start of the app"),
+            GrassComputeError::FailedRequestResource => write!(f,"Failed to request the `DitherBuffer` assets, which should be inserted with the `WarblerPlugin` at the start of the app"),
             GrassComputeError::EntityDoesNotExist(e) => write!(f,"Entity {e:?} does not exist anymore. Maybe the entity was removed while calculating the grass positions?"),
         }
     }
