@@ -68,7 +68,7 @@ pub(crate) fn dither_density_map(
 
     let mut dither_buffer = Vec::with_capacity(image_length as usize);
     if !matches!(dynamic_image, DynamicImage::ImageLuma8(_)) {
-        info!("The density map is prefered to be in Luma8(/R8) encoding");
+        info_once!("The density map is prefered to be in Luma8(/R8) encoding");
     }
     // This conversion doesn't cost anything if the image is already luma8 but makes up for most of the function duration otherwise.
     let buffer = dynamic_image.into_luma8();
