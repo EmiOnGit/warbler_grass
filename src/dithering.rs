@@ -1,3 +1,6 @@
+use std::error::Error;
+use std::fmt::Display;
+
 use bevy::asset::Asset;
 use bevy::ecs::system::lifetimeless::SRes;
 use bevy::ecs::system::{CommandQueue, SystemParamItem};
@@ -9,6 +12,7 @@ use bevy::render::render_resource::{Buffer, BufferInitDescriptor, BufferUsages};
 use bevy::render::renderer::RenderDevice;
 use bevy::tasks::futures_lite::future;
 use bevy::tasks::{block_on, AsyncComputeTaskPool, Task};
+use image::DynamicImage;
 
 use crate::map::DensityMap;
 
@@ -23,25 +27,50 @@ const BAYER_DITHER: [[u8; 8]; 8] = [
     [15, 47, 7, 39, 13, 45, 5, 37],
     [61, 31, 55, 23, 61, 29, 53, 21],
 ];
+const MIN_AREA: f32 = 0.0001;
+#[derive(Debug)]
+pub enum DitherComputeError {
+    ImageFormat,
+    DensityToSmall(f32),
+    ChunkAreaToSmall(f32),
+}
+impl Display for DitherComputeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DitherComputeError::ImageFormat => write!(f, "The densitymap was not in a supported `ImageFormat`. The recommended format is Luma8(R8)"),
+            DitherComputeError::DensityToSmall(density) => write!(f, "The density has to be larger than 0, but was {density}"),
+            DitherComputeError::ChunkAreaToSmall(area) => write!(f, "The chunk area is to tiny. Current area is {area} but has to be at least {MIN_AREA}"),
+        }
+    }
+}
+impl Error for DitherComputeError {}
+/// Dithers a given density map.
+/// The performance is highly dependend on the image type of the density map. If the image is already encoded in luma8 (or r8) format,
+/// the dithering is substancially faster.
 pub(crate) fn dither_density_map(
     image: Image,
     density: f32,
     field_size: Vec2,
-) -> Option<DitheredBuffer> {
+) -> Result<DitheredBuffer, DitherComputeError> {
     if density < 0. {
-        warn!("tried to dither a image with density < 0");
-        return None;
+        return Err(DitherComputeError::DensityToSmall(density));
     }
-    if field_size.length() < 0.0001 {
-        return None;
+
+    let area = field_size.x * field_size.y;
+    if area < MIN_AREA {
+        return Err(DitherComputeError::ChunkAreaToSmall(area));
     }
     let image_length = (image.size().length_squared() as f32).sqrt();
     let Ok(dynamic_image) = image.try_into_dynamic() else {
-        return None;
+        return Err(DitherComputeError::ImageFormat);
     };
     // Capacity is not precise but should be a good estimate
 
     let mut dither_buffer = Vec::with_capacity(image_length as usize);
+    if !matches!(dynamic_image, DynamicImage::ImageLuma8(_)) {
+        info!("The density map is prefered to be in Luma8(/R8) encoding");
+    }
+    // This conversion doesn't cost anything if the image is already luma8 but makes up for most of the function duration otherwise.
     let buffer = dynamic_image.into_luma8();
     let i_count = (density * field_size.x).abs() as usize;
     let j_count = (density * field_size.y).abs() as usize;
@@ -62,7 +91,7 @@ pub(crate) fn dither_density_map(
             }
         }
     }
-    Some(DitheredBuffer {
+    Ok(DitheredBuffer {
         positions: dither_buffer,
     })
 }
@@ -111,7 +140,7 @@ pub(crate) fn add_dither_task(
     grasses: Query<(Entity, &DensityMap, &Aabb), Or<(Changed<DensityMap>, Changed<Aabb>)>>,
     images: Res<Assets<Image>>,
     mut storage: Local<Vec<(Entity, DensityMap, Aabb)>>,
-    mut event_writer: EventWriter<GrassComputationEvent>,
+    mut event_writer: EventWriter<GrassComputeEvent>,
 ) {
     if storage.is_empty() && grasses.is_empty() {
         return;
@@ -133,37 +162,46 @@ pub(crate) fn add_dither_task(
         data.push((e, image.clone(), density_map.density, *aabb));
     }
     for (e, map, density, aabb) in data.into_iter() {
+        event_writer.send(GrassComputeEvent::StartComputation(e));
         let task: Task<_> = thread_pool.spawn::<CommandQueue>(async move {
             let mut command_queue = CommandQueue::default();
             let xz = aabb.half_extents.xz() * 2.;
-            let Some(buffer) = dither_density_map(map, density, xz) else {
-                warn!("Couldn't dither density map. Maybe the image format is not supported?");
-                command_queue.push(move |world: &mut World| {
-                    world.send_event(GrassComputationEvent::FailedComputation(e));
-                });
-                return command_queue;
-            };
-            command_queue.push(move |world: &mut World| {
-                let Some(mut dithered) = world.get_resource_mut::<Assets<DitheredBuffer>>() else {
-                    error!("`DitheredBuffer` assets are not found in the world. Couldn't append dither buffer to grass chunk");
-                    world.send_event(GrassComputationEvent::FailedComputation(e));
-                    return;
-                };
-                let handle = dithered.add(buffer);
-                if let Some(mut entity_builder) = world.get_entity_mut(e) {
-                    entity_builder.insert(handle).remove::<ComputeDither>();
-                    world.send_event(GrassComputationEvent::FinishedComputation(e));
-                } else {
-                    warn!("Tried to insert `DitheredBuffer` to entity with id: {e:?} but the entity does not exist anymore");
-                    world.send_event(GrassComputationEvent::FailedComputation(e));
+            match dither_density_map(map, density, xz) {
+                Ok(buffer) => {
+                    command_queue
+                        .push(move |world: &mut World| on_dither_success(world, e, buffer));
                 }
-            });
+                Err(error) => {
+                    command_queue.push(move |world: &mut World| {
+                        world.send_event::<GrassComputeEvent>(
+                            GrassComputeError::FailedComputation(e, error).into(),
+                        );
+                    });
+                    return command_queue;
+                }
+            }
             command_queue
         });
-        event_writer.send(GrassComputationEvent::StartComputation(e));
         commands.entity(e).try_insert(ComputeDither(task));
     }
 }
+fn on_dither_success(world: &mut World, e: Entity, buffer: DitheredBuffer) {
+    let err = DitherComputeError::ImageFormat;
+    let Some(mut dithered) = world.get_resource_mut::<Assets<DitheredBuffer>>() else {
+        error!("`DitheredBuffer` assets are not found in the world. Couldn't append dither buffer to grass chunk");
+        world.send_event::<GrassComputeEvent>(GrassComputeError::FailedComputation(e, err).into());
+        return;
+    };
+    let handle = dithered.add(buffer);
+    if let Some(mut entity_builder) = world.get_entity_mut(e) {
+        entity_builder.insert(handle).remove::<ComputeDither>();
+        world.send_event(GrassComputeEvent::FinishedComputation(e));
+    } else {
+        warn!("Tried to insert `DitheredBuffer` to entity with id: {e:?} but the entity does not exist anymore");
+        world.send_event::<GrassComputeEvent>(GrassComputeError::FailedComputation(e, err).into());
+    }
+}
+
 pub(crate) fn check_dither_compute_tasks(
     mut commands: Commands,
     mut dither_tasks: Query<&mut ComputeDither>,
@@ -176,11 +214,32 @@ pub(crate) fn check_dither_compute_tasks(
     }
 }
 #[derive(Event)]
-pub enum GrassComputationEvent {
+pub enum GrassComputeEvent {
     StartComputation(Entity),
-    FailedComputation(Entity),
     FinishedComputation(Entity),
+    Error(GrassComputeError),
 }
+impl From<GrassComputeError> for GrassComputeEvent {
+    fn from(value: GrassComputeError) -> Self {
+        GrassComputeEvent::Error(value)
+    }
+}
+#[derive(Debug)]
+pub enum GrassComputeError {
+    FailedComputation(Entity, DitherComputeError),
+    FailedRequestResource(Entity),
+    EntityDoesNotExist(Entity),
+}
+impl Display for GrassComputeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GrassComputeError::FailedComputation(_, er) => er.fmt(f),
+            GrassComputeError::FailedRequestResource(_) => write!(f,"Failed to request the `DitherBuffer` assets, which should be inserted with the `WarblerPlugin` at the start of the app"),
+            GrassComputeError::EntityDoesNotExist(e) => write!(f,"Entity {e:?} does not exist anymore. Maybe the entity was removed while calculating the grass positions?"),
+        }
+    }
+}
+impl Error for GrassComputeError {}
 #[cfg(test)]
 mod tests {
     use bevy::math::Vec2;
@@ -190,10 +249,10 @@ mod tests {
     fn dither_1x1() {
         let image = Image::default(); // 1x1x1 image all white
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(1., 1.));
-        assert!(dither.is_some());
+        assert!(dither.is_ok());
         assert_eq!(dither.unwrap().positions.len(), 1);
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(10., 5.));
-        assert!(dither.is_some());
+        assert!(dither.is_ok());
         assert!(dither.unwrap().positions.len() == 10 * 5);
     }
     #[test]
@@ -231,35 +290,35 @@ mod tests {
         assert!(dither.unwrap().positions.is_empty());
         // negative density should return None
         let dither = super::dither_density_map(image.clone(), -1., Vec2::new(1., 1.));
-        assert!(dither.is_none());
+        assert!(dither.is_err());
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(0., 0.));
-        assert!(dither.is_none());
+        assert!(dither.is_err());
     }
     #[test]
     fn dither_field_size() {
         let image = Image::default(); // 1x1x1 image all white
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(10., 1.));
-        assert!(dither.is_some());
+        assert!(dither.is_ok());
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(10., 10.));
-        assert!(dither.is_some());
+        assert!(dither.is_ok());
         assert!(dither.unwrap().positions.len() == 10 * 10);
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(0., 10.));
-        assert!(dither.is_some());
+        assert!(dither.is_ok());
         assert!(dither.unwrap().positions.is_empty());
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(100., 0.));
-        assert!(dither.is_some());
+        assert!(dither.is_ok());
         assert!(dither.unwrap().positions.is_empty());
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(-10., 0.));
-        assert!(dither.is_some());
+        assert!(dither.is_ok());
         assert!(dither.unwrap().positions.is_empty());
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(0., -10.));
-        assert!(dither.is_some());
+        assert!(dither.is_ok());
         assert!(dither.unwrap().positions.is_empty());
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(-10., -10.));
-        assert!(dither.is_some());
+        assert!(dither.is_ok());
         assert_eq!(dither.unwrap().positions.len(), 100);
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(-10., 5.));
-        assert!(dither.is_some());
+        assert!(dither.is_ok());
         assert_eq!(dither.unwrap().positions.len(), 50);
     }
 }
