@@ -111,6 +111,7 @@ pub(crate) fn add_dither_task(
     grasses: Query<(Entity, &DensityMap, &Aabb), Or<(Changed<DensityMap>, Changed<Aabb>)>>,
     images: Res<Assets<Image>>,
     mut storage: Local<Vec<(Entity, DensityMap, Aabb)>>,
+    mut event_writer: EventWriter<GrassComputationEvent>,
 ) {
     if storage.is_empty() && grasses.is_empty() {
         return;
@@ -123,7 +124,10 @@ pub(crate) fn add_dither_task(
         .chain(stored.iter().map(|(e, map, aabb)| (*e, map, aabb)))
     {
         let Some(image) = images.get(&density_map.density_map) else {
-            storage.push((e, density_map.clone(), *aabb));
+            // the entity might have been deleted from the world
+            if commands.get_entity(e).is_some() {
+                storage.push((e, density_map.clone(), *aabb));
+            }
             continue;
         };
         data.push((e, image.clone(), density_map.density, *aabb));
@@ -134,19 +138,30 @@ pub(crate) fn add_dither_task(
             let xz = aabb.half_extents.xz() * 2.;
             let Some(buffer) = dither_density_map(map, density, xz) else {
                 warn!("Couldn't dither density map. Maybe the image format is not supported?");
+                command_queue.push(move |world: &mut World| {
+                    world.send_event(GrassComputationEvent::FailedComputation(e));
+                });
                 return command_queue;
             };
             command_queue.push(move |world: &mut World| {
                 let Some(mut dithered) = world.get_resource_mut::<Assets<DitheredBuffer>>() else {
-                    error!("DitheredBuffer assets are not found in the world. Couldn't append dither buffer to grass chunk");
+                    error!("`DitheredBuffer` assets are not found in the world. Couldn't append dither buffer to grass chunk");
+                    world.send_event(GrassComputationEvent::FailedComputation(e));
                     return;
                 };
                 let handle = dithered.add(buffer);
-                world.entity_mut(e).insert(handle).remove::<ComputeDither>();
+                if let Some(mut entity_builder) = world.get_entity_mut(e) {
+                    entity_builder.insert(handle).remove::<ComputeDither>();
+                    world.send_event(GrassComputationEvent::FinishedComputation(e));
+                } else {
+                    warn!("Tried to insert `DitheredBuffer` to entity with id: {e:?} but the entity does not exist anymore");
+                    world.send_event(GrassComputationEvent::FailedComputation(e));
+                }
             });
             command_queue
         });
-        commands.entity(e).insert(ComputeDither(task));
+        event_writer.send(GrassComputationEvent::StartComputation(e));
+        commands.entity(e).try_insert(ComputeDither(task));
     }
 }
 pub(crate) fn check_dither_compute_tasks(
@@ -159,6 +174,12 @@ pub(crate) fn check_dither_compute_tasks(
             commands.append(&mut commands_queue);
         }
     }
+}
+#[derive(Event)]
+pub enum GrassComputationEvent {
+    StartComputation(Entity),
+    FailedComputation(Entity),
+    FinishedComputation(Entity),
 }
 #[cfg(test)]
 mod tests {
