@@ -18,7 +18,7 @@ bitflags = "2"
 [dependencies.bevy]
 version = "0.13"
 default-features = false
-features = [ "bevy_core_pipeline", "bevy_render", "bevy_asset", "bevy_pbr" , "png"]
+features = [ "bevy_core_pipeline", "bevy_render", "bevy_asset", "bevy_pbr" , "png", "multi-threaded"]
 
 [dev-dependencies]
 bevy = { version = "0.13", default-features = false, features = ["bevy_winit","x11", "ktx2", "zstd", "tonemapping_luts", "multi-threaded"] }
