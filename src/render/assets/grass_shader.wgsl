@@ -1,6 +1,5 @@
 #import bevy_pbr::mesh_functions::{mesh_position_local_to_clip, get_model_matrix}
 #import bevy_pbr::mesh_types::Mesh
-// #import bevy_pbr::mesh_view_bindings::globals
 #import bevy_pbr::mesh_bindings::mesh
 #import bevy_render::maths::affine_to_square
 
