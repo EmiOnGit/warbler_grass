@@ -166,21 +166,26 @@ pub(crate) fn add_dither_task(
         let task: Task<_> = thread_pool.spawn::<CommandQueue>(async move {
             let mut command_queue = CommandQueue::default();
             let xz = aabb.half_extents.xz() * 2.;
+            // We want to remove `ComputeDither` regardless of success to avoid polling on a already finished task
+            // (Which would crash the app)
+            command_queue.push(move |world: &mut World| {
+                if let Some(mut entity_builder) = world.get_entity_mut(e) {
+                    entity_builder.remove::<ComputeDither>();
+                }
+            });
             match dither_density_map(map, density, xz) {
                 Ok(buffer) => {
-                    command_queue
-                        .push(move |world: &mut World| on_dither_success(world, e, buffer));
+                    command_queue.push(move |world: &mut World| {
+                        let event = on_dither_success(world, e, buffer);
+                        world.send_event(event);
+                    });
                 }
                 Err(error) => {
                     command_queue.push(move |world: &mut World| {
-                        if let Some(mut entity_builder) = world.get_entity_mut(e) {
-                            entity_builder.remove::<ComputeDither>();
-                        }
                         world.send_event::<GrassComputeEvent>(
                             GrassComputeError::FailedComputation(e, error).into(),
                         );
                     });
-                    return command_queue;
                 }
             }
             command_queue
@@ -188,20 +193,16 @@ pub(crate) fn add_dither_task(
         commands.entity(e).try_insert(ComputeDither(task));
     }
 }
-fn on_dither_success(world: &mut World, e: Entity, buffer: DitheredBuffer) {
+fn on_dither_success(world: &mut World, e: Entity, buffer: DitheredBuffer) -> GrassComputeEvent {
     let Some(mut dithered) = world.get_resource_mut::<Assets<DitheredBuffer>>() else {
-        world.send_event::<GrassComputeEvent>(GrassComputeError::FailedRequestResource.into());
-        if let Some(mut entity_builder) = world.get_entity_mut(e) {
-            entity_builder.remove::<ComputeDither>();
-        }
-        return;
+        return GrassComputeError::FailedRequestResource.into();
     };
     let handle = dithered.add(buffer);
     if let Some(mut entity_builder) = world.get_entity_mut(e) {
-        entity_builder.insert(handle).remove::<ComputeDither>();
-        world.send_event(GrassComputeEvent::FinishedComputation(e));
+        entity_builder.insert(handle);
+        return GrassComputeEvent::FinishedComputation(e);
     } else {
-        world.send_event::<GrassComputeEvent>(GrassComputeError::EntityDoesNotExist(e).into());
+        return GrassComputeError::EntityDoesNotExist(e).into();
     }
 }
 
