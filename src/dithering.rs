@@ -28,16 +28,22 @@ const BAYER_DITHER: [[u8; 8]; 8] = [
     [61, 31, 55, 23, 61, 29, 53, 21],
 ];
 const MIN_AREA: f32 = 0.0001;
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum DitherComputeError {
     ImageFormat,
+    /// The density is too small to be dithered.
+    /// Usually this means that the provided density is negative.
+    /// The provided density is stored in the error
     DensityToSmall(f32),
+    /// The area is too small to be dithered.
+    /// The error contains the area of the chunk.
+    /// The area is calculated using `field_size.x * field_size.y`
     ChunkAreaToSmall(f32),
 }
 impl Display for DitherComputeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            DitherComputeError::ImageFormat => write!(f, "The densitymap was not in a supported `ImageFormat`. The recommended format is Luma8(R8)"),
+            DitherComputeError::ImageFormat => write!(f, "The densitymap was not in a supported `ImageFormat`. The recommended format is Luma8(R8), but it should be at least convertable to Luma8"),
             DitherComputeError::DensityToSmall(density) => write!(f, "The density has to be larger than 0, but was {density}"),
             DitherComputeError::ChunkAreaToSmall(area) => write!(f, "The chunk area is to tiny. Current area is {area} but has to be at least {MIN_AREA}"),
         }
@@ -68,9 +74,10 @@ pub(crate) fn dither_density_map(
 
     let mut dither_buffer = Vec::with_capacity(image_length as usize);
     if !matches!(dynamic_image, DynamicImage::ImageLuma8(_)) {
-        info_once!("The density map is prefered to be in Luma8(/R8) encoding");
+        warn_once!("The density map is prefered to be in Luma8(/R8) encoding");
     }
-    // This conversion doesn't cost anything if the image is already luma8 but makes up for most of the function duration otherwise.
+    // This conversion doesn't cost anything if the image is already luma8
+    // but makes up for most of the function duration otherwise.
     let buffer = dynamic_image.into_luma8();
     let i_count = (density * field_size.x).abs() as usize;
     let j_count = (density * field_size.y).abs() as usize;
@@ -100,7 +107,7 @@ pub(crate) struct ComputeDither(Task<CommandQueue>);
 /// A buffer containing the dithered density map
 ///
 /// This struct shouldn't be modified by the user
-#[derive(Clone, Debug, TypePath, Asset)]
+#[derive(Clone, Debug, TypePath, Asset, PartialEq)]
 pub(crate) struct DitheredBuffer {
     pub positions: Vec<Vec2>,
 }
@@ -249,6 +256,8 @@ mod tests {
     use bevy::math::Vec2;
     use bevy::prelude::Image;
     use bevy::render::render_asset::RenderAssetUsages;
+
+    use crate::dithering::DitherComputeError;
     #[test]
     fn dither_1x1() {
         let image = Image::default(); // 1x1x1 image all white
@@ -306,23 +315,20 @@ mod tests {
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(10., 10.));
         assert!(dither.is_ok());
         assert!(dither.unwrap().positions.len() == 10 * 10);
+        let dither = super::dither_density_map(image.clone(), 0., Vec2::new(10., 10.));
+        assert!(dither.is_ok());
+        assert!(dither.unwrap().positions.is_empty());
+
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(0., 10.));
-        assert!(dither.is_ok());
-        assert!(dither.unwrap().positions.is_empty());
+        assert_eq!(dither, Err(DitherComputeError::ChunkAreaToSmall(0.)));
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(100., 0.));
-        assert!(dither.is_ok());
-        assert!(dither.unwrap().positions.is_empty());
+        assert_eq!(dither, Err(DitherComputeError::ChunkAreaToSmall(0.)));
+        let dither = super::dither_density_map(image.clone(), 1., Vec2::new(0., 0.));
+        assert_eq!(dither, Err(DitherComputeError::ChunkAreaToSmall(0.)));
         let dither = super::dither_density_map(image.clone(), 1., Vec2::new(-10., 0.));
-        assert!(dither.is_ok());
-        assert!(dither.unwrap().positions.is_empty());
-        let dither = super::dither_density_map(image.clone(), 1., Vec2::new(0., -10.));
-        assert!(dither.is_ok());
-        assert!(dither.unwrap().positions.is_empty());
-        let dither = super::dither_density_map(image.clone(), 1., Vec2::new(-10., -10.));
-        assert!(dither.is_ok());
-        assert_eq!(dither.unwrap().positions.len(), 100);
-        let dither = super::dither_density_map(image.clone(), 1., Vec2::new(-10., 5.));
-        assert!(dither.is_ok());
-        assert_eq!(dither.unwrap().positions.len(), 50);
+        assert_eq!(dither, Err(DitherComputeError::ChunkAreaToSmall(0.)));
+
+        let dither = super::dither_density_map(image.clone(), -0.1, Vec2::new(10., 10.));
+        assert_eq!(dither, Err(DitherComputeError::DensityToSmall(-0.1)));
     }
 }
