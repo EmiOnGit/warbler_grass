@@ -21,7 +21,7 @@ use bevy::{
 };
 
 use crate::{
-    dithering::{add_dither_to_density, DitheredBuffer},
+    dithering::{add_dither_task, check_dither_compute_tasks, DitheredBuffer, GrassComputeEvent},
     map::{NormalMap, YMap},
     prelude::{GrassColor, WarblerHeight},
     render::{self, cache::UniformBuffer, extract, grass_pipeline::GrassPipeline, prepare, queue},
@@ -69,7 +69,8 @@ impl Plugin for WarblersPlugin {
         images.insert(DEFAULT_NORMAL_MAP_HANDLE, default_normal_map());
         images.insert(DEFAULT_IMAGE_HANDLE, Image::default());
 
-        app.add_systems(Update, add_dither_to_density)
+        app.add_systems(Update, (add_dither_task, check_dither_compute_tasks))
+            .add_event::<GrassComputeEvent>()
             .init_asset::<DitheredBuffer>()
             .add_plugins(RenderAssetPlugin::<DitheredBuffer>::default());
         // Init resources

@@ -15,10 +15,11 @@ description = "A bevy plugin for creating 3d grass in your game"
 [dependencies]
 bytemuck = "1.13.0"
 bitflags = "2"
+image = "0.24.9" # needs to be in sync with the version used by bevy
 [dependencies.bevy]
 version = "0.13"
 default-features = false
-features = [ "bevy_core_pipeline", "bevy_render", "bevy_asset", "bevy_pbr" , "png"]
+features = [ "bevy_core_pipeline", "bevy_render", "bevy_asset", "bevy_pbr" , "png", "multi-threaded"]
 
 [dev-dependencies]
 bevy = { version = "0.13", default-features = false, features = ["bevy_winit","x11", "ktx2", "zstd", "tonemapping_luts", "multi-threaded"] }
