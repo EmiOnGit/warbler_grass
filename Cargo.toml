@@ -15,7 +15,7 @@ description = "A bevy plugin for creating 3d grass in your game"
 [dependencies]
 bytemuck = "1.13.0"
 bitflags = "2"
-image = "0.24.9" # needs to be in sync with the version used by bevy
+image = "0.25" # needs to be in sync with the version used by bevy
 [dependencies.bevy]
 version = "0.14.0-rc.3"
 default-features = false
