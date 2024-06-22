@@ -236,7 +236,6 @@ impl SpecializedMeshPipeline for GrassPipeline {
             &self.y_map_layout,
             &self.region_layout,
             &self.normal_map_layout,
-            &self.instance_index_bind_group_layout,
         ];
         for layout in layouts {
             descriptor.layout.push(layout.clone());

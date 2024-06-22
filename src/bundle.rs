@@ -86,8 +86,8 @@ pub struct GrassColor {
 impl Default for GrassColor {
     fn default() -> Self {
         GrassColor {
-            main_color: Color::rgb(0.2, 0.5, 0.0),
-            bottom_color: Color::rgb(0.1, 0.1, 0.0),
+            main_color: Color::srgb(0.2, 0.5, 0.0),
+            bottom_color: Color::srgb(0.1, 0.1, 0.0),
         }
     }
 }

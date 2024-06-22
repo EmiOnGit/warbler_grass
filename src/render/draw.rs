@@ -21,10 +21,7 @@ use crate::{
     prelude::{GrassColor, NormalMap, WarblerHeight},
 };
 
-use super::{
-    cache::UniformBuffer,
-    prepare::{BindGroupBuffer, IndexBindgroup},
-};
+use super::{cache::UniformBuffer, prepare::BindGroupBuffer};
 pub(crate) struct SetUniformBindGroup<const I: usize>;
 
 impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetUniformBindGroup<I> {
@@ -132,30 +129,7 @@ impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetHeightBindGroup<I> {
         }
     }
 }
-pub(crate) struct SetInstanceIndexBindGroup<const N: usize>;
 
-impl<P: PhaseItem, const N: usize> RenderCommand<P> for SetInstanceIndexBindGroup<N> {
-    type Param = ();
-    type ViewQuery = ();
-
-    type ItemQuery = Read<IndexBindgroup>;
-
-    #[inline]
-    fn render<'w>(
-        _item: &P,
-        _view: ROQueryItem<'w, Self::ViewQuery>,
-        index_bindgroup: Option<&'w IndexBindgroup>,
-        _: SystemParamItem<'w, '_, Self::Param>,
-        pass: &mut TrackedRenderPass<'w>,
-    ) -> RenderCommandResult {
-        if let Some(index_bindgroup) = index_bindgroup {
-            pass.set_bind_group(N, &index_bindgroup.bind_group, &[]);
-            RenderCommandResult::Success
-        } else {
-            RenderCommandResult::Failure
-        }
-    }
-}
 pub(crate) struct SetVertexBuffer;
 
 impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {

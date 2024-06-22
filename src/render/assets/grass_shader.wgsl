@@ -1,4 +1,4 @@
-#import bevy_pbr::mesh_functions::{mesh_position_local_to_clip, get_model_matrix}
+#import bevy_pbr::mesh_functions::{mesh_position_local_to_clip, get_world_from_local}
 #import bevy_pbr::mesh_types::Mesh
 #import bevy_pbr::mesh_bindings::mesh
 #import bevy_render::maths::affine_to_square
@@ -55,8 +55,8 @@ var noise_texture: texture_2d<f32>;
 @group(6) @binding(0)
 var t_normal: texture_2d<f32>;
 
-@group(7) @binding(0)
-var<uniform> instance_index: InstanceIndex;
+// @group(7) @binding(0)
+// var<uniform> instance_index: InstanceIndex;
 
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
@@ -146,7 +146,8 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     position.z += offset.y * strength;
     
     // ---CLIP_POSITION---
-    out.clip_position = mesh_position_local_to_clip(get_model_matrix(instance_index.index), vec4<f32>(position, 1.0));
+    // out.clip_position = mesh_position_local_to_clip(get_world_from_local(instance_index.index), vec4<f32>(position, 1.0));
+    out.clip_position = mesh_position_local_to_clip(get_world_from_local(0u), vec4<f32>(position, 1.0));
 
     // ---COLOR---
     var lambda = clamp(vertex.vertex_position.y, 0., 1.) ;

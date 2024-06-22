@@ -27,6 +27,7 @@ pub(crate) fn queue_grass_buffers(
     material_meshes: Query<(Entity, &WarblerHeight)>,
     mut phase: ResMut<ViewBinnedRenderPhases<Opaque3d>>,
     mut views: Query<(
+        Entity,
         &ExtractedView,
         Has<DepthPrepass>,
         Has<NormalPrepass>,
@@ -37,7 +38,9 @@ pub(crate) fn queue_grass_buffers(
     let draw_custom = opaque_3d_draw_functions.read().id::<GrassDrawCall>();
     let msaa_key = MeshPipelineKey::from_msaa_samples(msaa.samples());
 
-    for (view, depth_prepass, normal_prepass, motion_prepass, deferred_prepass) in &mut views {
+    for (camera_entity, view, depth_prepass, normal_prepass, motion_prepass, deferred_prepass) in
+        &mut views
+    {
         let mut view_key = msaa_key | MeshPipelineKey::from_hdr(view.hdr);
         if deferred_prepass {
             view_key |= MeshPipelineKey::DEFERRED_PREPASS;
@@ -51,6 +54,9 @@ pub(crate) fn queue_grass_buffers(
         if motion_prepass {
             view_key |= MeshPipelineKey::MOTION_VECTOR_PREPASS;
         }
+        let Some(phase) = phase.get_mut(&camera_entity) else {
+            continue;
+        };
         for (entity, height) in material_meshes.iter() {
             let Some(mesh_instance) = render_mesh_instances.render_mesh_queue_data(entity) else {
                 continue;
@@ -69,9 +75,6 @@ pub(crate) fn queue_grass_buffers(
             let pipeline = pipelines
                 .specialize(&pipeline_cache, &grass_pipeline, grass_key, &mesh.layout)
                 .unwrap();
-            let Some(phase) = phase.get_mut(&entity) else {
-                continue;
-            };
             phase.add(
                 Opaque3dBinKey {
                     pipeline,

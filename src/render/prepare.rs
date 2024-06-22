@@ -9,11 +9,9 @@ use crate::bundle::WarblerHeight;
 use crate::map::{NormalMap, YMap};
 use crate::prelude::GrassColor;
 use crate::{GrassConfiguration, GrassNoiseTexture};
-use bevy::core_pipeline::core_3d::Opaque3d;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
-use bevy::render::render_phase::RenderPhase;
 use bevy::render::render_resource::{
     BindGroup, BindGroupEntries, BindingResource, BufferBinding, BufferInitDescriptor,
     BufferUsages, TextureViewId,
@@ -34,46 +32,53 @@ impl<T> BindGroupBuffer<T> {
         }
     }
 }
-#[derive(Component)]
-pub(crate) struct IndexBindgroup {
-    pub bind_group: BindGroup,
-}
-pub(crate) fn prepare_instance_index(
-    query: Query<Entity, With<GrassColor>>,
-    mut commands: Commands,
-    phases: Query<&RenderPhase<Opaque3d>>,
-    pipeline: Res<GrassPipeline>,
-    render_device: Res<RenderDevice>,
-) {
-    for entity in &query {
-        let Some(item) = phases
-            .iter()
-            .flat_map(|phase| &phase.items)
-            .find(|item| item.entity == entity)
-        else {
-            continue;
-        };
-        let index_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-            label: Some("instance index buffer"),
-            contents: bytemuck::cast_slice(&[item.batch_range.start, 0, 0, 0]),
-            usage: BufferUsages::VERTEX | BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-        });
-        let layout = &pipeline.instance_index_bind_group_layout;
-        let bind_group = render_device.create_bind_group(
-            "instance index bindgroup",
-            layout,
-            &BindGroupEntries::single(BindingResource::Buffer(BufferBinding {
-                buffer: &index_buffer,
-                offset: 0,
-                size: None,
-            })),
-        );
+// #[derive(Component)]
+// pub(crate) struct IndexBindgroup {
+//     pub bind_group: BindGroup,
+// }
+// pub(crate) fn prepare_instance_index(
+//     query: Query<(Entity, &PhaseViewEntity), With<GrassColor>>,
+//     mut commands: Commands,
+//     phases: Res<ViewBinnedRenderPhases<Opaque3d>>,
 
-        commands
-            .entity(entity)
-            .insert(IndexBindgroup { bind_group });
-    }
-}
+//     pipeline: Res<GrassPipeline>,
+//     render_device: Res<RenderDevice>,
+// ) {
+//     for (e, view_e) in &query {
+//         let phase = phases[&view_e.0];
+//     }
+//     for phase in phases.values().into_iter() {
+//         phase.unbatchable_keys
+//     }
+//     for entity in &query {
+//         let Some(item) = phases
+//             .iter()
+//             .flat_map(|phase| &phase.items)
+//             .find(|item| item.entity == entity)
+//         else {
+//             continue;
+//         };
+//         let index_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+//             label: Some("instance index buffer"),
+//             contents: bytemuck::cast_slice(&[item.batch_range.start, 0, 0, 0]),
+//             usage: BufferUsages::VERTEX | BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+//         });
+//         let layout = &pipeline.instance_index_bind_group_layout;
+//         let bind_group = render_device.create_bind_group(
+//             "instance index bindgroup",
+//             layout,
+//             &BindGroupEntries::single(BindingResource::Buffer(BufferBinding {
+//                 buffer: &index_buffer,
+//                 offset: 0,
+//                 size: None,
+//             })),
+//         );
+
+//         commands
+//             .entity(entity)
+//             .insert(IndexBindgroup { bind_group });
+//     }
+// }
 #[derive(Component)]
 pub(crate) struct UniformHeightFlag;
 

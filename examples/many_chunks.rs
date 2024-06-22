@@ -40,7 +40,7 @@ fn setup_grass_chunks(mut commands: Commands, asset_server: Res<AssetServer>) {
             (chunk % chunk_width as i32) as f32 * chunk_height * 1.05,
         );
         // we can define the color of the grass on a chunk basis
-        let color = Color::rgb(
+        let color = Color::srgb(
             ((chunk / chunk_width as i32) as f32 / 400. * chunk_width) + 0.5,
             ((chunk % chunk_width as i32) as f32 / chunk_width) + 0.5,
             0.,
@@ -55,7 +55,7 @@ fn setup_grass_chunks(mut commands: Commands, asset_server: Res<AssetServer>) {
             aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(chunk_width, 2., chunk_height)),
             grass_color: GrassColor {
                 main_color: color,
-                bottom_color: color * 0.4,
+                bottom_color: (color.to_linear() * 0.4).into(),
             },
 
             spatial: SpatialBundle {

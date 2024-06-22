@@ -5,12 +5,11 @@ use bevy::{
     pbr::MeshPipeline,
     prelude::*,
     render::{
-        batching::batch_and_prepare_render_phase,
         extract_component::ExtractComponentPlugin,
         extract_resource::ExtractResourcePlugin,
         mesh::{Indices, Mesh},
         render_asset::{RenderAssetPlugin, RenderAssetUsages},
-        render_phase::AddRenderCommand,
+        render_phase::{AddRenderCommand, BinnedRenderPhasePlugin},
         render_resource::{
             Extent3d, PrimitiveTopology, Shader, SpecializedMeshPipelines, TextureDescriptor,
             TextureDimension, TextureFormat, TextureUsages,
@@ -21,7 +20,10 @@ use bevy::{
 };
 
 use crate::{
-    dithering::{add_dither_task, check_dither_compute_tasks, DitheredBuffer, GrassComputeEvent},
+    dithering::{
+        add_dither_task, check_dither_compute_tasks, DitheredBuffer, GpuDitheredBuffer,
+        GrassComputeEvent,
+    },
     map::{NormalMap, YMap},
     prelude::{GrassColor, WarblerHeight},
     render::{self, cache::UniformBuffer, extract, grass_pipeline::GrassPipeline, prepare, queue},
@@ -61,18 +63,18 @@ impl Plugin for WarblersPlugin {
         );
 
         // Load default grass blade mesh
-        let mut meshes = app.world.resource_mut::<Assets<Mesh>>();
-        meshes.insert(GRASS_MESH_HANDLE, default_grass_mesh());
+        let mut meshes = app.world_mut().resource_mut::<Assets<Mesh>>();
+        meshes.insert(GRASS_MESH_HANDLE.id(), default_grass_mesh());
 
         // Load default normal map
-        let mut images = app.world.resource_mut::<Assets<Image>>();
-        images.insert(DEFAULT_NORMAL_MAP_HANDLE, default_normal_map());
-        images.insert(DEFAULT_IMAGE_HANDLE, Image::default());
+        let mut images = app.world_mut().resource_mut::<Assets<Image>>();
+        images.insert(DEFAULT_NORMAL_MAP_HANDLE.id(), default_normal_map());
+        images.insert(DEFAULT_IMAGE_HANDLE.id(), Image::default());
 
         app.add_systems(Update, (add_dither_task, check_dither_compute_tasks))
             .add_event::<GrassComputeEvent>()
             .init_asset::<DitheredBuffer>()
-            .add_plugins(RenderAssetPlugin::<DitheredBuffer>::default());
+            .add_plugins(RenderAssetPlugin::<GpuDitheredBuffer>::default());
         // Init resources
         app.init_resource::<GrassConfiguration>()
             .init_resource::<Time>()
@@ -90,6 +92,7 @@ impl Plugin for WarblersPlugin {
         // Init render app
         app.sub_app_mut(RenderApp)
             .add_render_command::<Opaque3d, render::GrassDrawCall>()
+            .add_plugins(BinnedRenderPhasePlugin::<Opaque3d, MeshPipeline>::default())
             .init_resource::<SpecializedMeshPipelines<GrassPipeline>>()
             .add_systems(
                 ExtractSchedule,
@@ -107,8 +110,8 @@ impl Plugin for WarblersPlugin {
                     prepare::prepare_grass_color,
                     prepare::prepare_y_map_buffer,
                     prepare::prepare_normal_map_buffer,
-                    prepare::prepare_instance_index
-                        .after(batch_and_prepare_render_phase::<Opaque3d, MeshPipeline>),
+                    // prepare::prepare_instance_index
+                    //     .after(batch_and_prepare_render_phase::<Opaque3d, MeshPipeline>),
                 )
                     .in_set(RenderSet::PrepareResources),
             )

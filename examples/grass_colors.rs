@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::primitives::Aabb};
+use bevy::{color::palettes, prelude::*, render::primitives::Aabb};
 use warbler_grass::prelude::*;
 mod helper;
 fn main() {
@@ -31,8 +31,8 @@ fn setup_grass(mut commands: Commands, asset_server: Res<AssetServer>) {
         aabb: Aabb::from_min_max(Vec3::ZERO, Vec3::new(100., 10., 100.)),
         // you can define the color for each grass chunk
         grass_color: GrassColor {
-            main_color: Color::DARK_GREEN,
-            bottom_color: Color::DARK_GREEN * 0.5,
+            main_color: (palettes::css::DARK_GREEN).into(),
+            bottom_color: (palettes::css::DARK_GREEN * 0.5).into(),
         },
         ..default()
     },));
@@ -44,10 +44,8 @@ fn change_colors(mut grass_colors: Query<&mut GrassColor>, time: Res<Time>) {
     let r = ((time.elapsed_seconds() / 2.).sin() / 2.) + 0.5;
     let g = 1. - r;
     for mut color in &mut grass_colors {
-        color.main_color.set_r(r);
-        color.main_color.set_g(g);
-        color.main_color.set_b((g * r).sin());
+        color.main_color = Color::srgb(r, g, (g * r).sin()).into();
         // the bottom color should normally be a bit darker than the main color.
-        color.bottom_color = color.main_color * 0.5;
+        color.bottom_color = (color.main_color.to_linear() * 0.5).into();
     }
 }

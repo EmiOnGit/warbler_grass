@@ -3,11 +3,12 @@ use std::fmt::Display;
 
 use bevy::asset::Asset;
 use bevy::ecs::system::lifetimeless::SRes;
-use bevy::ecs::system::{CommandQueue, SystemParamItem};
+use bevy::ecs::system::SystemParamItem;
+use bevy::ecs::world::CommandQueue;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
-use bevy::render::render_asset::{PrepareAssetError, RenderAsset, RenderAssetUsages};
+use bevy::render::render_asset::{PrepareAssetError, RenderAsset};
 use bevy::render::render_resource::{Buffer, BufferInitDescriptor, BufferUsages};
 use bevy::render::renderer::RenderDevice;
 use bevy::tasks::futures_lite::future;
