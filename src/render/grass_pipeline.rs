@@ -2,7 +2,7 @@ use bevy::{
     pbr::{MeshPipeline, MeshPipelineKey},
     prelude::*,
     render::{
-        mesh::MeshVertexBufferLayout,
+        mesh::MeshVertexBufferLayoutRef,
         render_resource::{
             BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType,
             RenderPipelineDescriptor, ShaderStages, SpecializedMeshPipeline,
@@ -193,7 +193,7 @@ impl SpecializedMeshPipeline for GrassPipeline {
     fn specialize(
         &self,
         key: Self::Key,
-        layout: &MeshVertexBufferLayout,
+        layout: &MeshVertexBufferLayoutRef,
     ) -> Result<RenderPipelineDescriptor, SpecializedMeshPipelineError> {
         let mut descriptor = self.mesh_pipeline.specialize(key.mesh_key, layout)?;
         let vertex = &mut descriptor.vertex;
