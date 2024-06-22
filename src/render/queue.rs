@@ -1,11 +1,12 @@
-use bevy::core_pipeline::core_3d::Opaque3d;
+use bevy::core_pipeline::core_3d::{Opaque3d, Opaque3dBinKey};
 use bevy::core_pipeline::prepass::{
     DeferredPrepass, DepthPrepass, MotionVectorPrepass, NormalPrepass,
 };
 use bevy::pbr::{MeshPipelineKey, RenderMeshInstances};
 use bevy::prelude::*;
+use bevy::render::mesh::GpuMesh;
 use bevy::render::render_asset::RenderAssets;
-use bevy::render::render_phase::{DrawFunctions, RenderPhase};
+use bevy::render::render_phase::{DrawFunctions, ViewBinnedRenderPhases};
 use bevy::render::render_resource::{PipelineCache, SpecializedMeshPipelines};
 use bevy::render::view::ExtractedView;
 
@@ -22,11 +23,11 @@ pub(crate) fn queue_grass_buffers(
     mut pipelines: ResMut<SpecializedMeshPipelines<GrassPipeline>>,
     pipeline_cache: Res<PipelineCache>,
     render_mesh_instances: Res<RenderMeshInstances>,
-    meshes: Res<RenderAssets<Mesh>>,
+    meshes: Res<RenderAssets<GpuMesh>>,
     material_meshes: Query<(Entity, &WarblerHeight)>,
+    mut phase: ResMut<ViewBinnedRenderPhases<Opaque3d>>,
     mut views: Query<(
         &ExtractedView,
-        &mut RenderPhase<Opaque3d>,
         Has<DepthPrepass>,
         Has<NormalPrepass>,
         Has<MotionVectorPrepass>,
@@ -36,9 +37,7 @@ pub(crate) fn queue_grass_buffers(
     let draw_custom = opaque_3d_draw_functions.read().id::<GrassDrawCall>();
     let msaa_key = MeshPipelineKey::from_msaa_samples(msaa.samples());
 
-    for (view, mut opaque_phase, depth_prepass, normal_prepass, motion_prepass, deferred_prepass) in
-        &mut views
-    {
+    for (view, depth_prepass, normal_prepass, motion_prepass, deferred_prepass) in &mut views {
         let mut view_key = msaa_key | MeshPipelineKey::from_hdr(view.hdr);
         if deferred_prepass {
             view_key |= MeshPipelineKey::DEFERRED_PREPASS;
@@ -53,7 +52,7 @@ pub(crate) fn queue_grass_buffers(
             view_key |= MeshPipelineKey::MOTION_VECTOR_PREPASS;
         }
         for (entity, height) in material_meshes.iter() {
-            let Some(mesh_instance) = render_mesh_instances.get(&entity) else {
+            let Some(mesh_instance) = render_mesh_instances.render_mesh_queue_data(entity) else {
                 continue;
             };
 
@@ -61,7 +60,7 @@ pub(crate) fn queue_grass_buffers(
                 continue;
             };
             let mesh_key =
-                view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology);
+                view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology());
             let mut grass_key = GrassRenderKey::from(mesh_key);
             grass_key.uniform_height = match height {
                 WarblerHeight::Uniform(_) => true,
@@ -70,14 +69,20 @@ pub(crate) fn queue_grass_buffers(
             let pipeline = pipelines
                 .specialize(&pipeline_cache, &grass_pipeline, grass_key, &mesh.layout)
                 .unwrap();
-            opaque_phase.add(Opaque3d {
+            let Some(phase) = phase.get_mut(&entity) else {
+                continue;
+            };
+            phase.add(
+                Opaque3dBinKey {
+                    pipeline,
+                    draw_function: draw_custom,
+                    asset_id: mesh_instance.mesh_asset_id,
+                    material_bind_group_id: None,
+                    lightmap_image: None,
+                },
                 entity,
-                pipeline,
-                draw_function: draw_custom,
-                batch_range: 0..1,
-                dynamic_offset: None,
-                asset_id: mesh_instance.mesh_asset_id,
-            });
+                false,
+            );
         }
     }
 }
