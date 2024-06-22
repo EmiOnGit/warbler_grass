@@ -19,7 +19,7 @@ use bevy::render::render_resource::{
     BufferUsages, TextureViewId,
 };
 use bevy::render::renderer::RenderDevice;
-use bevy::render::texture::FallbackImage;
+use bevy::render::texture::{FallbackImage, GpuImage};
 use bytemuck::{Pod, Zeroable};
 #[derive(Component)]
 pub(crate) struct BindGroupBuffer<T> {
@@ -81,7 +81,7 @@ pub(crate) fn prepare_height_buffer(
     mut commands: Commands,
     pipeline: Res<GrassPipeline>,
     fallback_img: Res<FallbackImage>,
-    images: Res<RenderAssets<Image>>,
+    images: Res<RenderAssets<GpuImage>>,
 
     render_device: Res<RenderDevice>,
     inserted_grass: Query<(Entity, &WarblerHeight)>,
@@ -165,7 +165,7 @@ pub(crate) fn prepare_y_map_buffer(
     render_device: Res<RenderDevice>,
     pipeline: Res<GrassPipeline>,
     fallback_img: Res<FallbackImage>,
-    images: Res<RenderAssets<Image>>,
+    images: Res<RenderAssets<GpuImage>>,
     inserted_grass: Query<(Entity, &YMap, &Aabb)>,
 ) {
     let layout = pipeline.y_map_layout.clone();
@@ -206,7 +206,7 @@ pub(crate) fn prepare_normal_map_buffer(
     render_device: Res<RenderDevice>,
     pipeline: Res<GrassPipeline>,
     fallback_img: Res<FallbackImage>,
-    images: Res<RenderAssets<Image>>,
+    images: Res<RenderAssets<GpuImage>>,
     inserted_grass: Query<(Entity, &NormalMap)>,
 ) {
     let layout = pipeline.normal_map_layout.clone();
@@ -236,7 +236,7 @@ pub(crate) fn prepare_uniform_buffers(
     fallback_img: Res<FallbackImage>,
     render_device: Res<RenderDevice>,
     mut uniform_buffer: ResMut<UniformBuffer>,
-    images: Res<RenderAssets<Image>>,
+    images: Res<RenderAssets<GpuImage>>,
     time: Res<Time>,
     mut last_texture_id: Local<Option<TextureViewId>>,
 ) {

@@ -20,8 +20,6 @@ pub mod bundle;
 pub mod dithering;
 
 pub mod diagnostic;
-#[cfg(feature = "editor")]
-pub mod editor;
 
 pub mod map;
 
