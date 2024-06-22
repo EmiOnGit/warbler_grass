@@ -117,28 +117,24 @@ pub(crate) struct GpuDitheredBuffer {
     pub buffer: Buffer,
     pub instances: usize,
 }
-impl RenderAsset for DitheredBuffer {
-    type PreparedAsset = GpuDitheredBuffer;
+impl RenderAsset for GpuDitheredBuffer {
+    type SourceAsset = DitheredBuffer;
 
     type Param = SRes<RenderDevice>;
 
-    fn asset_usage(&self) -> bevy::render::render_asset::RenderAssetUsages {
-        RenderAssetUsages::default()
-    }
-
     fn prepare_asset(
-        self,
+        source_asset: Self::SourceAsset,
         param: &mut SystemParamItem<Self::Param>,
-    ) -> Result<Self::PreparedAsset, PrepareAssetError<Self>> {
+    ) -> Result<Self, PrepareAssetError<Self::SourceAsset>> {
         let render_device = param;
         let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: "dither buffer".into(),
-            contents: bytemuck::cast_slice(self.positions.as_slice()),
+            contents: bytemuck::cast_slice(source_asset.positions.as_slice()),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
         Ok(GpuDitheredBuffer {
             buffer,
-            instances: self.positions.len(),
+            instances: source_asset.positions.len(),
         })
     }
 }

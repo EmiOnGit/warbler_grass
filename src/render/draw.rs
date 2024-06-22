@@ -9,14 +9,14 @@ use bevy::{
     pbr::RenderMeshInstances,
     prelude::*,
     render::{
-        mesh::GpuBufferInfo,
+        mesh::{GpuBufferInfo, GpuMesh},
         render_asset::RenderAssets,
         render_phase::{PhaseItem, RenderCommand, RenderCommandResult, TrackedRenderPass},
     },
 };
 
 use crate::{
-    dithering::DitheredBuffer,
+    dithering::{DitheredBuffer, GpuDitheredBuffer},
     map::YMap,
     prelude::{GrassColor, NormalMap, WarblerHeight},
 };
@@ -160,9 +160,9 @@ pub(crate) struct SetVertexBuffer;
 
 impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
     type Param = (
-        SRes<RenderAssets<Mesh>>,
+        SRes<RenderAssets<GpuMesh>>,
         SRes<RenderMeshInstances>,
-        SRes<RenderAssets<DitheredBuffer>>,
+        SRes<RenderAssets<GpuDitheredBuffer>>,
     );
     type ViewQuery = ();
     type ItemQuery = Read<Handle<DitheredBuffer>>;
@@ -175,7 +175,8 @@ impl<P: PhaseItem> RenderCommand<P> for SetVertexBuffer {
         (meshes, render_mesh_instances, dither): SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
-        let Some(mesh_instance) = render_mesh_instances.get(&item.entity()) else {
+        let Some(mesh_instance) = render_mesh_instances.render_mesh_queue_data(item.entity())
+        else {
             return RenderCommandResult::Failure;
         };
         let Some(gpu_mesh) = meshes.into_inner().get(mesh_instance.mesh_asset_id) else {
